@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="ext-resource-dependency" content="./Screen.dc.html" data-resource-id="./Screen.dc.html" />
+<meta name="ext-resource-dependency" content="./support.js" data-resource-id="./support.js" />
+<template id="__bundler_thumbnail" data-bg-color="#1F4E79">
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+<rect width="1200" height="800" fill="#1F4E79"/>
+<rect x="470" y="230" width="260" height="260" rx="72" fill="#26A69A"/>
+<rect x="530" y="300" width="140" height="26" rx="13" fill="#FFF8E7"/>
+<rect x="530" y="348" width="140" height="26" rx="13" fill="#FFF8E7"/>
+<rect x="530" y="396" width="92" height="26" rx="13" fill="#FFF8E7"/>
+<rect x="440" y="556" width="320" height="18" rx="9" fill="#A9C6DD"/>
+</svg>
+</template>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF2F6}
+a{color:#1F4E79}
+a:hover{color:#26A69A}
+</style>
+</helmet>
+
+<div style="font-family:Manrope,system-ui,sans-serif;color:#22303C;padding:44px 48px 64px;display:flex;flex-direction:column;gap:34px;width:1560px;box-sizing:border-box">
+
+<div style="display:flex;gap:40px;align-items:flex-start">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;max-width:760px">
+<div style="display:flex;align-items:center;gap:12px">
+<div style="background:#1F4E79;color:#fff;font-size:14px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:6px 11px;border-radius:6px">HCD Research Prototype</div>
+<div style="font-size:14px;font-weight:700;color:#1F7A70;letter-spacing:.08em;text-transform:uppercase">v1 · 19 screens</div>
+</div>
+<h1 style="margin:0;font-size:40px;font-weight:800;line-height:1.12;color:#1F4E79;text-wrap:pretty">সহজপাঠ / Shohojpath</h1>
+<p style="margin:0;font-size:16px;line-height:1.65;color:#44586A;max-width:640px;text-wrap:pretty">A dyslexia-friendly Bangla reading interface. Every screen below is built to answer one question: <em>how can a human-centred Bangla reading interface support decoding for people with dyslexia?</em></p>
+</div>
+<div style="width:420px;flex:none;background:#fff;border:1px solid #DDE5EC;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="font-size:14px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#5B6B7B">Design assumptions</div>
+<div style="font-size:14px;line-height:1.7;color:#3B4B5A;text-wrap:pretty">No design system was available, so the visual language is taken from your slide deck: deep blue <strong style="color:#1F4E79">#1F4E79</strong>, teal <strong style="color:#26A69A">#26A69A</strong>, cream and light-yellow reading surfaces, Material rounded icons, and 48 px minimum touch targets. Bangla is set in Noto Sans Bengali; UI labels are English. Passages are written sample text — swap in your study material.</div>
+<div style="display:flex;gap:7px;flex-wrap:wrap">
+<div style="width:34px;height:34px;border-radius:9px;background:#1F4E79"></div>
+<div style="width:34px;height:34px;border-radius:9px;background:#26A69A"></div>
+<div style="width:34px;height:34px;border-radius:9px;background:#FFF8E7;border:1px solid #E3E9F0"></div>
+<div style="width:34px;height:34px;border-radius:9px;background:#FFFDE7;border:1px solid #E3E9F0"></div>
+<div style="width:34px;height:34px;border-radius:9px;background:#22303C"></div>
+<div style="width:34px;height:34px;border-radius:9px;background:#F7F9FC;border:1px solid #E3E9F0"></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;gap:40px;align-items:flex-start">
+
+<div style="flex:none;display:flex;flex-direction:column;gap:18px">
+<div style="width:403px;box-sizing:border-box;padding:14px;border-radius:52px;background:#20303F;box-shadow:0 26px 60px rgba(20,40,60,.34)">
+<div style="border-radius:40px;overflow:hidden;background:#000;position:relative">
+<dc-import name="Screen" screen="{{ screen }}" mode="{{ mode }}" onNav="{{ setScreen }}" onMode="{{ setMode }}" hint-size="375px,812px"></dc-import>
+</div>
+<div style="height:5px;width:120px;border-radius:3px;background:#4A5B6B;margin:11px auto 2px"></div>
+</div>
+
+<div style="width:403px;box-sizing:border-box;background:#fff;border:1px solid #DDE5EC;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:14px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#5B6B7B">Reading profile (research condition)</div>
+<div style="display:flex;gap:7px">
+<button onClick="{{ pickDefault }}" style="{{ btnDefault }}">Default</button>
+<button onClick="{{ pickRecommended }}" style="{{ btnRecommended }}">Recommended</button>
+<button onClick="{{ pickCustom }}" style="{{ btnCustom }}">Custom</button>
+</div>
+<div style="font-size:14px;line-height:1.6;color:#3B4B5A">Switch conditions to compare the control interface against the evidence-based preset and the reader's own settings. The Reading screen re-renders live.</div>
+<div style="height:1px;background:#EDF1F5"></div>
+<div style="font-size:14px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#5B6B7B">Evaluation path</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px">
+<sc-for list="{{ flow }}" as="f" hint-placeholder-count="9">
+<button onClick="{{ f.go }}" style="{{ f.style }}">{{ f.label }}</button>
+</sc-for>
+</div>
+</div>
+</div>
+
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;align-items:baseline;gap:12px">
+<div style="font-size:20px;font-weight:800;color:#1F4E79">Screen map</div>
+<div style="font-size:14px;color:#5B6B7B">Tap any screen to open it in the phone</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:20px">
+<sc-for list="{{ screens }}" as="sc" hint-placeholder-count="19">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="{{ sc.frame }}">
+<div inert aria-hidden="true" style="width:375px;height:812px;transform:scale(.362);transform-origin:top left;pointer-events:none">
+<dc-import name="Screen" screen="{{ sc.id }}" mode="{{ mode }}" hint-size="375px,812px"></dc-import>
+</div>
+<button aria-label="{{ sc.aria }}" onClick="{{ sc.go }}" style="position:absolute;inset:0;background:none;border:0;padding:0;cursor:pointer"></button>
+</div>
+<div style="display:flex;align-items:baseline;gap:7px">
+<span style="font-size:14px;font-weight:800;color:#5B6B7B;font-variant-numeric:tabular-nums">{{ sc.n }}</span>
+<span style="{{ sc.labelStyle }}">{{ sc.label }}</span>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="background:#fff;border:1px solid #DDE5EC;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;margin-top:8px">
+<div style="font-size:15px;font-weight:800;color:#1F4E79">What I'd do next</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 26px;font-size:14px;line-height:1.65;color:#3B4B5A">
+<div>Wire the settings controls to real values so participants can genuinely customise, then log every change with a timestamp for the independent-variable analysis.</div>
+<div>Add the reading ruler and focus-mode overlays as live behaviours on the reading screen — right now they are shown as settings, not as rendered states.</div>
+<div>Replace sample passages with your study material at matched difficulty, and add the remaining 6 SUS statements and the short-answer / true-false quiz types.</div>
+<div>Build a researcher view: per-session export (CSV), condition assignment, and a side-by-side Default vs Recommended comparison for the thesis figures.</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;recommended&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;recommended&quot;,&quot;custom&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Research condition&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#26A69A&quot;,&quot;options&quot;:[&quot;#26A69A&quot;,&quot;#1F4E79&quot;,&quot;#F2B441&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Screen map&quot;}}">
+class Component extends DCLogic {
+  // mode starts null so the in-design switcher (state) wins over the declared
+  // prop default, which the host always passes through as a real prop.
+  state = { screen: 'reading', mode: null };
+
+  renderVals() {
+    const cur = this.state.screen;
+    const mode = this.state.mode || this.props.mode || 'recommended';
+    const accent = this.props.accent || '#26A69A';
+
+    const list = [
+      ['splash','Splash'], ['login','Login / Guest'], ['home','Home'], ['library','Library'],
+      ['reading','Reading'], ['rsettings','Reading Settings'], ['progress','Progress'],
+      ['history','History'], ['bookmarks','Bookmarks'], ['stats','Statistics'],
+      ['quiz','Assessment'], ['feedback','Feedback'], ['sus','SUS'], ['nasa','NASA-TLX'],
+      ['profile','Profile'], ['settings','Settings'], ['help','Help'], ['about','About'],
+      ['thanks','Thank You']
+    ];
+
+    const set = id => () => this.setState({ screen: id });
+
+    const chip = on => Object.assign({
+      cursor: 'pointer', fontSize: '14px', fontWeight: 700, padding: '9px 12px', minHeight: '44px',
+      borderRadius: '8px', whiteSpace: 'nowrap'
+    }, on ? { background: '#1F4E79', color: '#fff' }
+          : { background: '#F2F6FA', color: '#5B6B7B', border: '1px solid #E3E9F0' });
+
+    const pill = on => Object.assign({
+      cursor: 'pointer', flex: 1, textAlign: 'center', fontSize: '14px',
+      fontWeight: 700, padding: '11px 4px', borderRadius: '10px', minHeight: '44px'
+    }, on ? { background: '#1F4E79', color: '#fff' }
+          : { background: '#F2F6FA', color: '#5B6B7B', border: '1px solid #E3E9F0' });
+
+    const flowIds = ['splash','login','home','library','reading','rsettings','quiz','feedback','sus','thanks'];
+
+    return {
+      screen: cur,
+      mode,
+      setScreen: id => this.setState({ screen: id }),
+      setMode: m => this.setState({ mode: m }),
+      pickDefault: () => this.setState({ mode: 'default' }),
+      pickRecommended: () => this.setState({ mode: 'recommended' }),
+      pickCustom: () => this.setState({ mode: 'custom' }),
+      btnDefault: pill(mode === 'default'),
+      btnRecommended: pill(mode === 'recommended'),
+      btnCustom: pill(mode === 'custom'),
+
+      flow: flowIds.map(id => {
+        const item = list.filter(l => l[0] === id)[0];
+        return { label: item[1], go: set(id), style: chip(cur === id) };
+      }),
+
+      screens: list.map((l, i) => ({
+        id: l[0],
+        label: l[1],
+        n: (i + 1 < 10 ? '0' : '') + (i + 1),
+        aria: 'Open ' + l[1] + ' screen',
+        go: set(l[0]),
+        frame: {
+          position: 'relative', width: '138px', height: '296px', overflow: 'hidden', boxSizing: 'border-box',
+          borderRadius: '16px', background: '#fff',
+          border: cur === l[0] ? '2.5px solid ' + accent : '1px solid #DDE5EC',
+          boxShadow: cur === l[0] ? '0 8px 22px rgba(38,166,154,.26)' : '0 2px 6px rgba(31,78,121,.08)'
+        },
+        labelStyle: {
+          fontSize: '14px', fontWeight: cur === l[0] ? 800 : 600,
+          color: cur === l[0] ? '#1F4E79' : '#3B4B5A'
+        }
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

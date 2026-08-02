@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1F4E79}
+a:hover{color:#26A69A}
+.ms{font-family:'Material Symbols Rounded';font-weight:400;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased}
+.bn{font-family:'Noto Sans Bengali','Manrope',sans-serif}
+button{font-family:inherit;margin:0}
+button:focus,button:focus-visible{outline:3px solid #B07A00;outline-offset:2px}
+</style>
+</helmet>
+<div style="width:375px;height:812px;background:#F7F9FC;display:flex;flex-direction:column;overflow:hidden;font-family:Manrope,system-ui,sans-serif;color:#22303C;position:relative;isolation:isolate">
+
+<div style="flex:none;height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:14px;font-weight:700;color:#1F4E79;background:#fff">
+<span>11:37</span>
+<span style="display:flex;align-items:center;gap:5px"><span class="ms" style="font-size:16px" aria-hidden="true">wifi</span><span class="ms" style="font-size:16px" aria-hidden="true">signal_cellular_alt</span><span class="ms" style="font-size:16px" aria-hidden="true">battery_5_bar</span></span>
+</div>
+
+<sc-if value="{{ isSplash }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:linear-gradient(180deg,#FFFFFF 0%,#EAF1F7 100%);padding:34px">
+<div style="width:104px;height:104px;border-radius:30px;background:#1F4E79;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 28px rgba(31,78,121,.28)">
+<span class="ms" style="font-size:52px;color:#fff" aria-hidden="true">menu_book</span>
+</div>
+<div style="text-align:center;display:flex;flex-direction:column;gap:6px">
+<h1 lang="bn" class="bn" style="margin:0;font-size:30px;font-weight:700;color:#1F4E79">সহজপাঠ</h1>
+<div style="font-size:14px;font-weight:700;color:#1F7A70;letter-spacing:.14em;text-transform:uppercase">Shohojpath</div>
+<p style="margin:6px 0 0;font-size:15px;color:#3B4B5A;max-width:250px;line-height:1.6;text-wrap:pretty">A dyslexia-friendly Bangla reading interface</p>
+</div>
+<div style="width:132px;height:5px;border-radius:3px;background:#DCE5EE;overflow:hidden;margin-top:4px">
+<div style="width:62%;height:100%;background:#26A69A;border-radius:3px"></div>
+</div>
+<div style="font-size:14px;color:#5B6B7B">Loading your preferences…</div>
+<button onClick="{{ go.login }}" style="outline:3px solid #B07A00;outline-offset:2px;margin-top:10px;border:0;cursor:pointer;background:#1F4E79;color:#fff;font-size:17px;font-weight:700;padding:16px 46px;border-radius:14px;box-shadow:0 6px 16px rgba(31,78,121,.24);min-height:52px">Get Started</button>
+<div style="position:absolute;bottom:22px;font-size:14px;color:#5B6B7B">Version 1.0 · Research Prototype</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;padding:22px 20px;display:flex;flex-direction:column;gap:14px;background:#fff">
+<div style="width:52px;height:52px;border-radius:16px;background:#1F4E79;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:28px;color:#fff" aria-hidden="true">menu_book</span></div>
+<div style="display:flex;flex-direction:column;gap:5px">
+<h1 style="margin:0;font-size:24px;font-weight:800;color:#1F4E79">Welcome back</h1>
+<p style="margin:0;font-size:15px;color:#3B4B5A;line-height:1.5;text-wrap:pretty">Sign in to save your reading settings across sessions.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+<span style="font-size:14px;font-weight:700;color:#3B4B5A">Email</span>
+<div style="display:flex;align-items:center;gap:10px;border:1.5px solid #9FB0C0;border-radius:12px;padding:14px;background:#F7F9FC;min-height:48px;box-sizing:border-box"><span class="ms" style="font-size:22px;color:#5B6B7B" aria-hidden="true">mail</span><span style="font-size:15px;color:#22303C">mitu.rahman@mail.com</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font-size:14px;font-weight:700;color:#3B4B5A">Password</span>
+<div style="display:flex;align-items:center;gap:10px;border:1.5px solid #9FB0C0;border-radius:12px;padding:14px;background:#F7F9FC;min-height:48px;box-sizing:border-box"><span class="ms" style="font-size:22px;color:#5B6B7B" aria-hidden="true">lock</span><span style="font-size:15px;color:#22303C;letter-spacing:.2em">••••••••</span><button aria-label="Show password" style="margin-left:auto;background:none;border:0;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px"><span class="ms" style="font-size:22px;color:#5B6B7B" aria-hidden="true">visibility_off</span></button></div>
+</div>
+<div style="display:flex;justify-content:flex-end"><button style="background:none;border:0;cursor:pointer;font-size:14px;font-weight:700;color:#1F7A70;min-height:44px;padding:0 4px">Forgot password?</button></div>
+<button onClick="{{ go.home }}" style="outline:3px solid #B07A00;outline-offset:2px;border:0;cursor:pointer;background:#1F4E79;color:#fff;font-size:17px;font-weight:700;padding:16px;border-radius:14px;min-height:52px">Log in</button>
+<div style="display:flex;align-items:center;gap:12px;color:#5B6B7B;font-size:14px;font-weight:700"><div style="flex:1;height:1px;background:#DCE5EE"></div>OR<div style="flex:1;height:1px;background:#DCE5EE"></div></div>
+<button onClick="{{ go.home }}" style="cursor:pointer;background:#fff;color:#1F4E79;font-size:17px;font-weight:700;padding:16px;border-radius:14px;border:2px solid #1F4E79;min-height:52px">Continue as Guest</button>
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:2px">
+<h2 style="margin:0;font-size:14px;font-weight:800;color:#3B4B5A;letter-spacing:.06em;text-transform:uppercase">I am a…</h2>
+<div style="display:flex;gap:8px">
+<button style="flex:1;cursor:pointer;border:2px solid #26A69A;background:#E8F5F3;border-radius:12px;padding:12px 6px;font-size:14px;font-weight:700;color:#1F4E79;min-height:48px">Reader</button>
+<button style="flex:1;cursor:pointer;border:1.5px solid #9FB0C0;background:#fff;border-radius:12px;padding:12px 6px;font-size:14px;font-weight:600;color:#3B4B5A;min-height:48px">Parent</button>
+<button style="flex:1;cursor:pointer;border:1.5px solid #9FB0C0;background:#fff;border-radius:12px;padding:12px 6px;font-size:14px;font-weight:600;color:#3B4B5A;min-height:48px">Pro</button>
+</div>
+</div>
+<div style="text-align:center;font-size:15px;color:#3B4B5A">New here? <button style="background:none;border:0;cursor:pointer;font-size:15px;font-weight:800;color:#1F4E79;padding:10px 4px;min-height:44px">Create an account</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:14px 18px 22px;border-radius:0 0 22px 22px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px">
+<button onClick="{{ go.profile }}" aria-label="Open profile" style="cursor:pointer;border:0;width:46px;height:46px;border-radius:50%;background:#26A69A;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex:none">MR</button>
+<div style="flex:1">
+<div style="font-size:14px;color:#C9DCEA">Good morning</div>
+<h1 style="margin:0;font-size:19px;font-weight:700;color:#fff">Mitu Rahman</h1>
+</div>
+<button aria-label="Notifications" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">notifications</span></button>
+</div>
+<button style="cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:14px;padding:13px 14px;min-height:48px;width:100%;box-sizing:border-box">
+<span class="ms" style="font-size:22px;color:#DCEAF5" aria-hidden="true">search</span>
+<span style="font-size:15px;color:#DCEAF5">Search passages…</span>
+</button>
+</div>
+<div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+
+<button onClick="{{ go.reading }}" style="text-align:left;cursor:pointer;background:#fff;border:1px solid #C9D4DF;border-radius:18px;padding:15px;box-shadow:0 2px 8px rgba(31,78,121,.07);display:flex;flex-direction:column;gap:10px;width:100%;box-sizing:border-box">
+<div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+<span style="font-size:14px;font-weight:800;color:#1F7A70;letter-spacing:.06em;text-transform:uppercase">Continue reading</span>
+<span class="ms" style="font-size:22px;color:#1F4E79" aria-hidden="true">bookmark</span>
+</div>
+<span lang="bn" class="bn" style="font-size:20px;font-weight:600;color:#22303C">বৃষ্টির দিনে মিতু</span>
+<span style="display:flex;align-items:center;gap:8px;width:100%">
+<span style="flex:1;height:9px;border-radius:5px;background:#EDF2F7;overflow:hidden;display:block"><span style="width:64%;height:100%;background:#26A69A;display:block"></span></span>
+<span style="font-size:14px;font-weight:700;color:#3B4B5A">64%</span>
+</span>
+<span style="font-size:14px;color:#5B6B7B">Page 4 of 6 · about 4 min left</span>
+</button>
+
+<button onClick="{{ go.library }}" style="outline:3px solid #B07A00;outline-offset:2px;cursor:pointer;border:0;background:#26A69A;color:#fff;font-size:17px;font-weight:700;padding:17px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:10px;min-height:58px;box-shadow:0 6px 16px rgba(38,166,154,.28)"><span class="ms" style="font-size:26px" aria-hidden="true">auto_stories</span>Start Reading</button>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+<button onClick="{{ go.library }}" style="text-align:left;cursor:pointer;background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:7px;min-height:100px">
+<span class="ms" style="font-size:28px;color:#1F4E79" aria-hidden="true">local_library</span>
+<span style="font-size:15px;font-weight:700;color:#22303C">Library</span>
+<span style="font-size:14px;color:#5B6B7B">28 passages</span>
+</button>
+<button onClick="{{ go.progress }}" style="text-align:left;cursor:pointer;background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:7px;min-height:100px">
+<span class="ms" style="font-size:28px;color:#1F4E79" aria-hidden="true">insights</span>
+<span style="font-size:15px;font-weight:700;color:#22303C">My Progress</span>
+<span style="font-size:14px;color:#5B6B7B">18 min today</span>
+</button>
+<button onClick="{{ go.bookmarks }}" style="text-align:left;cursor:pointer;background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:7px;min-height:100px">
+<span class="ms" style="font-size:28px;color:#1F4E79" aria-hidden="true">bookmarks</span>
+<span style="font-size:15px;font-weight:700;color:#22303C">Bookmarks</span>
+<span style="font-size:14px;color:#5B6B7B">5 saved</span>
+</button>
+<button onClick="{{ go.history }}" style="text-align:left;cursor:pointer;background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:7px;min-height:100px">
+<span class="ms" style="font-size:28px;color:#1F4E79" aria-hidden="true">history</span>
+<span style="font-size:15px;font-weight:700;color:#22303C">History</span>
+<span style="font-size:14px;color:#5B6B7B">12 sessions</span>
+</button>
+</div>
+
+<div style="display:flex;gap:9px;padding-bottom:8px">
+<button onClick="{{ go.settings }}" style="cursor:pointer;border:0;flex:1;background:#EAF1F7;border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:64px"><span class="ms" style="font-size:24px;color:#1F4E79" aria-hidden="true">settings</span><span style="font-size:14px;font-weight:700;color:#1F4E79">Settings</span></button>
+<button onClick="{{ go.help }}" style="cursor:pointer;border:0;flex:1;background:#EAF1F7;border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:64px"><span class="ms" style="font-size:24px;color:#1F4E79" aria-hidden="true">help</span><span style="font-size:14px;font-weight:700;color:#1F4E79">Help</span></button>
+<button onClick="{{ go.about }}" style="cursor:pointer;border:0;flex:1;background:#EAF1F7;border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:64px"><span class="ms" style="font-size:24px;color:#1F4E79" aria-hidden="true">info</span><span style="font-size:14px;font-weight:700;color:#1F4E79">About</span></button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLibrary }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:8px">
+<button onClick="{{ go.home }}" aria-label="Go back to home" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button>
+<h1 style="margin:0;font-size:19px;font-weight:700;color:#fff">Reading Library</h1>
+</div>
+<button style="cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:12px 13px;min-height:48px;width:100%;box-sizing:border-box"><span class="ms" style="font-size:21px;color:#DCEAF5" aria-hidden="true">search</span><span style="font-size:15px;color:#DCEAF5">Search by title or topic</span></button>
+</div>
+<div style="display:flex;gap:7px;overflow-x:auto;padding:12px 14px 4px">
+<button style="outline:3px solid #B07A00;outline-offset:2px;flex:none;cursor:pointer;border:0;background:#1F4E79;color:#fff;font-size:14px;font-weight:700;padding:11px 16px;border-radius:22px;min-height:44px">All</button>
+<button style="flex:none;cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:600;padding:11px 16px;border-radius:22px;min-height:44px">Children</button>
+<button style="flex:none;cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:600;padding:11px 16px;border-radius:22px;min-height:44px">School</button>
+<button style="flex:none;cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:600;padding:11px 16px;border-radius:22px;min-height:44px">Articles</button>
+<button style="flex:none;cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:600;padding:11px 16px;border-radius:22px;min-height:44px">News</button>
+</div>
+<div style="display:flex;gap:7px;padding:6px 14px 2px;align-items:center;flex-wrap:wrap">
+<h2 style="margin:0;font-size:14px;font-weight:800;color:#3B4B5A;letter-spacing:.05em;text-transform:uppercase">Difficulty</h2>
+<button style="cursor:pointer;background:#E8F5F3;border:1.5px solid #26A69A;color:#1F7A70;font-size:14px;font-weight:700;padding:9px 13px;border-radius:16px;min-height:44px">Easy</button>
+<button style="cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:600;padding:9px 13px;border-radius:16px;min-height:44px">Medium</button>
+<button style="cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:600;padding:9px 13px;border-radius:16px;min-height:44px">Hard</button>
+</div>
+<div style="padding:10px 14px 20px;display:flex;flex-direction:column;gap:11px">
+<sc-for list="{{ books }}" as="b" hint-placeholder-count="4">
+<button onClick="{{ go.reading }}" style="text-align:left;cursor:pointer;background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:13px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 1px 4px rgba(31,78,121,.05);width:100%;box-sizing:border-box">
+<span style="width:48px;height:48px;border-radius:14px;background:#EAF1F7;display:flex;align-items:center;justify-content:center;flex:none"><span class="ms" style="font-size:26px;color:#1F4E79" aria-hidden="true">menu_book</span></span>
+<span style="flex:1;display:flex;flex-direction:column;gap:6px">
+<span lang="bn" class="bn" style="font-size:17px;font-weight:600;color:#22303C;line-height:1.4">{{ b.title }}</span>
+<span style="font-size:14px;color:#5B6B7B">{{ b.cat }}</span>
+<span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+<span style="background:#EAF1F7;color:#1F4E79;font-size:14px;font-weight:700;padding:4px 9px;border-radius:12px">{{ b.time }}</span>
+<span style="background:#E8F5F3;color:#1F7A70;font-size:14px;font-weight:700;padding:4px 9px;border-radius:12px">{{ b.level }}</span>
+</span>
+</span>
+<span class="ms" style="font-size:24px;color:#5B6B7B" aria-hidden="true">bookmark_border</span>
+</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isReading }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative">
+<div style="flex:none;display:flex;align-items:center;gap:4px;padding:6px 10px;background:#1F4E79;color:#fff">
+<button onClick="{{ go.library }}" aria-label="Back to library" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:25px;color:#fff" aria-hidden="true">arrow_back</span></button>
+<div style="flex:1;display:flex;flex-direction:column;gap:1px;min-width:0">
+<h1 lang="bn" class="bn" style="margin:0;font-size:16px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">বৃষ্টির দিনে মিতু</h1>
+<span style="font-size:14px;color:#C9DCEA">Children · Easy</span>
+</div>
+<button aria-label="Bookmark this page" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:24px;color:#fff" aria-hidden="true">bookmark</span></button>
+<button onClick="{{ go.rsettings }}" aria-label="Open reading settings" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:24px;color:#fff" aria-hidden="true">tune</span></button>
+</div>
+<div style="flex:none;height:5px;background:#DCE5EE"><div style="width:64%;height:100%;background:#26A69A"></div></div>
+<div style="{{ readerBody }}">
+<div style="font-size:14px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5B6B7B;margin-bottom:12px">Page 4 of 6</div>
+<div style="position:relative">
+<div style="{{ rulerStyle }}" aria-hidden="true"></div>
+<p lang="bn" class="bn" style="{{ passageStyle }}">একদিন সকালে <span style="{{ conj }}">ছোট্ট</span> মেয়ে মিতু জানালার পাশে বসে ছিল। বাইরে ঝিরিঝিরি <span style="{{ spoken }}" ref="{{ spokenRef }}">বৃষ্টি</span> পড়ছিল। গাছের পাতা <span style="{{ conj }}">বৃষ্টির</span> জলে ধুয়ে ঝকঝক করছিল। মিতু দেখল, একটা ছোট পাখি ভিজে গিয়ে <span style="{{ conj }}">বারান্দার</span> কোণে বসে আছে।</p>
+</div>
+<div style="margin-top:18px;padding:13px;border-radius:14px;background:#fff;border:2px solid #26A69A;display:flex;align-items:center;gap:11px">
+<span lang="bn" class="bn" style="font-size:22px;font-weight:600;color:#1F4E79;white-space:nowrap">ষ্ট &nbsp;→&nbsp; ষ্‌ + ট</span>
+<button aria-label="Hear this conjunct read aloud" style="cursor:pointer;border:0;background:#26A69A;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;margin-left:auto"><span class="ms" style="font-size:24px;color:#fff" aria-hidden="true">volume_up</span></button>
+</div>
+<div style="font-size:14px;color:#3B4B5A;margin-top:8px;line-height:1.5">Tap any conjunct to see and hear it</div>
+<div style="margin-top:16px;padding:13px;border-radius:12px;background:rgba(38,166,154,.12);border-left:4px solid #26A69A">
+<h2 style="margin:0 0 5px;font-size:14px;font-weight:800;color:#155F58;letter-spacing:.05em;text-transform:uppercase">Reading mode</h2>
+<p style="margin:0;font-size:14px;color:#3B4B5A;line-height:1.6;text-wrap:pretty">{{ modeNote }}</p>
+</div>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #C9D4DF;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:9px;padding:10px 12px;background:#F2FAF9;border-bottom:1px solid #CBE7E3">
+<button aria-label="Play read aloud" style="outline:3px solid #B07A00;outline-offset:2px;cursor:pointer;border:0;background:#26A69A;width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 4px 12px rgba(38,166,154,.32)"><span class="ms" style="font-size:32px;color:#fff" aria-hidden="true">play_arrow</span></button>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;min-width:0">
+<div style="display:flex;gap:5px">
+<button style="flex:1;cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:700;padding:8px 2px;border-radius:9px;min-height:44px">0.75x</button>
+<button style="flex:1;cursor:pointer;background:#1F4E79;border:0;color:#fff;font-size:14px;font-weight:700;padding:8px 2px;border-radius:9px;min-height:44px">1x</button>
+<button style="flex:1;cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:700;padding:8px 2px;border-radius:9px;min-height:44px">1.25x</button>
+</div>
+<span style="font-size:14px;font-weight:700;color:#155F58">Word highlighting on</span>
+</div>
+</div>
+<div style="padding:10px 12px 14px;display:flex;align-items:center;gap:10px">
+<button style="flex:1;cursor:pointer;background:#fff;border:2px solid #9FB0C0;color:#3B4B5A;font-size:15px;font-weight:700;padding:12px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:4px;min-height:48px"><span class="ms" style="font-size:20px" aria-hidden="true">chevron_left</span>Previous</button>
+<button onClick="{{ go.quiz }}" style="flex:1;cursor:pointer;background:#1F4E79;border:0;color:#fff;font-size:15px;font-weight:700;padding:12px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:4px;min-height:48px">Next<span class="ms" style="font-size:20px" aria-hidden="true">chevron_right</span></button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRsettings }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;position:relative;overflow:hidden;background:#22303C">
+<div style="position:absolute;inset:0;background:rgba(20,32,44,.5)"></div>
+<div style="position:absolute;top:0;right:0;bottom:0;width:352px;background:#fff;box-shadow:-12px 0 34px rgba(0,0,0,.24);display:flex;flex-direction:column">
+<div style="flex:none;display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;border-bottom:1px solid #C9D4DF">
+<h1 style="margin:0;font-size:18px;font-weight:800;color:#1F4E79;flex:1">Reading Settings</h1>
+<button onClick="{{ go.reading }}" aria-label="Close reading settings" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#3B4B5A" aria-hidden="true">close</span></button>
+</div>
+<div style="flex:1;overflow-y:auto;padding:14px 16px 24px;display:flex;flex-direction:column;gap:20px">
+
+<div style="border:2px solid #26A69A;border-radius:16px;padding:13px;background:#F2FAF9;display:flex;flex-direction:column;gap:10px">
+<h2 style="margin:0;font-size:15px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#155F58">Reading profile</h2>
+<div style="display:flex;gap:6px">
+<button onClick="{{ setDefault }}" style="{{ tabDefault }}">Default</button>
+<button onClick="{{ setRecommended }}" style="{{ tabRecommended }}">Recommended</button>
+<button onClick="{{ setCustom }}" style="{{ tabCustom }}">Custom</button>
+</div>
+<p lang="bn" style="margin:0;font-size:14px;color:#3B4B5A;line-height:1.6;text-wrap:pretty">{{ modeNote }}</p>
+</div>
+
+<div style="border:2px solid #26A69A;border-radius:16px;padding:13px;background:#fff;display:flex;flex-direction:column;gap:11px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<h2 lang="bn" style="margin:0;font-size:15px;font-weight:800;color:#1F4E79">1 · Read Aloud / পড়ে শোনাও</h2>
+<span style="background:#E8F5F3;color:#155F58;font-size:14px;font-weight:700;padding:3px 10px;border-radius:12px">Evidence-based</span>
+</div>
+<p style="margin:0;font-size:14px;color:#3B4B5A;line-height:1.55;text-wrap:pretty">Dyslexia is a phonological difficulty. Audio support addresses it directly.</p>
+<button style="cursor:pointer;background:none;border:0;padding:8px 0;display:flex;align-items:center;justify-content:space-between;min-height:48px;width:100%" aria-pressed="true"><span style="font-size:15px;font-weight:700;color:#22303C">Read aloud</span><span style="width:48px;height:28px;border-radius:14px;position:relative;background:#26A69A;flex:none"><span style="position:absolute;top:3px;left:23px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span></span></button>
+<button style="cursor:pointer;background:none;border:0;padding:8px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;width:100%;text-align:left" aria-pressed="true"><span style="font-size:15px;color:#22303C;line-height:1.4">Highlight each word as it is spoken</span><span style="width:48px;height:28px;border-radius:14px;position:relative;background:#26A69A;flex:none"><span style="position:absolute;top:3px;left:23px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span></span></button>
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font-size:15px;font-weight:700;color:#3B4B5A">Speed</span>
+<div style="display:flex;gap:6px">
+<button style="flex:1;cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:700;padding:10px 2px;border-radius:10px;min-height:44px">0.75x</button>
+<button style="flex:1;cursor:pointer;background:#1F4E79;border:0;color:#fff;font-size:14px;font-weight:700;padding:10px 2px;border-radius:10px;min-height:44px">1x</button>
+<button style="flex:1;cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:700;padding:10px 2px;border-radius:10px;min-height:44px">1.25x</button>
+</div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:2px"><span style="font-size:15px;font-weight:700;color:#3B4B5A">Voice</span><span style="font-size:15px;font-weight:700;color:#1F4E79">Bangla (bn-BD)</span></div>
+</div>
+
+<div style="border:2px solid #26A69A;border-radius:16px;padding:13px;background:#F2FAF9;display:flex;flex-direction:column;gap:9px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<h2 lang="bn" style="margin:0;font-size:15px;font-weight:800;color:#1F4E79">2 · Bangla Reading Support / বাংলা পাঠ সহায়তা</h2>
+<span style="background:#D9EFEC;color:#155F58;font-size:14px;font-weight:700;padding:3px 10px;border-radius:12px">Research feature</span>
+</div>
+<p style="margin:0;font-size:14px;color:#3B4B5A;line-height:1.55;text-wrap:pretty">Bangla conjuncts hide the letters inside them. These options make the spelling visible.</p>
+<sc-for list="{{ banglaToggles }}" as="t" hint-placeholder-count="4">
+<button style="cursor:pointer;background:none;border:0;border-top:1px solid #CBE7E3;padding:9px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;width:100%;text-align:left">
+<span style="flex:1;display:flex;flex-direction:column;gap:2px">
+<span lang="bn" class="bn" style="font-size:16px;font-weight:600;color:#22303C">{{ t.bn }}</span>
+<span style="font-size:14px;color:#3B4B5A;line-height:1.4">{{ t.en }}</span>
+</span>
+<span style="{{ t.track }}"><span style="{{ t.knob }}"></span></span>
+</button>
+</sc-for>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<h2 style="margin:0;font-size:15px;font-weight:800;color:#1F4E79">3 · Typography</h2>
+<span style="background:#EDF1F5;color:#3B4B5A;font-size:14px;font-weight:700;padding:3px 10px;border-radius:12px">Personal preference</span>
+</div>
+<p style="margin:0;font-size:14px;color:#3B4B5A;line-height:1.55;text-wrap:pretty">Font choice is a comfort preference. Research has not shown any single font improves reading accuracy.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<button style="cursor:pointer;text-align:left;border:2px solid #1F4E79;background:#EAF1F7;border-radius:11px;padding:11px 10px;font-size:14px;font-weight:700;color:#1F4E79;min-height:48px">Noto Sans Bengali</button>
+<button style="cursor:pointer;text-align:left;border:1.5px solid #9FB0C0;background:#fff;border-radius:11px;padding:11px 10px;font-size:14px;font-weight:600;color:#3B4B5A;min-height:48px">SolaimanLipi</button>
+<button style="cursor:pointer;text-align:left;border:1.5px solid #9FB0C0;background:#fff;border-radius:11px;padding:11px 10px;font-size:14px;font-weight:600;color:#3B4B5A;min-height:48px">Kalpurush</button>
+<button style="cursor:pointer;text-align:left;border:1.5px solid #9FB0C0;background:#fff;border-radius:11px;padding:11px 10px;font-size:14px;font-weight:600;color:#3B4B5A;min-height:48px">AdorshoLipi</button>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#F7F9FC;border:1px solid #C9D4DF;border-radius:13px;padding:12px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+<span style="font-size:15px;font-weight:700;color:#3B4B5A">Font size</span>
+<span style="font-size:32px;font-weight:800;color:#1F4E79;line-height:1">{{ sizeLabel }}</span>
+</div>
+<div style="height:8px;border-radius:4px;background:#DCE5EE;position:relative;margin:6px 0"><div style="{{ sizeFill }}"></div><div style="{{ sizeKnob }}"></div></div>
+<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:#5B6B7B"><span>12 px</span><span>72 px</span></div>
+<p style="margin:0;font-size:14px;color:#3B4B5A;line-height:1.5;text-wrap:pretty">Applies to the whole app, not just the passage.</p>
+</div>
+<button style="cursor:pointer;background:none;border:0;padding:6px 0;display:flex;align-items:center;justify-content:space-between;min-height:48px;width:100%" aria-pressed="false"><span style="font-size:15px;font-weight:700;color:#3B4B5A">Bold text</span><span style="width:48px;height:28px;border-radius:14px;background:#9FB0C0;position:relative;flex:none"><span style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span></span></button>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:11px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<h2 style="margin:0;font-size:15px;font-weight:800;color:#1F4E79">4 · Spacing</h2>
+<span style="background:#E8F5F3;color:#155F58;font-size:14px;font-weight:700;padding:3px 10px;border-radius:12px">Evidence-based</span>
+</div>
+<sc-for list="{{ spacings }}" as="sp" hint-placeholder-count="4">
+<div style="display:flex;flex-direction:column;gap:7px">
+<div style="display:flex;justify-content:space-between;gap:10px;font-size:15px;font-weight:600;color:#3B4B5A"><span>{{ sp.name }}</span><span style="font-weight:800;color:#1F4E79">{{ sp.val }}</span></div>
+<div style="height:8px;border-radius:4px;background:#DCE5EE;position:relative;margin-bottom:4px"><div style="{{ sp.fill }}"></div><div style="{{ sp.knob }}"></div></div>
+<p lang="bn" style="{{ sp.noteStyle }}">{{ sp.note }}</p>
+</div>
+</sc-for>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<h2 style="margin:0;font-size:15px;font-weight:800;color:#1F4E79">5 · Theme</h2>
+<span style="background:#EDF1F5;color:#3B4B5A;font-size:14px;font-weight:700;padding:3px 10px;border-radius:12px">Comfort</span>
+</div>
+<p style="margin:0;font-size:14px;color:#3B4B5A;line-height:1.55;text-wrap:pretty">Background colour affects comfort, not decoding accuracy.</p>
+<div style="display:flex;gap:7px">
+<button aria-label="White theme" style="cursor:pointer;flex:1;height:60px;border-radius:12px;background:#FFFFFF;border:2px solid #9FB0C0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;font-size:14px;font-weight:700;color:#3B4B5A">White</button>
+<button aria-label="Cream theme, selected" style="cursor:pointer;flex:1;height:60px;border-radius:12px;background:#FFF8E7;border:3px solid #26A69A;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;font-size:14px;font-weight:800;color:#155F58">Cream</button>
+<button aria-label="Light yellow theme" style="cursor:pointer;flex:1;height:60px;border-radius:12px;background:#FFFDE7;border:2px solid #9FB0C0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;font-size:14px;font-weight:700;color:#3B4B5A">Yellow</button>
+<button aria-label="Dark theme" style="cursor:pointer;flex:1;height:60px;border-radius:12px;background:#22303C;border:2px solid #9FB0C0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;font-size:14px;font-weight:700;color:#fff">Dark</button>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<h2 style="margin:0;font-size:15px;font-weight:800;color:#1F4E79">6 · Reading focus</h2>
+<span style="background:#E8F5F3;color:#155F58;font-size:14px;font-weight:700;padding:3px 10px;border-radius:12px">Evidence-based</span>
+</div>
+<sc-for list="{{ focusToggles }}" as="t" hint-placeholder-count="5">
+<button style="cursor:pointer;background:none;border:0;border-top:1px solid #E3E9F0;padding:9px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;width:100%;text-align:left">
+<span style="flex:1;display:flex;flex-direction:column;gap:2px">
+<span style="font-size:15px;font-weight:600;color:#22303C">{{ t.name }}</span>
+<span style="{{ t.capStyle }}">{{ t.cap }}</span>
+</span>
+<span style="{{ t.track }}"><span style="{{ t.knob }}"></span></span>
+</button>
+</sc-for>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:9px">
+<h2 style="margin:0;font-size:15px;font-weight:800;color:#1F4E79">7 · Reading assistance</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<button style="cursor:pointer;border:1.5px solid #9FB0C0;background:#fff;border-radius:11px;padding:11px 10px;display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:#22303C;min-height:48px"><span class="ms" style="font-size:20px;color:#1F4E79" aria-hidden="true">bookmark</span>Bookmark</button>
+<button style="cursor:pointer;border:1.5px solid #9FB0C0;background:#fff;border-radius:11px;padding:11px 10px;display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:#22303C;min-height:48px"><span class="ms" style="font-size:20px;color:#1F4E79" aria-hidden="true">book_2</span>Dictionary</button>
+<button style="cursor:pointer;border:1.5px solid #9FB0C0;background:#fff;border-radius:11px;padding:11px 10px;display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:#22303C;min-height:48px"><span class="ms" style="font-size:20px;color:#1F4E79" aria-hidden="true">border_color</span>Highlight</button>
+<button style="cursor:pointer;border:1.5px solid #9FB0C0;background:#fff;border-radius:11px;padding:11px 10px;display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:#22303C;min-height:48px"><span class="ms" style="font-size:20px;color:#1F4E79" aria-hidden="true">translate</span>Meaning</button>
+</div>
+</div>
+<button onClick="{{ go.reading }}" style="outline:3px solid #B07A00;outline-offset:2px;cursor:pointer;border:0;background:#1F4E79;color:#fff;font-size:16px;font-weight:700;padding:16px;border-radius:13px;min-height:52px">Apply &amp; return to reading</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isProgress }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 16px;display:flex;align-items:center;gap:8px"><button onClick="{{ go.home }}" aria-label="Back to home" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button><h1 style="margin:0;font-size:19px;font-weight:700;color:#fff">My Progress</h1></div>
+<div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:5px"><span class="ms" style="font-size:26px;color:#1F7A70" aria-hidden="true">schedule</span><span style="font-size:26px;font-weight:800;color:#1F4E79">18<span style="font-size:15px;color:#5B6B7B"> min</span></span><span style="font-size:14px;color:#5B6B7B">Time today</span></div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:5px"><span class="ms" style="font-size:26px;color:#1F7A70" aria-hidden="true">description</span><span style="font-size:26px;font-weight:800;color:#1F4E79">7<span style="font-size:15px;color:#5B6B7B"> pages</span></span><span style="font-size:14px;color:#5B6B7B">Pages read</span></div>
+</div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:11px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font-size:16px;font-weight:700;color:#22303C">Current passage</h2><span style="font-size:20px;font-weight:800;color:#1F7A70">64%</span></div>
+<div style="height:10px;border-radius:5px;background:#EDF2F7;overflow:hidden"><div style="width:64%;height:100%;background:#26A69A"></div></div>
+<div lang="bn" class="bn" style="font-size:16px;color:#3B4B5A">বৃষ্টির দিনে মিতু</div>
+</div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;font-weight:700;color:#22303C">This week</h2>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;height:106px;gap:7px">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end"><div style="width:100%;height:38%;border-radius:6px 6px 3px 3px;background:#26A69A"></div><span style="font-size:14px;font-weight:600;color:#3B4B5A">S</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end"><div style="width:100%;height:62%;border-radius:6px 6px 3px 3px;background:#26A69A"></div><span style="font-size:14px;font-weight:600;color:#3B4B5A">M</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end"><div style="width:100%;height:45%;border-radius:6px 6px 3px 3px;background:#26A69A"></div><span style="font-size:14px;font-weight:600;color:#3B4B5A">T</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end"><div style="width:100%;height:80%;border-radius:6px 6px 3px 3px;background:#26A69A"></div><span style="font-size:14px;font-weight:600;color:#3B4B5A">W</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end"><div style="width:100%;height:55%;border-radius:6px 6px 3px 3px;background:#26A69A"></div><span style="font-size:14px;font-weight:600;color:#3B4B5A">T</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end"><div style="width:100%;height:92%;border-radius:6px 6px 3px 3px;background:#26A69A"></div><span style="font-size:14px;font-weight:600;color:#3B4B5A">F</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end"><div style="width:100%;height:30%;border-radius:6px 6px 3px 3px;background:#7FC8C1"></div><span style="font-size:14px;font-weight:600;color:#3B4B5A">S</span></div>
+</div>
+</div>
+<button onClick="{{ go.stats }}" style="outline:3px solid #B07A00;outline-offset:2px;cursor:pointer;border:0;background:#EAF1F7;border-radius:14px;padding:15px;display:flex;align-items:center;gap:11px;min-height:56px"><span class="ms" style="font-size:24px;color:#1F4E79" aria-hidden="true">analytics</span><span style="flex:1;text-align:left;font-size:15px;font-weight:700;color:#1F4E79">Detailed reading statistics</span><span class="ms" style="font-size:22px;color:#1F4E79" aria-hidden="true">chevron_right</span></button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 16px;display:flex;align-items:center;gap:8px"><button onClick="{{ go.home }}" aria-label="Back to home" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button><h1 style="margin:0;font-size:19px;font-weight:700;color:#fff">Reading History</h1></div>
+<div style="padding:14px;display:flex;flex-direction:column;gap:11px">
+<sc-for list="{{ history }}" as="h" hint-placeholder-count="4">
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:9px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+<h2 lang="bn" class="bn" style="margin:0;font-size:17px;font-weight:600;flex:1;color:#22303C">{{ h.title }}</h2>
+<span style="font-size:14px;color:#5B6B7B;white-space:nowrap">{{ h.date }}</span>
+</div>
+<div style="display:flex;align-items:center;gap:14px;font-size:14px;color:#3B4B5A">
+<span style="display:flex;align-items:center;gap:5px"><span class="ms" style="font-size:18px" aria-hidden="true">schedule</span>{{ h.time }}</span>
+<span style="display:flex;align-items:center;gap:5px"><span class="ms" style="font-size:18px" aria-hidden="true">done_all</span>{{ h.pct }}</span>
+</div>
+<button onClick="{{ go.reading }}" style="cursor:pointer;border:0;align-self:flex-start;background:#EAF1F7;color:#1F4E79;font-size:15px;font-weight:700;padding:11px 18px;border-radius:11px;min-height:44px">Continue</button>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isBookmarks }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 16px;display:flex;align-items:center;gap:8px"><button onClick="{{ go.home }}" aria-label="Back to home" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button><h1 style="margin:0;font-size:19px;font-weight:700;color:#fff">Bookmarks</h1></div>
+<div style="padding:14px;display:flex;flex-direction:column;gap:11px">
+<sc-for list="{{ bookmarks }}" as="bm" hint-placeholder-count="3">
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:14px;display:flex;gap:11px;align-items:flex-start">
+<span class="ms" style="font-size:24px;color:#1F7A70" aria-hidden="true">bookmark</span>
+<div style="flex:1;display:flex;flex-direction:column;gap:7px">
+<h2 lang="bn" class="bn" style="margin:0;font-size:16px;font-weight:600;color:#22303C">{{ bm.title }}</h2>
+<p lang="bn" class="bn" style="margin:0;font-size:14px;color:#3B4B5A;line-height:1.6">{{ bm.excerpt }}</p>
+<div style="display:flex;gap:8px;margin-top:2px">
+<button onClick="{{ go.reading }}" style="cursor:pointer;border:0;background:#1F4E79;color:#fff;font-size:15px;font-weight:700;padding:11px 17px;border-radius:11px;min-height:44px">Continue</button>
+<button style="cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:15px;font-weight:700;padding:11px 17px;border-radius:11px;min-height:44px">Delete</button>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isStats }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 16px;display:flex;align-items:center;gap:8px"><button onClick="{{ go.progress }}" aria-label="Back to progress" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button><h1 style="margin:0;font-size:19px;font-weight:700;color:#fff">Reading Statistics</h1></div>
+<div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+
+<div style="background:#1F4E79;border-radius:18px;padding:17px;color:#fff;display:flex;flex-direction:column;gap:3px">
+<h2 style="margin:0;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:#C9DCEA;font-weight:700">Words read this week</h2>
+<span style="font-size:40px;font-weight:800;line-height:1.1">4,280</span>
+<span style="font-size:15px;color:#8FD9D1">▲ 620 words vs last week</span>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:4px">
+<h2 style="margin:0;font-size:14px;font-weight:700;color:#3B4B5A">Reading speed</h2>
+<span style="font-size:24px;font-weight:800;color:#1F4E79">96 <span style="font-size:14px;font-weight:600;color:#5B6B7B">wpm</span></span>
+<span style="font-size:14px;color:#3B4B5A;line-height:1.4">Speed is read alongside accuracy.</span>
+</div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:4px">
+<h2 style="margin:0;font-size:14px;font-weight:700;color:#3B4B5A">Reading accuracy</h2>
+<span style="font-size:24px;font-weight:800;color:#1F4E79">94<span style="font-size:15px;color:#5B6B7B">%</span></span>
+<span style="font-size:14px;color:#3B4B5A;line-height:1.4">6 errors this session</span>
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:9px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><h2 style="margin:0;font-size:16px;font-weight:700;color:#22303C">Read aloud used</h2><span style="font-size:24px;font-weight:800;color:#1F7A70">73%</span></div>
+<div style="height:10px;border-radius:5px;background:#EDF2F7;overflow:hidden"><div style="width:73%;height:100%;background:#26A69A"></div></div>
+<p style="margin:0;font-size:14px;color:#3B4B5A;line-height:1.5">Percentage of sessions where audio support was switched on.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+<sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:14px;padding:13px;display:flex;flex-direction:column;gap:4px">
+<span style="font-size:14px;font-weight:700;color:#3B4B5A">{{ s.k }}</span>
+<span style="font-size:16px;font-weight:800;color:#1F4E79">{{ s.v }}</span>
+</div>
+</sc-for>
+</div>
+
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:11px">
+<h2 style="margin:0;font-size:16px;font-weight:700;color:#22303C">Most-used settings</h2>
+<div style="display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:14px;color:#3B4B5A"><span>Read aloud</span><span style="font-weight:700;color:#1F4E79">73%</span></div><div style="height:7px;border-radius:4px;background:#EDF2F7"><div style="width:73%;height:100%;border-radius:4px;background:#26A69A"></div></div></div>
+<div style="display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:14px;color:#3B4B5A"><span>Conjunct highlight</span><span style="font-weight:700;color:#1F4E79">68%</span></div><div style="height:7px;border-radius:4px;background:#EDF2F7"><div style="width:68%;height:100%;border-radius:4px;background:#26A69A"></div></div></div>
+<div style="display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:14px;color:#3B4B5A"><span>Line spacing 1.8</span><span style="font-weight:700;color:#1F4E79">64%</span></div><div style="height:7px;border-radius:4px;background:#EDF2F7"><div style="width:64%;height:100%;border-radius:4px;background:#26A69A"></div></div></div>
+<div style="display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:14px;color:#3B4B5A"><span>Cream theme</span><span style="font-weight:700;color:#1F4E79">52%</span></div><div style="height:7px;border-radius:4px;background:#EDF2F7"><div style="width:52%;height:100%;border-radius:4px;background:#26A69A"></div></div></div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isQuiz }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 16px;display:flex;align-items:center;gap:8px"><button onClick="{{ go.reading }}" aria-label="Back to reading" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button><h1 style="margin:0;font-size:18px;font-weight:700;color:#fff">Comprehension</h1><span style="margin-left:auto;font-size:15px;font-weight:700;color:#C9DCEA">2 / 5</span></div>
+<div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:5px"><div style="flex:1;height:6px;border-radius:3px;background:#26A69A"></div><div style="flex:1;height:6px;border-radius:3px;background:#26A69A"></div><div style="flex:1;height:6px;border-radius:3px;background:#DCE5EE"></div><div style="flex:1;height:6px;border-radius:3px;background:#DCE5EE"></div><div style="flex:1;height:6px;border-radius:3px;background:#DCE5EE"></div></div>
+<div style="display:flex;align-items:center;gap:9px;background:#F0F3F6;border:1.5px solid #9FB0C0;border-radius:12px;padding:11px 12px">
+<span class="ms" style="font-size:22px;color:#5B6B7B;flex:none" aria-hidden="true">headphones</span>
+<span style="flex:1;font-size:14px;color:#5B6B7B;line-height:1.4">Audio support: OFF during this passage</span>
+<span style="font-size:14px;font-weight:700;color:#5B6B7B;white-space:nowrap">Reading condition</span>
+</div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:13px">
+<h2 style="margin:0;font-size:14px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#155F58">Multiple choice</h2>
+<p lang="bn" class="bn" style="margin:0;font-size:19px;font-weight:600;line-height:1.7;color:#22303C">মিতু জানালার পাশে বসে কী দেখেছিল?</p>
+<div style="display:flex;flex-direction:column;gap:9px">
+<button lang="bn" class="bn" style="cursor:pointer;text-align:left;border-radius:13px;padding:14px;font-size:17px;min-height:52px;display:flex;align-items:center;background:#EAF1F7;border:2.5px solid #1F4E79;color:#1F4E79;font-weight:600">একটা ভেজা পাখি</button>
+<button lang="bn" class="bn" style="cursor:pointer;text-align:left;border-radius:13px;padding:14px;font-size:17px;min-height:52px;display:flex;align-items:center;background:#fff;border:1.5px solid #9FB0C0;color:#22303C">একটা রঙিন ছাতা</button>
+<button lang="bn" class="bn" style="cursor:pointer;text-align:left;border-radius:13px;padding:14px;font-size:17px;min-height:52px;display:flex;align-items:center;background:#fff;border:1.5px solid #9FB0C0;color:#22303C">একটা নৌকা</button>
+<button lang="bn" class="bn" style="cursor:pointer;text-align:left;border-radius:13px;padding:14px;font-size:17px;min-height:52px;display:flex;align-items:center;background:#fff;border:1.5px solid #9FB0C0;color:#22303C">একটা বই</button>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:14px;padding:14px;display:flex;align-items:center;gap:10px">
+<span class="ms" style="font-size:22px;color:#3B4B5A" aria-hidden="true">timer</span>
+<span style="font-size:15px;color:#3B4B5A;flex:1">Reading time recorded</span>
+<span style="font-size:16px;font-weight:800;color:#1F4E79">4:12</span>
+</div>
+<button onClick="{{ go.feedback }}" style="outline:3px solid #B07A00;outline-offset:2px;cursor:pointer;border:0;background:#1F4E79;color:#fff;font-size:17px;font-weight:700;padding:16px;border-radius:14px;min-height:52px">Next question</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isFeedback }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 16px;display:flex;align-items:center;gap:8px"><button onClick="{{ go.quiz }}" aria-label="Back to quiz" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button><h1 style="margin:0;font-size:19px;font-weight:700;color:#fff">Your Feedback</h1></div>
+<div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+<div style="background:#E8F5F3;border-radius:16px;padding:15px;display:flex;align-items:center;gap:12px"><span class="ms" style="font-size:28px;color:#155F58" aria-hidden="true">task_alt</span><div style="flex:1"><div style="font-size:16px;font-weight:800;color:#155F58">Quiz score: 4 / 5</div><div style="font-size:14px;color:#2F6B65">Reading time 4:12 · 96 wpm</div></div></div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:10px">
+<h2 style="margin:0;font-size:16px;font-weight:600;color:#22303C">Was the reading easy?</h2>
+<div style="display:flex;gap:8px"><button aria-label="1 star" style="cursor:pointer;background:none;border:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:34px;color:#B07A00" aria-hidden="true">star</span></button><button aria-label="2 stars" style="cursor:pointer;background:none;border:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:34px;color:#B07A00" aria-hidden="true">star</span></button><button aria-label="3 stars" style="cursor:pointer;background:none;border:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:34px;color:#B07A00" aria-hidden="true">star</span></button><button aria-label="4 stars" style="cursor:pointer;background:none;border:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:34px;color:#B07A00" aria-hidden="true">star</span></button><button aria-label="5 stars" style="cursor:pointer;background:none;border:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:34px;color:#5B6B7B" aria-hidden="true">star</span></button></div>
+</div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:10px">
+<h2 style="margin:0;font-size:16px;font-weight:600;color:#22303C">Did read aloud help?</h2>
+<div style="display:flex;gap:8px"><button aria-label="1 star" style="cursor:pointer;background:none;border:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:34px;color:#B07A00" aria-hidden="true">star</span></button><button aria-label="2 stars" style="cursor:pointer;background:none;border:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:34px;color:#B07A00" aria-hidden="true">star</span></button><button aria-label="3 stars" style="cursor:pointer;background:none;border:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:34px;color:#B07A00" aria-hidden="true">star</span></button><button aria-label="4 stars" style="cursor:pointer;background:none;border:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:34px;color:#B07A00" aria-hidden="true">star</span></button><button aria-label="5 stars" style="cursor:pointer;background:none;border:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:34px;color:#B07A00" aria-hidden="true">star</span></button></div>
+</div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:10px">
+<h2 style="margin:0;font-size:16px;font-weight:600;color:#22303C">Which settings helped most?</h2>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button style="cursor:pointer;background:#EAF1F7;border:2px solid #1F4E79;color:#1F4E79;font-size:14px;font-weight:700;padding:11px 14px;border-radius:22px;min-height:44px">Read aloud</button>
+<button style="cursor:pointer;background:#EAF1F7;border:2px solid #1F4E79;color:#1F4E79;font-size:14px;font-weight:700;padding:11px 14px;border-radius:22px;min-height:44px">Conjunct highlight</button>
+<button style="cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:600;padding:11px 14px;border-radius:22px;min-height:44px">Line spacing</button>
+<button style="cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:600;padding:11px 14px;border-radius:22px;min-height:44px">Cream theme</button>
+<button style="cursor:pointer;background:#fff;border:1.5px solid #9FB0C0;color:#3B4B5A;font-size:14px;font-weight:600;padding:11px 14px;border-radius:22px;min-height:44px">Reading ruler</button>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:9px">
+<h2 style="margin:0;font-size:16px;font-weight:600;color:#22303C">Any suggestions?</h2>
+<div style="border:1.5px solid #9FB0C0;border-radius:12px;padding:13px;min-height:74px;font-size:15px;color:#5B6B7B;background:#F7F9FC">Tell us what would make reading easier…</div>
+</div>
+<button onClick="{{ go.sus }}" style="outline:3px solid #B07A00;outline-offset:2px;cursor:pointer;border:0;background:#1F4E79;color:#fff;font-size:17px;font-weight:700;padding:16px;border-radius:14px;min-height:52px">Continue to SUS</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSus }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 16px;display:flex;align-items:center;gap:8px"><button onClick="{{ go.feedback }}" aria-label="Back to feedback" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button><div style="flex:1"><h1 style="margin:0;font-size:18px;font-weight:700;color:#fff">System Usability Scale</h1><div style="font-size:14px;color:#C9DCEA">10 statements · 1 = strongly disagree</div></div></div>
+<div style="padding:14px;display:flex;flex-direction:column;gap:11px">
+<sc-for list="{{ susItems }}" as="q" hint-placeholder-count="4">
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:15px;padding:14px;display:flex;flex-direction:column;gap:11px">
+<div style="display:flex;gap:9px"><span style="font-size:14px;font-weight:800;color:#155F58">{{ q.n }}</span><span style="flex:1;font-size:15px;line-height:1.5;color:#22303C">{{ q.t }}</span></div>
+<div style="display:flex;gap:6px">
+<sc-for list="{{ q.scale }}" as="c" hint-placeholder-count="5">
+<button style="{{ c.style }}">{{ c.n }}</button>
+</sc-for>
+</div>
+</div>
+</sc-for>
+<div style="background:#1F4E79;border-radius:16px;padding:17px;color:#fff;display:flex;align-items:center;gap:14px">
+<div style="flex:1"><h2 style="margin:0;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:#C9DCEA;font-weight:700">Live SUS score</h2><div style="font-size:15px;color:#C9DCEA;margin-top:3px">Above the 68 benchmark</div></div>
+<div style="font-size:38px;font-weight:800">82.5</div>
+</div>
+<button onClick="{{ go.nasa }}" style="outline:3px solid #B07A00;outline-offset:2px;cursor:pointer;border:0;background:#1F7A70;color:#fff;font-size:17px;font-weight:700;padding:16px;border-radius:14px;min-height:52px">Continue to NASA-TLX</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isNasa }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 16px;display:flex;align-items:center;gap:8px"><button onClick="{{ go.sus }}" aria-label="Back to SUS" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button><div style="flex:1"><h1 style="margin:0;font-size:18px;font-weight:700;color:#fff">NASA-TLX</h1><div style="font-size:14px;color:#C9DCEA">Optional · workload rating</div></div></div>
+<div style="padding:14px;display:flex;flex-direction:column;gap:13px">
+<sc-for list="{{ tlx }}" as="t" hint-placeholder-count="6">
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:15px;padding:15px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><h2 style="margin:0;font-size:16px;font-weight:700;color:#22303C">{{ t.name }}</h2><span style="font-size:18px;font-weight:800;color:#1F4E79">{{ t.val }}</span></div>
+<p style="margin:0;font-size:14px;color:#3B4B5A;line-height:1.45">{{ t.desc }}</p>
+<div style="height:9px;border-radius:5px;background:#DCE5EE;position:relative;margin:4px 0"><div style="{{ t.fill }}"></div><div style="{{ t.knob }}"></div></div>
+<div style="display:flex;justify-content:space-between;font-size:14px;color:#5B6B7B;font-weight:600"><span>Very low</span><span>Very high</span></div>
+</div>
+</sc-for>
+<button onClick="{{ go.thanks }}" style="outline:3px solid #B07A00;outline-offset:2px;cursor:pointer;border:0;background:#1F4E79;color:#fff;font-size:17px;font-weight:700;padding:16px;border-radius:14px;min-height:52px">Submit session</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 22px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:8px"><button onClick="{{ go.home }}" aria-label="Back to home" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button><h1 style="margin:0;font-size:19px;font-weight:700;color:#fff">Profile</h1></div>
+<div style="display:flex;align-items:center;gap:14px;padding-left:4px">
+<div style="width:64px;height:64px;border-radius:50%;background:#26A69A;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;flex:none">MR</div>
+<div><div style="font-size:20px;font-weight:700;color:#fff">Mitu Rahman</div><div style="font-size:15px;color:#C9DCEA">Age 11 · Reader · P-04</div></div>
+</div>
+</div>
+<div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:4px 15px">
+<sc-for list="{{ prefs }}" as="p" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #EDF1F5"><span style="font-size:15px;color:#3B4B5A">{{ p.k }}</span><span style="font-size:15px;font-weight:700;color:#1F4E79;text-align:right">{{ p.v }}</span></div>
+</sc-for>
+</div>
+<button onClick="{{ go.history }}" style="outline:3px solid #B07A00;outline-offset:2px;cursor:pointer;background:#fff;border:1px solid #C9D4DF;border-radius:14px;padding:15px;display:flex;align-items:center;gap:11px;min-height:56px"><span class="ms" style="font-size:24px;color:#1F4E79" aria-hidden="true">history</span><span style="flex:1;text-align:left;font-size:15px;font-weight:700;color:#22303C">Reading history</span><span class="ms" style="font-size:22px;color:#5B6B7B" aria-hidden="true">chevron_right</span></button>
+<button onClick="{{ go.stats }}" style="cursor:pointer;background:#fff;border:1px solid #C9D4DF;border-radius:14px;padding:15px;display:flex;align-items:center;gap:11px;min-height:56px"><span class="ms" style="font-size:24px;color:#1F4E79" aria-hidden="true">analytics</span><span style="flex:1;text-align:left;font-size:15px;font-weight:700;color:#22303C">My statistics</span><span class="ms" style="font-size:22px;color:#5B6B7B" aria-hidden="true">chevron_right</span></button>
+<button onClick="{{ go.settings }}" style="cursor:pointer;background:#fff;border:1px solid #C9D4DF;border-radius:14px;padding:15px;display:flex;align-items:center;gap:11px;min-height:56px"><span class="ms" style="font-size:24px;color:#1F4E79" aria-hidden="true">settings</span><span style="flex:1;text-align:left;font-size:15px;font-weight:700;color:#22303C">App settings</span><span class="ms" style="font-size:22px;color:#5B6B7B" aria-hidden="true">chevron_right</span></button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 16px;display:flex;align-items:center;gap:8px"><button onClick="{{ go.home }}" aria-label="Back to home" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button><h1 style="margin:0;font-size:19px;font-weight:700;color:#fff">Settings</h1></div>
+<div style="padding:14px;display:flex;flex-direction:column;gap:15px">
+<div style="display:flex;flex-direction:column;gap:9px">
+<h2 style="margin:0;font-size:15px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#3B4B5A">Language</h2>
+<div style="display:flex;gap:9px">
+<button lang="bn" class="bn" style="cursor:pointer;flex:1;border:2px solid #1F4E79;background:#EAF1F7;border-radius:12px;padding:14px;font-size:17px;font-weight:700;color:#1F4E79;min-height:52px">বাংলা</button>
+<button style="cursor:pointer;flex:1;border:1.5px solid #9FB0C0;background:#fff;border-radius:12px;padding:14px;font-size:17px;font-weight:600;color:#3B4B5A;min-height:52px">English</button>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:4px 15px">
+<button style="cursor:pointer;background:none;border:0;border-bottom:1px solid #EDF1F5;padding:12px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;width:100%;text-align:left" aria-pressed="true"><span style="font-size:15px;color:#22303C">Reading reminders</span><span style="width:48px;height:28px;border-radius:14px;position:relative;background:#26A69A;flex:none"><span style="position:absolute;top:3px;left:23px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span></span></button>
+<button style="cursor:pointer;background:none;border:0;border-bottom:1px solid #EDF1F5;padding:12px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;width:100%;text-align:left" aria-pressed="false"><span style="font-size:15px;color:#22303C">Session sound effects</span><span style="width:48px;height:28px;border-radius:14px;position:relative;background:#9FB0C0;flex:none"><span style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span></span></button>
+<button style="cursor:pointer;background:none;border:0;padding:12px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;width:100%;text-align:left" aria-pressed="true"><span style="font-size:15px;color:#22303C">Share anonymised data</span><span style="width:48px;height:28px;border-radius:14px;position:relative;background:#26A69A;flex:none"><span style="position:absolute;top:3px;left:23px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span></span></button>
+</div>
+<button style="cursor:pointer;background:#fff;border:1px solid #C9D4DF;border-radius:14px;padding:15px;display:flex;align-items:center;gap:11px;text-align:left;min-height:56px"><span class="ms" style="font-size:24px;color:#1F4E79" aria-hidden="true">download</span><span style="flex:1"><span style="display:block;font-size:15px;font-weight:700;color:#22303C">Export session data</span><span style="display:block;font-size:14px;color:#3B4B5A;margin-top:2px">CSV for research analysis</span></span><span class="ms" style="font-size:22px;color:#5B6B7B" aria-hidden="true">chevron_right</span></button>
+<button style="outline:3px solid #B07A00;outline-offset:2px;cursor:pointer;background:#fff;border:1px solid #C9D4DF;border-radius:14px;padding:15px;display:flex;align-items:center;gap:11px;min-height:56px"><span class="ms" style="font-size:24px;color:#1F4E79" aria-hidden="true">shield</span><span style="flex:1;text-align:left;font-size:15px;font-weight:700;color:#22303C">Privacy &amp; consent</span><span class="ms" style="font-size:22px;color:#5B6B7B" aria-hidden="true">chevron_right</span></button>
+<button style="cursor:pointer;border:1.5px solid #C99A9A;border-radius:14px;padding:15px;display:flex;align-items:center;gap:11px;background:#FCF6F6;min-height:56px"><span class="ms" style="font-size:24px;color:#8E4141" aria-hidden="true">restart_alt</span><span style="flex:1;text-align:left;font-size:15px;font-weight:700;color:#8E4141">Reset all settings</span></button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isHelp }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 16px;display:flex;align-items:center;gap:8px"><button onClick="{{ go.home }}" aria-label="Back to home" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button><h1 style="margin:0;font-size:19px;font-weight:700;color:#fff">Help</h1></div>
+<div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+<div style="background:#EAF1F7;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:8px">
+<h2 style="margin:0;font-size:16px;font-weight:800;color:#1F4E79">How to use Shohojpath</h2>
+<p style="margin:0;font-size:15px;color:#22303C;line-height:1.6;text-wrap:pretty">Pick a passage from the Library, then tap the settings button while reading. Start with Read Aloud — it helps most. Adjust spacing and theme until the text feels comfortable. Your choices are saved automatically.</p>
+</div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:13px">
+<h2 style="margin:0;font-size:16px;font-weight:800;color:#1F4E79">Accessibility features</h2>
+<sc-for list="{{ helpFeatures }}" as="f" hint-placeholder-count="6">
+<div style="display:flex;gap:11px;align-items:flex-start"><span class="ms" style="font-size:22px;color:#1F7A70" aria-hidden="true">{{ f.icon }}</span><div style="flex:1"><div style="font-size:15px;font-weight:700;color:#22303C">{{ f.name }}</div><div style="font-size:14px;color:#3B4B5A;line-height:1.5">{{ f.desc }}</div></div></div>
+</sc-for>
+</div>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:4px 15px">
+<sc-for list="{{ faqs }}" as="q" hint-placeholder-count="3">
+<button style="cursor:pointer;background:none;border:0;border-bottom:1px solid #EDF1F5;display:flex;align-items:center;gap:10px;padding:14px 0;min-height:52px;width:100%;text-align:left"><span style="flex:1;font-size:15px;color:#22303C;line-height:1.4">{{ q }}</span><span class="ms" style="font-size:22px;color:#5B6B7B" aria-hidden="true">expand_more</span></button>
+</sc-for>
+</div>
+<button style="outline:3px solid #B07A00;outline-offset:2px;cursor:pointer;background:#fff;border:1px solid #C9D4DF;border-radius:14px;padding:15px;display:flex;align-items:center;gap:11px;min-height:56px"><span class="ms" style="font-size:24px;color:#1F4E79" aria-hidden="true">mail</span><span style="flex:1;text-align:left;font-size:15px;font-weight:700;color:#22303C">Contact the research team</span></button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAbout }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;background:#F7F9FC">
+<div style="background:#1F4E79;padding:8px 14px 16px;display:flex;align-items:center;gap:8px"><button onClick="{{ go.home }}" aria-label="Back to home" style="cursor:pointer;background:none;border:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex:none"><span class="ms" style="font-size:26px;color:#fff" aria-hidden="true">arrow_back</span></button><h1 style="margin:0;font-size:19px;font-weight:700;color:#fff">About</h1></div>
+<div style="padding:16px 14px;display:flex;flex-direction:column;gap:13px;align-items:center">
+<div style="width:70px;height:70px;border-radius:22px;background:#1F4E79;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:38px;color:#fff" aria-hidden="true">menu_book</span></div>
+<div lang="bn" class="bn" style="font-size:24px;font-weight:700;color:#1F4E79">সহজপাঠ</div>
+
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:16px;width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:15px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#3B4B5A">Research title</h2>
+<p style="margin:0;font-size:16px;font-weight:600;line-height:1.55;color:#22303C;text-wrap:pretty">Design and Evaluation of a Dyslexia-Friendly Bangla Reading Interface Using Human-Centered Design Principles</p>
+<sc-for list="{{ about }}" as="a" hint-placeholder-count="4">
+<div style="display:flex;justify-content:space-between;gap:12px;padding-top:10px;border-top:1px solid #EDF1F5"><span style="font-size:14px;color:#3B4B5A">{{ a.k }}</span><span style="font-size:14px;font-weight:600;font-style:italic;color:#5B6B7B;text-align:right">{{ a.v }}</span></div>
+</sc-for>
+</div>
+
+<div style="background:#fff;border:2px solid #26A69A;border-radius:16px;padding:16px;width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:10px">
+<h2 style="margin:0;font-size:16px;font-weight:800;color:#1F4E79">Accessibility summary</h2>
+<sc-for list="{{ a11y }}" as="x" hint-placeholder-count="6">
+<div style="display:flex;gap:9px;align-items:flex-start"><span class="ms" style="font-size:20px;color:#1F7A70;flex:none" aria-hidden="true">check_circle</span><span style="flex:1;font-size:14px;color:#22303C;line-height:1.5">{{ x }}</span></div>
+</sc-for>
+</div>
+
+<div style="background:#FCFAF4;border:2px solid #B07A00;border-radius:16px;padding:16px;width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:8px">
+<h2 style="margin:0;font-size:16px;font-weight:800;color:#8A6000">Disclaimer</h2>
+<p style="margin:0;font-size:14px;color:#22303C;line-height:1.6;text-wrap:pretty">This application is a reading support tool. It is not a diagnostic or therapeutic instrument and does not replace assessment or instruction by qualified professionals.</p>
+</div>
+
+<div style="font-size:14px;color:#5B6B7B">Version 1.0 · Research Prototype</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isThanks }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:34px 26px;background:linear-gradient(180deg,#FFFFFF,#E8F5F3)">
+<div style="width:92px;height:92px;border-radius:50%;background:#26A69A;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(38,166,154,.32)"><span class="ms" style="font-size:50px;color:#fff" aria-hidden="true">check</span></div>
+<h1 style="margin:0;font-size:26px;font-weight:800;color:#1F4E79;text-align:center">Thank you!</h1>
+<p style="margin:0;font-size:15px;color:#3B4B5A;text-align:center;line-height:1.7;max-width:265px;text-wrap:pretty">Your session has been recorded. Your responses help us design better Bangla reading tools.</p>
+<div style="background:#fff;border:1px solid #C9D4DF;border-radius:16px;padding:15px;width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;font-size:15px"><span style="color:#3B4B5A">Reading time</span><span style="font-weight:700;color:#1F4E79">4 min 12 s</span></div>
+<div style="display:flex;justify-content:space-between;font-size:15px"><span style="color:#3B4B5A">Comprehension</span><span style="font-weight:700;color:#1F4E79">4 / 5</span></div>
+<div style="display:flex;justify-content:space-between;font-size:15px"><span style="color:#3B4B5A">SUS score</span><span style="font-weight:700;color:#1F4E79">82.5</span></div>
+</div>
+<button onClick="{{ go.home }}" style="outline:3px solid #B07A00;outline-offset:2px;cursor:pointer;border:0;background:#1F4E79;color:#fff;font-size:17px;font-weight:700;padding:16px 40px;border-radius:14px;min-height:52px">Back to Home</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ showTabs }}" hint-placeholder-val="{{ false }}">
+<nav style="flex:none;display:flex;background:#fff;border-top:1px solid #C9D4DF;padding:6px 4px 10px">
+<button onClick="{{ go.home }}" style="{{ tabs.home }}"><span class="ms" style="font-size:24px" aria-hidden="true">home</span><span style="font-size:14px;font-weight:700">Home</span></button>
+<button onClick="{{ go.library }}" style="{{ tabs.library }}"><span class="ms" style="font-size:24px" aria-hidden="true">local_library</span><span style="font-size:14px;font-weight:700">Library</span></button>
+<button onClick="{{ go.progress }}" style="{{ tabs.progress }}"><span class="ms" style="font-size:24px" aria-hidden="true">insights</span><span style="font-size:14px;font-weight:700">Progress</span></button>
+<button onClick="{{ go.profile }}" style="{{ tabs.profile }}"><span class="ms" style="font-size:24px" aria-hidden="true">person</span><span style="font-size:14px;font-weight:700">Profile</span></button>
+</nav>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:375,&quot;height&quot;:812},&quot;screen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;reading&quot;,&quot;options&quot;:[&quot;splash&quot;,&quot;login&quot;,&quot;home&quot;,&quot;library&quot;,&quot;reading&quot;,&quot;rsettings&quot;,&quot;progress&quot;,&quot;history&quot;,&quot;bookmarks&quot;,&quot;stats&quot;,&quot;quiz&quot;,&quot;feedback&quot;,&quot;sus&quot;,&quot;nasa&quot;,&quot;profile&quot;,&quot;settings&quot;,&quot;help&quot;,&quot;about&quot;,&quot;thanks&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;recommended&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;recommended&quot;,&quot;custom&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(id: string) =&gt; void&quot;},&quot;onMode&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(m: string) =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { rulerTop: null };
+
+  // The ruler must sit on the line holding the spoken word. Where that word
+  // wraps depends on font size, spacing and profile, so measure it instead of
+  // assuming a line index.
+  measureRuler = el => {
+    this._spoken = el;
+    if (!el) return;
+    requestAnimationFrame(() => {
+      const n = this._spoken;
+      if (!n || !n.parentElement) return;
+      const lh = parseFloat(getComputedStyle(n.parentElement).lineHeight) || 0;
+      // snap to the line box the word sits on, not the word's own offset
+      const top = lh ? Math.round(n.offsetTop / lh) * lh : n.offsetTop;
+      if (this.state.rulerTop !== top) this.setState({ rulerTop: top });
+    });
+  };
+
+  renderVals() {
+    const s = this.props.screen || 'splash';
+    const mode = this.props.mode || 'recommended';
+    const nav = id => () => { if (this.props.onNav) this.props.onNav(id); };
+    const ids = ['splash','login','home','library','reading','rsettings','progress','history','bookmarks','stats','quiz','feedback','sus','nasa','profile','settings','help','about','thanks'];
+    const go = {};
+    ids.forEach(id => { go[id] = nav(id); });
+
+    const tabStyle = on => ({
+      cursor: 'pointer', background: 'none', border: 0, flex: 1, display: 'flex',
+      flexDirection: 'column', alignItems: 'center', gap: '3px', minHeight: '52px',
+      justifyContent: 'center', color: on ? '#1F4E79' : '#5B6B7B'
+    });
+
+    const cfg = {
+      default: {
+        size: 16, ls: '0em', ws: 'normal', lh: 1.5, bg: '#FFFFFF',
+        sizeL: '16 px', lsv: '0', wsv: '0', lhv: '1.5', pv: '1.0em', rulerLine: 1,
+        f: [7, 0, 0, 36, 25]
+      },
+      recommended: {
+        size: 22, ls: '0em', ws: '0.16em', lh: 1.8, bg: '#FFF8E7',
+        sizeL: '22 px', lsv: '0', wsv: '0.16em', lhv: '1.8', pv: '1.5em', rulerLine: 2,
+        f: [17, 0, 53, 57, 50]
+      },
+      custom: {
+        size: 28, ls: '0.04em', ws: '0.24em', lh: 2.1, bg: '#FFFDE7',
+        sizeL: '28 px', lsv: '0.04em', wsv: '0.24em', lhv: '2.1', pv: '1.8em', rulerLine: 3,
+        f: [27, 33, 80, 79, 65]
+      }
+    }[mode];
+
+    const notes = {
+      default: 'Default — the baseline interface used as the control condition in the study.',
+      recommended: 'Evidence-based settings: audio support, wide line spacing, cream background, and no letter spacing so the মাত্রা stays intact.',
+      custom: 'Custom — the reader\u2019s own configuration, logged for comparison against Default and Recommended.'
+    };
+
+    const pill = on => Object.assign({
+      cursor: 'pointer', flex: 1, textAlign: 'center', fontSize: '14px',
+      fontWeight: 700, padding: '11px 2px', borderRadius: '10px', minHeight: '46px'
+    }, on ? { background: '#1F4E79', color: '#fff', border: 0 }
+          : { background: '#fff', color: '#3B4B5A', border: '1.5px solid #9FB0C0' });
+
+    const fill = (pct, h) => ({ width: pct + '%', height: '100%', borderRadius: (h || 4) + 'px', background: '#26A69A' });
+    const knob = pct => ({
+      position: 'absolute', top: '-7px', width: '22px', height: '22px',
+      borderRadius: '50%', background: '#fff', border: '4px solid #26A69A',
+      left: 'calc(' + pct + '% - 11px)'
+    });
+
+    const noteHidden = { display: 'none', margin: 0 };
+    const noteShown = { margin: 0, fontSize: '14px', color: '#5B6B7B', lineHeight: 1.5, textWrap: 'pretty' };
+
+    const track = on => ({
+      width: '48px', height: '28px', borderRadius: '14px', position: 'relative',
+      flex: 'none', display: 'block', background: on ? '#26A69A' : '#9FB0C0'
+    });
+    const tknob = on => ({
+      position: 'absolute', top: '3px', left: on ? '23px' : '3px', width: '22px', height: '22px',
+      borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.25)', display: 'block'
+    });
+
+    const capStyle = { fontSize: '14px', color: '#3B4B5A', lineHeight: 1.4 };
+
+    return {
+      go,
+      tabs: {
+        home: tabStyle(s === 'home'), library: tabStyle(s === 'library'),
+        progress: tabStyle(s === 'progress' || s === 'stats'), profile: tabStyle(s === 'profile')
+      },
+
+      isSplash: s === 'splash', isLogin: s === 'login', isHome: s === 'home', isLibrary: s === 'library',
+      isReading: s === 'reading', isRsettings: s === 'rsettings', isProgress: s === 'progress',
+      isHistory: s === 'history', isBookmarks: s === 'bookmarks', isStats: s === 'stats',
+      isQuiz: s === 'quiz', isFeedback: s === 'feedback', isSus: s === 'sus', isNasa: s === 'nasa',
+      isProfile: s === 'profile', isSettings: s === 'settings', isHelp: s === 'help',
+      isAbout: s === 'about', isThanks: s === 'thanks',
+      showTabs: ['home','library','progress','profile','stats'].indexOf(s) >= 0,
+
+      readerBody: { flex: 1, overflowY: 'auto', padding: '18px 18px 200px', background: cfg.bg },
+      passageStyle: {
+        margin: 0, fontSize: cfg.size + 'px', letterSpacing: cfg.ls, wordSpacing: cfg.ws,
+        lineHeight: cfg.lh, color: '#22303C', textWrap: 'pretty',
+        position: 'relative', zIndex: 1
+      },
+      conj: { borderBottom: '3px solid #26A69A', paddingBottom: '1px' },
+      spoken: {
+        background: '#9BDDD6', borderRadius: '7px', padding: '1px 5px',
+        boxDecorationBreak: 'clone', outline: '2px solid #26A69A', outlineOffset: '1px'
+      },
+      spokenRef: this.measureRuler,
+      rulerStyle: {
+        position: 'absolute', left: '-6px', right: '-6px', zIndex: 0, pointerEvents: 'none',
+        top: (this.state.rulerTop === null ? cfg.rulerLine * cfg.size * cfg.lh : this.state.rulerTop) + 'px',
+        height: (cfg.size * cfg.lh) + 'px',
+        background: 'rgba(38,166,154,.14)', borderBottom: '2px solid #26A69A', borderRadius: '3px'
+      },
+
+      modeNote: notes[mode],
+      sizeLabel: cfg.sizeL,
+      sizeFill: fill(cfg.f[0]), sizeKnob: knob(cfg.f[0]),
+      setDefault: () => this.props.onMode && this.props.onMode('default'),
+      setRecommended: () => this.props.onMode && this.props.onMode('recommended'),
+      setCustom: () => this.props.onMode && this.props.onMode('custom'),
+      tabDefault: pill(mode === 'default'),
+      tabRecommended: pill(mode === 'recommended'),
+      tabCustom: pill(mode === 'custom'),
+
+      spacings: [
+        {
+          name: 'Letter spacing', val: cfg.lsv, fill: fill(cfg.f[1]), knob: knob(cfg.f[1]),
+          note: 'বাংলায় বেশি letter spacing মাত্রা ভেঙে দেয় — সাবধানে ব্যবহার করুন। Word spacing is safer for Bangla.',
+          noteStyle: noteShown
+        },
+        { name: 'Word spacing', val: cfg.wsv, fill: fill(cfg.f[2]), knob: knob(cfg.f[2]), note: '', noteStyle: noteHidden },
+        { name: 'Line spacing', val: cfg.lhv, fill: fill(cfg.f[3]), knob: knob(cfg.f[3]), note: '', noteStyle: noteHidden },
+        { name: 'Paragraph spacing', val: cfg.pv, fill: fill(cfg.f[4]), knob: knob(cfg.f[4]), note: '', noteStyle: noteHidden }
+      ],
+
+      banglaToggles: [
+        { bn: 'যুক্তাক্ষর হাইলাইট', en: 'Highlight conjuncts', track: track(true), knob: tknob(true) },
+        { bn: 'যুক্তাক্ষর ভেঙে দেখাও', en: 'Split conjuncts: ক্ষ shows as ক্‌ + ষ', track: track(false), knob: tknob(false) },
+        { bn: 'মাত্রা জোর করো', en: 'Emphasise the matra headline', track: track(false), knob: tknob(false) },
+        { bn: 'কঠিন শব্দ ভাগ করো', en: 'Syllable breaks in long words', track: track(false), knob: tknob(false) }
+      ],
+
+      focusToggles: [
+        { name: 'Highlight current line', cap: '', capStyle: noteHidden, track: track(true), knob: tknob(true) },
+        { name: 'Reading ruler', cap: '', capStyle: noteHidden, track: track(true), knob: tknob(true) },
+        { name: 'Highlight current paragraph', cap: '', capStyle: noteHidden, track: track(false), knob: tknob(false) },
+        { name: 'Hide decorative images', cap: 'Illustrations often help comprehension. Hide only if they distract.', capStyle: capStyle, track: track(false), knob: tknob(false) },
+        { name: 'Focus mode', cap: '', capStyle: noteHidden, track: track(true), knob: tknob(true) }
+      ],
+
+      books: [
+        { title: 'বৃষ্টির দিনে মিতু', cat: 'Children Stories', time: '3 min', level: 'Easy' },
+        { title: 'আমাদের গ্রাম', cat: 'School Text', time: '5 min', level: 'Easy' },
+        { title: 'নদীর গল্প', cat: 'Short Stories', time: '7 min', level: 'Medium' },
+        { title: 'বিজ্ঞান ও আমরা', cat: 'Articles', time: '10 min', level: 'Hard' },
+        { title: 'আজকের খবর', cat: 'News', time: '4 min', level: 'Medium' }
+      ],
+
+      history: [
+        { title: 'বৃষ্টির দিনে মিতু', date: 'Today', time: '4 min 12 s', pct: '64%' },
+        { title: 'আমাদের গ্রাম', date: 'Yesterday', time: '6 min 03 s', pct: '100%' },
+        { title: 'নদীর গল্প', date: '28 Jul', time: '8 min 41 s', pct: '82%' },
+        { title: 'আজকের খবর', date: '26 Jul', time: '3 min 55 s', pct: '100%' }
+      ],
+
+      bookmarks: [
+        { title: 'বৃষ্টির দিনে মিতু', excerpt: 'মিতু দেখল, একটা ছোট পাখি ভিজে গিয়ে…' },
+        { title: 'নদীর গল্প', excerpt: 'নদীর ধারে সন্ধ্যা নামলে চারদিক শান্ত হয়ে…' },
+        { title: 'আমাদের গ্রাম', excerpt: 'আমাদের গ্রামের নাম শিমুলতলী।' }
+      ],
+
+      stats: [
+        { k: 'Average session', v: '5 min 20 s' },
+        { k: 'Comprehension', v: '86%' },
+        { k: 'Sessions logged', v: '12' },
+        { k: 'Passages finished', v: '9' }
+      ],
+
+      susItems: [
+        { n: '01', t: 'I think that I would like to use this reading app frequently.', p: 4 },
+        { n: '02', t: 'I found the app unnecessarily complex.', p: 2 },
+        { n: '03', t: 'I thought the app was easy to use.', p: 5 },
+        { n: '04', t: 'I found the various functions well integrated.', p: 4 }
+      ].map(q => ({
+        n: q.n, t: q.t,
+        scale: [1,2,3,4,5].map(n => ({
+          n: String(n),
+          style: Object.assign({
+            flex: 1, height: '46px', borderRadius: '10px', display: 'flex', cursor: 'pointer',
+            alignItems: 'center', justifyContent: 'center', fontSize: '15px', fontWeight: 700
+          }, n === q.p
+            ? { background: '#1F4E79', color: '#fff', border: 0 }
+            : { background: '#F7F9FC', color: '#3B4B5A', border: '1.5px solid #9FB0C0' })
+        }))
+      })),
+
+      tlx: [
+        { name: 'Mental demand', desc: 'How much thinking was required?', v: 35 },
+        { name: 'Physical demand', desc: 'How physically demanding was the task?', v: 12 },
+        { name: 'Temporal demand', desc: 'How hurried was the pace?', v: 28 },
+        { name: 'Performance', desc: 'How successful were you?', v: 80 },
+        { name: 'Effort', desc: 'How hard did you have to work?', v: 30 },
+        { name: 'Frustration', desc: 'How irritated or stressed did you feel?', v: 15 }
+      ].map(t => ({ name: t.name, desc: t.desc, val: String(t.v), fill: fill(t.v, 5), knob: knob(t.v) })),
+
+      prefs: [
+        { k: 'Read aloud', v: 'On · 1x' },
+        { k: 'Conjunct highlight', v: 'On' },
+        { k: 'Preferred font', v: 'Noto Sans Bengali' },
+        { k: 'Preferred theme', v: 'Cream' },
+        { k: 'Font size', v: '22 px' },
+        { k: 'Reading profile', v: 'Recommended' }
+      ],
+
+      helpFeatures: [
+        { icon: 'volume_up', name: 'Read aloud', desc: 'Bangla text-to-speech with word-by-word highlighting.' },
+        { icon: 'spellcheck', name: 'Conjunct support', desc: 'Highlight or split যুক্তাক্ষর to reveal the spelling.' },
+        { icon: 'format_size', name: 'Font & size control', desc: 'Four Bangla typefaces, 12–72 px.' },
+        { icon: 'format_line_spacing', name: 'Spacing control', desc: 'Word, line and paragraph spacing.' },
+        { icon: 'straighten', name: 'Reading ruler', desc: 'A guide bar that follows the line you read.' },
+        { icon: 'bookmark', name: 'Bookmarks & progress', desc: 'Resume exactly where you stopped.' }
+      ],
+
+      faqs: [
+        'Why does read aloud matter more than the font?',
+        'Can I use the app without an account?',
+        'Where is my reading data stored?'
+      ],
+
+      a11y: [
+        'WCAG AA contrast on all text',
+        '14 px minimum text size',
+        'Screen reader support with lang="bn"',
+        'Text-to-speech with word tracking',
+        '12–72 px scalable typography',
+        'Conjunct decomposition (যুক্তাক্ষর)'
+      ],
+
+      about: [
+        { k: 'University', v: 'Department of CSE' },
+        { k: 'Researcher', v: 'Mitu Rahman' },
+        { k: 'Supervisor', v: 'Dr. A. Karim' },
+        { k: 'Version', v: '1.0 (2026)' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

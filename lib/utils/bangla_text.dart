@@ -216,6 +216,11 @@ class ConjunctCluster {
   List<String> get letters =>
       text.split(BanglaText.hasant).where((s) => s.isNotEmpty).toList();
 
+  /// Read aloud as separate letters, e.g. `ক, ষ` — lets the reader hear the
+  /// decomposition instead of the TTS engine resynthesising the fused
+  /// conjunct sound.
+  String get spokenForm => letters.join(', ');
+
   /// The teaching label used on the conjunct card: `ক্‌ + ষ`.
   String get decomposition {
     final parts = letters;

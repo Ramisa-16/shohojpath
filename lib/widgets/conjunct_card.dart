@@ -6,6 +6,7 @@ import '../services/tts_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/reading_surface.dart';
 import '../utils/bangla_text.dart';
+import 'no_bangla_voice_dialog.dart';
 
 /// Shows one যুক্তাক্ষর broken into its letters, with a speaker button.
 ///
@@ -30,7 +31,6 @@ class ConjunctCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<ReadingSettings>();
-    final tts = context.watch<TtsService>();
     final surface = settings.surface;
     final onDark = surface.isDark;
 
@@ -76,12 +76,12 @@ class ConjunctCard extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           _SpeakerButton(
-            enabled: tts.hasBanglaVoice,
             surface: surface,
-            onPressed: () => context.read<TtsService>().speak(
-                  cluster.text,
-                  rate: settings.speechRate,
-                ),
+            onPressed: () async {
+              final service = context.read<TtsService>();
+              if (!await ensureBanglaVoice(context, service)) return;
+              service.speak(cluster.spokenForm, rate: settings.speechRate);
+            },
           ),
           if (onClose != null) ...[
             const SizedBox(width: 4),
@@ -104,33 +104,32 @@ class ConjunctCard extends StatelessWidget {
 
 class _SpeakerButton extends StatelessWidget {
   const _SpeakerButton({
-    required this.enabled,
     required this.surface,
     required this.onPressed,
   });
 
-  final bool enabled;
   final ReadingSurface surface;
+
+  /// Always tappable — when no Bangla voice is installed this shows the
+  /// no-voice dialog instead of speaking, rather than being a dead button.
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: enabled
-          ? 'Hear this conjunct read aloud'
-          : 'No Bangla voice installed on this device',
+      label: 'Hear this conjunct read aloud',
       child: Material(
-        color: enabled ? surface.accent : AppColors.borderStrong,
+        color: surface.accent,
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
-          onTap: enabled ? onPressed : null,
+          onTap: onPressed,
           borderRadius: BorderRadius.circular(12),
           child: SizedBox(
             width: 44,
             height: 44,
             child: Icon(
-              enabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+              Icons.volume_up_rounded,
               color: surface.isDark ? const Color(0xFF10222B) : Colors.white,
               size: 24,
             ),

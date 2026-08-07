@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderAbstractViewport;
 import 'package:provider/provider.dart';
 
 import '../models/reading_settings.dart';
+import '../theme/app_colors.dart';
 import '../theme/reading_surface.dart';
 import '../utils/bangla_text.dart';
 import '../utils/passage_transform.dart';
@@ -30,6 +32,9 @@ class BanglaPassage extends StatefulWidget {
     this.onConjunctTap,
     this.selectedConjunct,
     this.onFocusChanged,
+    this.spokenParagraphIndex,
+    this.spokenRange,
+    this.scrollController,
   });
 
   /// Stored paragraph text, exactly as it appears in the study material.
@@ -44,6 +49,18 @@ class BanglaPassage extends StatefulWidget {
 
   /// Reports the paragraph the reader last touched, for session logging.
   final ValueChanged<int>? onFocusChanged;
+
+  /// Which paragraph read-aloud is currently speaking, or null when nothing
+  /// is playing or word highlighting is off.
+  final int? spokenParagraphIndex;
+
+  /// Offsets of the word currently being spoken, in **original** offsets over
+  /// [spokenParagraphIndex]'s paragraph text.
+  final TextUnitRange? spokenRange;
+
+  /// The scroll view this passage is laid out in, so the spoken word can be
+  /// scrolled into view as read-aloud progresses.
+  final ScrollController? scrollController;
 
   @override
   State<BanglaPassage> createState() => _BanglaPassageState();
@@ -132,6 +149,9 @@ class _BanglaPassageState extends State<BanglaPassage> {
             isFocused: _focusParagraph == i,
             focusDisplayOffset: _focusParagraph == i ? _focusDisplayOffset : null,
             anyParagraphFocused: _focusParagraph != null,
+            spokenRange:
+                widget.spokenParagraphIndex == i ? widget.spokenRange : null,
+            scrollController: widget.scrollController,
             onTap: (span, width, local, global) => _handleTap(
               paragraphIndex: i,
               prepared: prepared[i],
@@ -155,7 +175,7 @@ typedef _ParagraphTap = void Function(
   Offset globalPosition,
 );
 
-class _Paragraph extends StatelessWidget {
+class _Paragraph extends StatefulWidget {
   const _Paragraph({
     required this.index,
     required this.prepared,
@@ -165,6 +185,8 @@ class _Paragraph extends StatelessWidget {
     required this.isFocused,
     required this.focusDisplayOffset,
     required this.anyParagraphFocused,
+    required this.spokenRange,
+    required this.scrollController,
     required this.onTap,
   });
 
@@ -176,7 +198,26 @@ class _Paragraph extends StatelessWidget {
   final bool isFocused;
   final int? focusDisplayOffset;
   final bool anyParagraphFocused;
+
+  /// Offsets of the word read-aloud is speaking, in original offsets, or null
+  /// when this paragraph does not hold read-aloud's focus.
+  final TextUnitRange? spokenRange;
+  final ScrollController? scrollController;
   final _ParagraphTap onTap;
+
+  @override
+  State<_Paragraph> createState() => _ParagraphState();
+}
+
+class _ParagraphState extends State<_Paragraph> {
+  /// Anchored to the widget that shares its coordinate space with the
+  /// `TextPainter` layouts below (nothing between this key and the RichText
+  /// adds its own offset), so a rect computed from glyph boxes is valid to
+  /// reveal directly against this render object.
+  final GlobalKey _textKey = GlobalKey();
+
+  TextSpan? _lastSpan;
+  double _lastWidth = 0;
 
   /// Focus mode dims everything except the paragraph being read. It only
   /// engages once the reader has actually settled somewhere — dimming the whole
@@ -184,51 +225,115 @@ class _Paragraph extends StatelessWidget {
   static const double _dimmedOpacity = 0.35;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.spokenRange != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _revealSpokenWord());
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _Paragraph oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.spokenRange != oldWidget.spokenRange) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _revealSpokenWord());
+    }
+  }
+
+  void _revealSpokenWord() {
+    if (!mounted) return;
+    final range = widget.spokenRange;
+    final span = _lastSpan;
+    final controller = widget.scrollController;
+    if (range == null || span == null || controller == null) return;
+    if (!controller.hasClients) return;
+    if (Scrollable.maybeOf(context) == null) return;
+
+    final renderObject = _textKey.currentContext?.findRenderObject();
+    if (renderObject == null) return;
+
+    final displayRange = widget.prepared.mapping.toDisplayRange(range);
+    final rect = SpokenWordPainter.rectFor(span, _lastWidth, displayRange);
+    if (rect == null) return;
+
+    final viewport = RenderAbstractViewport.of(renderObject);
+    final reveal = viewport.getOffsetToReveal(renderObject, 0.5, rect: rect);
+    final target = reveal.offset.clamp(
+      controller.position.minScrollExtent,
+      controller.position.maxScrollExtent,
+    );
+    if ((target - controller.offset).abs() > 4) {
+      controller.animateTo(
+        target,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final span = _buildSpan();
-    final dim = settings.focusMode && anyParagraphFocused && !isFocused;
+    final dim = widget.settings.focusMode &&
+        widget.anyParagraphFocused &&
+        !widget.isFocused;
 
     final showParagraphBand =
-        settings.highlightCurrentParagraph && isFocused;
+        widget.settings.highlightCurrentParagraph && widget.isFocused;
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
+        _lastSpan = span;
+        _lastWidth = width;
 
         Widget text = CustomPaint(
+          key: _textKey,
           painter: ReadingLineBandPainter(
             span: span,
             width: width,
-            focusOffset: focusDisplayOffset,
-            showRuler: settings.readingRuler,
-            highlightLine: settings.highlightCurrentLine,
-            accent: surface.accent,
+            focusOffset: widget.focusDisplayOffset,
+            showRuler: widget.settings.readingRuler,
+            highlightLine: widget.settings.highlightCurrentLine,
+            accent: widget.surface.accent,
           ),
-          foregroundPainter: settings.emphasiseMatra
-              ? MatraEmphasisPainter(
-                  span: span,
-                  width: width,
-                  wordRanges: _displayWordRanges(),
-                  fontSize: settings.fontSize,
-                  colour: surface.accent.withValues(alpha: 0.5),
-                )
-              : null,
-          // RichText rather than Text.rich: Text merges the ambient
-          // DefaultTextStyle in as the root span and nests the given span
-          // underneath, so the widget and the aid painters would be laying out
-          // two different span trees. They must be identical or the ruler
-          // drifts off the line.
-          child: RichText(
-            text: span,
-            textAlign: TextAlign.start,
-            textDirection: TextDirection.ltr,
-            textScaler: TextScaler.noScaling,
+          child: CustomPaint(
+            painter: widget.spokenRange != null
+                ? SpokenWordPainter(
+                    span: span,
+                    width: width,
+                    range: widget.prepared.mapping
+                        .toDisplayRange(widget.spokenRange!),
+                    fillColor: AppColors.spokenWord,
+                    outlineColor: AppColors.teal,
+                  )
+                : null,
+            foregroundPainter: widget.settings.emphasiseMatra
+                ? MatraEmphasisPainter(
+                    span: span,
+                    width: width,
+                    wordRanges: _displayWordRanges(),
+                    fontSize: widget.settings.fontSize,
+                    colour: widget.surface.accent.withValues(alpha: 0.5),
+                  )
+                : null,
+            // RichText rather than Text.rich: Text merges the ambient
+            // DefaultTextStyle in as the root span and nests the given span
+            // underneath, so the widget and the aid painters would be laying
+            // out two different span trees. They must be identical or the
+            // ruler drifts off the line.
+            child: RichText(
+              text: span,
+              textAlign: TextAlign.start,
+              textDirection: TextDirection.ltr,
+              textScaler: TextScaler.noScaling,
+            ),
           ),
         );
 
         text = GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTapUp: (details) => onTap(
+          onTapUp: (details) => widget.onTap(
             span,
             width,
             details.localPosition,
@@ -240,7 +345,7 @@ class _Paragraph extends StatelessWidget {
         if (showParagraphBand) {
           text = Container(
             decoration: BoxDecoration(
-              color: surface.accent.withValues(alpha: 0.07),
+              color: widget.surface.accent.withValues(alpha: 0.07),
               borderRadius: BorderRadius.circular(8),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
@@ -258,7 +363,8 @@ class _Paragraph extends StatelessWidget {
   }
 
   List<TextUnitRange> _displayWordRanges() => [
-        for (final w in prepared.words) prepared.mapping.toDisplayRange(w),
+        for (final w in widget.prepared.words)
+          widget.prepared.mapping.toDisplayRange(w),
       ];
 
   /// Splits the display text into styled runs.
@@ -266,13 +372,13 @@ class _Paragraph extends StatelessWidget {
   /// Boundaries come from the conjunct ranges (mapped into display space) and
   /// the presentational insertions, so every run has one unambiguous style.
   TextSpan _buildSpan() {
-    final base = settings.passageStyle(color: surface.text);
-    final display = prepared.display;
-    final mapping = prepared.mapping;
+    final base = widget.settings.passageStyle(color: widget.surface.text);
+    final display = widget.prepared.display;
+    final mapping = widget.prepared.mapping;
 
     final highlightRanges = <TextUnitRange, ConjunctCluster>{};
-    if (settings.highlightConjuncts) {
-      for (final c in prepared.conjuncts) {
+    if (widget.settings.highlightConjuncts) {
+      for (final c in widget.prepared.conjuncts) {
         highlightRanges[
             mapping.toDisplayRange(TextUnitRange(c.start, c.styleEnd))] = c;
       }
@@ -331,23 +437,24 @@ class _Paragraph extends StatelessWidget {
       // The syllable dot is scaffolding, not content: it stays legible but
       // must never compete with the letters it separates.
       return base.copyWith(
-        color: surface.secondaryText.withValues(alpha: 0.55),
+        color: widget.surface.secondaryText.withValues(alpha: 0.55),
         fontWeight: FontWeight.w400,
       );
     }
 
     if (cluster == null) return base;
 
-    final isSelected = selectedConjunct != null &&
-        selectedConjunct!.start == cluster.start &&
-        selectedConjunct!.end == cluster.end;
+    final selected = widget.selectedConjunct;
+    final isSelected =
+        selected != null && selected.start == cluster.start && selected.end == cluster.end;
 
     return base.copyWith(
       decoration: TextDecoration.underline,
-      decorationColor: surface.accent.withValues(alpha: isSelected ? 1 : 0.75),
+      decorationColor:
+          widget.surface.accent.withValues(alpha: isSelected ? 1 : 0.75),
       decorationThickness: isSelected ? 3 : 2.2,
       backgroundColor:
-          isSelected ? surface.accent.withValues(alpha: 0.22) : null,
+          isSelected ? widget.surface.accent.withValues(alpha: 0.22) : null,
     );
   }
 }

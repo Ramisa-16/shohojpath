@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../app/participant_state.dart';
 import '../models/passage.dart';
 import '../models/reading_settings.dart';
+import '../models/study_session.dart';
+import '../services/session_logger.dart';
 import '../services/tts_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/reading_surface.dart';
 import '../utils/bangla_text.dart';
+import '../widgets/app_buttons.dart';
 import '../widgets/bangla_passage.dart';
 import '../widgets/conjunct_card.dart';
-import '../widgets/quick_settings_sheet.dart';
+import '../widgets/no_bangla_voice_dialog.dart';
+import '../widgets/therapist_session_banner.dart';
+import 'quiz_screen.dart';
+import 'reading_settings_screen.dart';
 
 /// The Reading Interface, screen 05 of the design.
 ///
@@ -33,9 +40,24 @@ class _ReadingScreenState extends State<ReadingScreen> {
   late int _pageIndex = widget.initialPage;
   final ScrollController _scrollController = ScrollController();
 
+  /// Total time spent on this screen, reported to the quiz as the reading
+  /// duration for the session.
+  final Stopwatch _stopwatch = Stopwatch()..start();
+
+  /// Time spent on the page currently on screen — logged and restarted every
+  /// time the reader turns a page.
+  final Stopwatch _pageStopwatch = Stopwatch()..start();
+
   ConjunctCluster? _selectedConjunct;
   bool _showFloatingCard = false;
   bool _bookmarked = false;
+
+  late final String _sessionId;
+
+  /// Captured in [initState] rather than looked up again in [dispose] —
+  /// `context.read` is not safe to call once a widget starts tearing down.
+  late final ReadingSettings _settings;
+  late final SessionLogger _logger;
 
   PassagePage get _page => widget.passage.pages[_pageIndex];
 
@@ -51,45 +73,133 @@ class _ReadingScreenState extends State<ReadingScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _settings = context.read<ReadingSettings>();
+    _logger = context.read<SessionLogger>();
+    _sessionId = _logger.newSessionId();
+    _logger.startSession(
+      sessionId: _sessionId,
+      participantId: context.read<ParticipantState>().participantId,
+      passageId: widget.passage.id,
+      profile: _settings.profile,
+    );
+    context.read<TtsService>().resetSpokenDuration();
+  }
+
+  @override
   void dispose() {
+    _logger.endActiveSession(_sessionId);
     _scrollController.dispose();
     super.dispose();
   }
 
+  void _logCurrentPageTime() {
+    _pageStopwatch.stop();
+    _logger.logPageTime(_sessionId, _pageIndex, _pageStopwatch.elapsed);
+  }
+
   void _goToPage(int index) {
     if (index < 0 || index >= widget.passage.pageCount) return;
+    _logCurrentPageTime();
     setState(() {
       _pageIndex = index;
       _selectedConjunct = null;
       _showFloatingCard = false;
     });
+    _pageStopwatch
+      ..reset()
+      ..start();
     if (_scrollController.hasClients) {
       _scrollController.jumpTo(0);
     }
   }
 
-  void _onConjunctTap(ConjunctCluster cluster, Offset _) {
+  /// Tapping "Finish" on the last page moves from reading into the
+  /// comprehension quiz, carrying forward exactly what the study needs to
+  /// know about this reading: how long it took and whether read-aloud was
+  /// switched on.
+  void _finishReading() {
+    _logCurrentPageTime();
+    _stopwatch.stop();
+    final tts = context.read<TtsService>();
+    _logger.finishReading(
+      sessionId: _sessionId,
+      totalReadingTime: _stopwatch.elapsed,
+      wordsRead: widget.passage.wordCount,
+      readAloudOn: _settings.readAloud,
+      audioDuration: tts.totalSpokenDuration,
+    );
+    final session = StudySession(
+      sessionId: _sessionId,
+      passage: widget.passage,
+      readAloudWasOn: _settings.readAloud,
+      readingDuration: _stopwatch.elapsed,
+    );
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => QuizScreen(session: session)),
+    );
+  }
+
+  void _onConjunctTap(ConjunctCluster cluster, Offset _) async {
     setState(() {
       _selectedConjunct = cluster;
       _showFloatingCard = true;
     });
+    final tts = context.read<TtsService>();
+    if (!await ensureBanglaVoice(context, tts)) return;
+    if (!mounted) return;
     final settings = context.read<ReadingSettings>();
-    context.read<TtsService>().speak(cluster.text, rate: settings.speechRate);
+    tts.speak(cluster.spokenForm, rate: settings.speechRate);
+  }
+
+  /// Translates an absolute offset pair in `page.paragraphs.join('\n')` (the
+  /// coordinate space read-aloud's progress handler reports in, since that is
+  /// the exact string handed to [TtsService.speak]) into the paragraph and
+  /// original-text range [BanglaPassage] needs to draw the highlight.
+  ({int paragraphIndex, TextUnitRange range})? _spokenRangeFor(
+    int start,
+    int end,
+  ) {
+    if (end <= start) return null;
+    var offset = 0;
+    final paragraphs = _page.paragraphs;
+    for (var i = 0; i < paragraphs.length; i++) {
+      final paragraph = paragraphs[i];
+      final paragraphEnd = offset + paragraph.length;
+      if (start >= offset && start < paragraphEnd) {
+        final localStart = start - offset;
+        final localEnd = (end - offset).clamp(localStart + 1, paragraph.length);
+        return (paragraphIndex: i, range: TextUnitRange(localStart, localEnd));
+      }
+      offset = paragraphEnd + 1; // +1 for the '\n' the pages are joined with.
+    }
+    return null;
   }
 
   Future<void> _openSettings() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const QuickSettingsSheet(),
+    await showReadingSettingsPanel(
+      context,
+      bookmarked: _bookmarked,
+      onToggleBookmark: () => setState(() => _bookmarked = !_bookmarked),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<ReadingSettings>();
+    final tts = context.watch<TtsService>();
     final surface = settings.surface;
+
+    final showSpokenWord = settings.readAloud &&
+        settings.highlightSpokenWord &&
+        (tts.isSpeaking || tts.isPaused) &&
+        tts.wordStart != null &&
+        tts.wordEnd != null;
+    final spoken =
+        showSpokenWord ? _spokenRangeFor(tts.wordStart!, tts.wordEnd!) : null;
+
+    final settingsLocked = context.watch<ParticipantState>().isSettingsLocked;
 
     return Scaffold(
       backgroundColor: surface.background,
@@ -97,9 +207,11 @@ class _ReadingScreenState extends State<ReadingScreen> {
         bottom: false,
         child: Column(
           children: [
+            const TherapistSessionBanner(),
             _Header(
               passage: widget.passage,
               bookmarked: _bookmarked,
+              settingsLocked: settingsLocked,
               onBack: () => Navigator.of(context).maybePop(),
               onBookmark: () => setState(() => _bookmarked = !_bookmarked),
               onSettings: _openSettings,
@@ -117,6 +229,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
                     cardCluster: _cardCluster,
                     selectedConjunct: _selectedConjunct,
                     onConjunctTap: _onConjunctTap,
+                    spokenParagraphIndex: spoken?.paragraphIndex,
+                    spokenRange: spoken?.range,
                   ),
                   if (_showFloatingCard && _selectedConjunct != null)
                     Positioned(
@@ -137,7 +251,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
               onPrevious: _pageIndex > 0 ? () => _goToPage(_pageIndex - 1) : null,
               onNext: _pageIndex < widget.passage.pageCount - 1
                   ? () => _goToPage(_pageIndex + 1)
-                  : null,
+                  : _finishReading,
+              isLastPage: _pageIndex == widget.passage.pageCount - 1,
               pageText: _page.paragraphs.join('\n'),
             ),
           ],
@@ -151,6 +266,7 @@ class _Header extends StatelessWidget {
   const _Header({
     required this.passage,
     required this.bookmarked,
+    required this.settingsLocked,
     required this.onBack,
     required this.onBookmark,
     required this.onSettings,
@@ -158,6 +274,7 @@ class _Header extends StatelessWidget {
 
   final Passage passage;
   final bool bookmarked;
+  final bool settingsLocked;
   final VoidCallback onBack;
   final VoidCallback onBookmark;
   final VoidCallback onSettings;
@@ -206,10 +323,27 @@ class _Header extends StatelessWidget {
             label: bookmarked ? 'Remove bookmark' : 'Bookmark this page',
             onPressed: onBookmark,
           ),
-          _HeaderButton(
-            icon: Icons.tune_rounded,
-            label: 'Open reading settings',
-            onPressed: onSettings,
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              _HeaderButton(
+                icon: Icons.tune_rounded,
+                label: settingsLocked ? 'Reading settings (locked for this session)' : 'Open reading settings',
+                onPressed: onSettings,
+              ),
+              if (settingsLocked)
+                const Positioned(
+                  right: 4,
+                  bottom: 4,
+                  child: IgnorePointer(
+                    child: CircleAvatar(
+                      radius: 8,
+                      backgroundColor: AppColors.navy,
+                      child: Icon(Icons.lock_rounded, size: 10, color: Colors.white),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -230,12 +364,11 @@ class _HeaderButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
+    return IconOnlyButton(
       onPressed: onPressed,
       tooltip: label,
-      icon: Icon(icon, color: Colors.white, size: 24),
-      constraints: const BoxConstraints.tightFor(width: 44, height: 44),
-      padding: EdgeInsets.zero,
+      icon: icon,
+      color: Colors.white,
     );
   }
 }
@@ -276,6 +409,8 @@ class _ReaderBody extends StatelessWidget {
     required this.cardCluster,
     required this.selectedConjunct,
     required this.onConjunctTap,
+    required this.spokenParagraphIndex,
+    required this.spokenRange,
   });
 
   final ScrollController scrollController;
@@ -286,6 +421,8 @@ class _ReaderBody extends StatelessWidget {
   final ConjunctCluster? cardCluster;
   final ConjunctCluster? selectedConjunct;
   final ConjunctTapCallback onConjunctTap;
+  final int? spokenParagraphIndex;
+  final TextUnitRange? spokenRange;
 
   @override
   Widget build(BuildContext context) {
@@ -314,6 +451,9 @@ class _ReaderBody extends StatelessWidget {
             paragraphs: page.paragraphs,
             selectedConjunct: selectedConjunct,
             onConjunctTap: onConjunctTap,
+            spokenParagraphIndex: spokenParagraphIndex,
+            spokenRange: spokenRange,
+            scrollController: scrollController,
           ),
           if (cardCluster != null) ...[
             SizedBox(height: settings.paragraphSpacingPx),
@@ -396,11 +536,13 @@ class _ReaderControls extends StatelessWidget {
   const _ReaderControls({
     required this.onPrevious,
     required this.onNext,
+    required this.isLastPage,
     required this.pageText,
   });
 
   final VoidCallback? onPrevious;
   final VoidCallback? onNext;
+  final bool isLastPage;
   final String pageText;
 
   @override
@@ -425,45 +567,21 @@ class _ReaderControls extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: SecondaryButton(
+                      label: 'Previous',
+                      icon: Icons.chevron_left_rounded,
+                      color: AppColors.body,
+                      expand: false,
                       onPressed: onPrevious,
-                      icon: const Icon(Icons.chevron_left_rounded, size: 20),
-                      label: const Text('Previous'),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(48),
-                        foregroundColor: AppColors.body,
-                        side: const BorderSide(
-                          color: AppColors.borderStrong,
-                          width: 2,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: FilledButton.icon(
+                    child: PrimaryButton(
+                      label: isLastPage ? 'Finish' : 'Next',
+                      icon: isLastPage ? Icons.check_rounded : Icons.chevron_right_rounded,
+                      expand: false,
                       onPressed: onNext,
-                      iconAlignment: IconAlignment.end,
-                      icon: const Icon(Icons.chevron_right_rounded, size: 20),
-                      label: const Text('Next'),
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(48),
-                        backgroundColor: AppColors.navy,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
                     ),
                   ),
                 ],
@@ -487,9 +605,24 @@ class _ReadAloudBar extends StatelessWidget {
   final ReadingSettings settings;
   final String pageText;
 
+  Future<void> _onPlayPause(BuildContext context) async {
+    final service = context.read<TtsService>();
+    if (tts.isSpeaking) {
+      service.pause();
+      return;
+    }
+    if (tts.isPaused) {
+      service.resume();
+      return;
+    }
+    if (!await ensureBanglaVoice(context, service)) return;
+    service.speak(pageText, rate: settings.speechRate);
+  }
+
   @override
   Widget build(BuildContext context) {
     final noVoice = tts.isInitialised && !tts.hasBanglaVoice;
+    final active = tts.isSpeaking || tts.isPaused;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -501,28 +634,23 @@ class _ReadAloudBar extends StatelessWidget {
         children: [
           Semantics(
             button: true,
-            label: tts.isSpeaking ? 'Stop read aloud' : 'Play read aloud',
+            label: tts.isSpeaking
+                ? 'Pause read aloud'
+                : tts.isPaused
+                    ? 'Resume read aloud'
+                    : 'Play read aloud',
             child: Material(
               color: noVoice ? AppColors.borderStrong : AppColors.teal,
               borderRadius: BorderRadius.circular(18),
               child: InkWell(
                 borderRadius: BorderRadius.circular(18),
-                onTap: noVoice
-                    ? null
-                    : () {
-                        final service = context.read<TtsService>();
-                        if (tts.isSpeaking) {
-                          service.stop();
-                        } else {
-                          service.speak(pageText, rate: settings.speechRate);
-                        }
-                      },
+                onTap: () => _onPlayPause(context),
                 child: SizedBox(
                   width: 56,
                   height: 56,
                   child: Icon(
                     tts.isSpeaking
-                        ? Icons.stop_rounded
+                        ? Icons.pause_rounded
                         : Icons.play_arrow_rounded,
                     color: Colors.white,
                     size: 32,
@@ -531,6 +659,30 @@ class _ReadAloudBar extends StatelessWidget {
               ),
             ),
           ),
+          if (active) ...[
+            const SizedBox(width: 6),
+            Semantics(
+              button: true,
+              label: 'Stop read aloud',
+              child: Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => context.read<TtsService>().stop(),
+                  child: const SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: Icon(
+                      Icons.stop_rounded,
+                      color: AppColors.navy,
+                      size: 26,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(width: 9),
           Expanded(
             child: Column(
@@ -558,9 +710,11 @@ class _ReadAloudBar extends StatelessWidget {
                   noVoice
                       ? 'No Bangla voice on this device — install one in '
                           'Android TTS settings'
-                      : 'Word highlighting is not wired up yet',
+                      : settings.highlightSpokenWord
+                          ? 'Word highlighting on'
+                          : 'Word highlighting off',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: noVoice ? AppColors.danger : AppColors.muted,
                   ),
@@ -598,20 +752,24 @@ class _RatePill extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(9),
         child: Container(
-          height: 44,
+          constraints: const BoxConstraints(minHeight: 48),
           alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(9),
             border: selected
                 ? null
                 : Border.all(color: AppColors.borderStrong, width: 1.5),
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: selected ? Colors.white : AppColors.body,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: selected ? Colors.white : AppColors.body,
+              ),
             ),
           ),
         ),

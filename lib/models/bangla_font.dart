@@ -9,7 +9,10 @@ enum BanglaFont {
   notoSansBengali(
     id: 'noto_sans_bengali',
     family: 'NotoSansBengali',
-    label: 'Noto Sans Bengali',
+    // Shortened from "Noto Sans Bengali": the font grid is a one-line
+    // choice tile, and "Bengali" is redundant here — every option in this
+    // list already is one.
+    label: 'Noto Sans',
     hasRealBold: true,
   ),
   solaimanLipi(

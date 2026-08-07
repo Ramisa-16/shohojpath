@@ -51,7 +51,10 @@ enum ReadingSurface {
   ),
   highContrast(
     id: 'high_contrast',
-    label: 'High contrast',
+    // Shortened from "High contrast": the theme swatch is a one-line,
+    // fixed-width choice tile alongside White/Cream/Yellow/Dark, and the
+    // full name didn't fit without the text touching the tile's edges.
+    label: 'Contrast',
     labelBn: 'উচ্চ কনট্রাস্ট',
     background: AppColors.surfaceHighContrast,
     text: Color(0xFFFFFFFF),

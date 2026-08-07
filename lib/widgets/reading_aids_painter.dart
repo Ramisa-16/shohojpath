@@ -192,3 +192,80 @@ class MatraEmphasisPainter extends CustomPainter {
       old.colour != colour ||
       !listEquals(old.wordRanges, wordRanges);
 }
+
+/// Draws the rounded highlight behind the word read-aloud is currently
+/// speaking.
+///
+/// Drawn as a background band from measured glyph boxes rather than as a
+/// [TextSpan] background colour, because only a canvas can give the fill
+/// rounded corners and a stroke outline — the two things the design calls
+/// for that inline text styling cannot produce.
+class SpokenWordPainter extends CustomPainter {
+  const SpokenWordPainter({
+    required this.span,
+    required this.width,
+    required this.range,
+    required this.fillColor,
+    required this.outlineColor,
+  });
+
+  final InlineSpan span;
+  final double width;
+
+  /// Display offsets of the spoken word.
+  final TextUnitRange range;
+
+  final Color fillColor;
+  final Color outlineColor;
+
+  static const double _hPad = 5;
+  static const double _vPad = 1;
+
+  /// The rounded rect the word occupies, in the same local coordinates as
+  /// [span]'s own layout — shared with [_ParagraphState] so it can scroll the
+  /// word into view using the exact rect this painter draws.
+  static Rect? rectFor(InlineSpan span, double width, TextUnitRange range) {
+    if (range.length <= 0) return null;
+    final painter = _layout(span, width);
+    final boxes = painter.getBoxesForSelection(
+      TextSelection(baseOffset: range.start, extentOffset: range.end),
+      boxHeightStyle: BoxHeightStyle.tight,
+    );
+    if (boxes.isEmpty) return null;
+
+    var rect = boxes.first.toRect();
+    for (final box in boxes.skip(1)) {
+      rect = rect.expandToInclude(box.toRect());
+    }
+    return Rect.fromLTRB(
+      rect.left - _hPad,
+      rect.top - _vPad,
+      rect.right + _hPad,
+      rect.bottom + _vPad,
+    );
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = rectFor(span, width, range);
+    if (rect == null) return;
+
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(7));
+    canvas.drawRRect(rrect, Paint()..color = fillColor);
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..color = outlineColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+  }
+
+  @override
+  bool shouldRepaint(SpokenWordPainter old) =>
+      old.span != span ||
+      old.width != width ||
+      old.range != range ||
+      old.fillColor != fillColor ||
+      old.outlineColor != outlineColor;
+}

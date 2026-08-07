@@ -204,7 +204,7 @@ class ReadingPreset {
 /// than hard-coding sizes — that is the difference between a prototype that
 /// demonstrates the idea and one that can be used to collect data.
 class ReadingSettings extends ChangeNotifier {
-  ReadingSettings({ReadingProfile initialProfile = ReadingProfile.recommended}) {
+  ReadingSettings({ReadingProfile initialProfile = ReadingProfile.standard}) {
     _profile = initialProfile;
     _assign(ReadingPreset.of(initialProfile));
   }

@@ -1,0 +1,528 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../app/participant_state.dart';
+import '../../models/reading_settings.dart';
+import '../../services/reader_profile_loader.dart';
+import '../../services/reader_repository.dart';
+import '../../services/session_logger.dart';
+import '../../theme/app_colors.dart';
+import '../../widgets/app_buttons.dart';
+import '../../widgets/therapist_bottom_tab_bar.dart';
+import '../home_shell.dart';
+import 'add_reader_screen.dart';
+import 'reader_detail_screen.dart';
+import 'start_session_sheet.dart';
+import 'therapist_profile_screen.dart';
+
+/// One row of the caseload list — everything the roster card needs,
+/// computed from this reader's actual session rows rather than carried as
+/// separate mock fields.
+class _ReaderRow {
+  const _ReaderRow({
+    required this.participantId,
+    required this.name,
+    required this.meta,
+    required this.lastActiveLabel,
+    required this.wpmLabel,
+    required this.accuracyLabel,
+    required this.accuracyFraction,
+    required this.statusLabel,
+    required this.statusColor,
+  });
+
+  final String participantId;
+  final String name;
+  final String meta;
+  final String lastActiveLabel;
+  final String wpmLabel;
+  final String accuracyLabel;
+  final double accuracyFraction;
+  final String statusLabel;
+  final Color statusColor;
+}
+
+/// Screen `tdash` of the v2 design — a therapist's caseload, computed live
+/// from [ReaderRepository] and [SessionLogger] rather than the design's
+/// static mock roster.
+class TherapistDashboardScreen extends StatefulWidget {
+  const TherapistDashboardScreen({super.key});
+
+  @override
+  State<TherapistDashboardScreen> createState() => _TherapistDashboardScreenState();
+}
+
+class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
+  late Future<List<_ReaderRow>> _roster;
+  int _readerCount = 0;
+  int _sessionsThisWeek = 0;
+  double? _susAverage;
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  void _load() {
+    setState(() {
+      _roster = _buildRoster();
+    });
+  }
+
+  Future<List<_ReaderRow>> _buildRoster() async {
+    final readerRepo = context.read<ReaderRepository>();
+    final logger = context.read<SessionLogger>();
+
+    final readers = await readerRepo.allReaders();
+    _readerCount = readers.length;
+    _sessionsThisWeek =
+        await logger.sessionsSince(DateTime.now().subtract(const Duration(days: 7)));
+    _susAverage = await logger.averageSusScore();
+
+    final rows = <_ReaderRow>[];
+    for (final reader in readers) {
+      final participantId = reader['participant_id'] as String;
+      final sessions = await logger.sessionsFor(participantId);
+
+      String lastActiveLabel = 'Never';
+      String wpmLabel = '—';
+      String accuracyLabel = '—';
+      double accuracyFraction = 0;
+      String statusLabel = 'No recent activity';
+      Color statusColor = AppColors.muted;
+
+      if (sessions.isNotEmpty) {
+        final latest = sessions.first;
+        final startedAt = DateTime.tryParse(latest['started_at'] as String? ?? '');
+        if (startedAt != null) {
+          lastActiveLabel = _relativeDate(startedAt);
+          final daysSince = DateTime.now().difference(startedAt).inDays;
+          if (daysSince <= 7) {
+            statusLabel = 'Improving';
+            statusColor = AppColors.teal;
+          }
+        }
+
+        final seconds = (latest['total_reading_seconds'] as num?)?.toDouble();
+        final words = (latest['words_read'] as num?)?.toInt();
+        if (seconds != null && seconds > 0 && words != null) {
+          wpmLabel = '${(words / seconds * 60).round()} wpm';
+        }
+
+        final quizScore = (latest['quiz_score'] as num?)?.toInt();
+        final quizTotal = (latest['quiz_total'] as num?)?.toInt();
+        if (quizScore != null && quizTotal != null && quizTotal > 0) {
+          accuracyFraction = quizScore / quizTotal;
+          accuracyLabel = '${(accuracyFraction * 100).round()}%';
+
+          if (sessions.length > 1) {
+            final prev = sessions[1];
+            final prevScore = (prev['quiz_score'] as num?)?.toInt();
+            final prevTotal = (prev['quiz_total'] as num?)?.toInt();
+            if (prevScore != null && prevTotal != null && prevTotal > 0) {
+              final prevFraction = prevScore / prevTotal;
+              if (accuracyFraction < prevFraction) {
+                statusLabel = 'Accuracy dropping';
+                statusColor = AppColors.focus;
+              }
+            }
+          }
+        }
+      }
+
+      final age = reader['age'];
+      final classGrade = reader['class_grade'] as String?;
+      final metaParts = [
+        if (age != null) 'Age $age',
+        if (classGrade != null && classGrade.isNotEmpty) classGrade,
+      ];
+
+      rows.add(
+        _ReaderRow(
+          participantId: participantId,
+          name: reader['name'] as String? ?? participantId,
+          meta: metaParts.isEmpty ? participantId : metaParts.join(' · '),
+          lastActiveLabel: lastActiveLabel,
+          wpmLabel: wpmLabel,
+          accuracyLabel: accuracyLabel,
+          accuracyFraction: accuracyFraction,
+          statusLabel: statusLabel,
+          statusColor: statusColor,
+        ),
+      );
+    }
+    return rows;
+  }
+
+  static String _relativeDate(DateTime at) {
+    final days = DateTime.now().difference(at).inDays;
+    if (days <= 0) return 'Today';
+    if (days == 1) return 'Yesterday';
+    return '$days days ago';
+  }
+
+  /// Asks which reading condition this session runs under before doing
+  /// anything else — a research-integrity gate, not a formality: Default
+  /// and Recommended lock the settings for the whole session, since a
+  /// reader who tweaks them mid-session has quietly left the condition the
+  /// logged data is supposed to represent.
+  Future<void> _promptStartSession(String participantId, String name) async {
+    final condition = await showStartSessionSheet(context, name: name, participantId: participantId);
+    if (condition == null || !mounted) return;
+    await _startSession(participantId, name, condition);
+  }
+
+  /// Switches the app straight into this reader's own Home screen, with
+  /// their assigned passages already loaded and settings forced to the
+  /// chosen condition (or their own saved settings, under Custom) — the
+  /// therapist hands the device over from here. [ParticipantState.
+  /// isSupervisedByTherapist] is what makes the session banner appear on the
+  /// reader's screens and gates "End session" behind a password, so the
+  /// reader can't back out into therapist data by accident.
+  Future<void> _startSession(String participantId, String name, ReadingProfile condition) async {
+    final locked = condition != ReadingProfile.custom;
+    context.read<ParticipantState>().signInAsReader(
+          participantId,
+          displayName: name,
+          supervisedByTherapist: true,
+          settingsLocked: locked,
+        );
+    if (condition == ReadingProfile.custom) {
+      await loadReaderProfile(context, participantId);
+    } else {
+      // Forces the exact canonical preset regardless of whatever the reader
+      // last saved for themselves — the whole point of the lock is every
+      // "Default" or "Recommended" session looking identical across
+      // participants, not "whatever this reader happened to leave it at".
+      context.read<ReadingSettings>().applyProfile(condition);
+    }
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const HomeShell()),
+      (route) => false,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              color: AppColors.navy,
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Therapist', style: TextStyle(fontSize: 14, color: AppColors.onNavyMuted, fontWeight: FontWeight.w600)),
+                            Text('My Readers', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                      IconOnlyButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const TherapistProfileScreen()),
+                        ),
+                        tooltip: 'Therapist profile',
+                        icon: Icons.account_circle_rounded,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 13),
+                  // IntrinsicHeight + stretch: "Sessions this week" wraps to
+                  // two lines while the other two stay on one, and a plain
+                  // Row won't stretch its Expanded children to match — this
+                  // forces all three chips to the tallest one's height.
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(child: _StatChip(value: '$_readerCount', label: 'Readers')),
+                        const SizedBox(width: 8),
+                        Expanded(child: _StatChip(value: '$_sessionsThisWeek', label: 'Sessions this week')),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _StatChip(
+                            value: _susAverage == null ? '—' : _susAverage!.toStringAsFixed(0),
+                            label: 'SUS average',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 13),
+                  Container(
+                    constraints: const BoxConstraints(minHeight: 48),
+                    padding: const EdgeInsets.symmetric(horizontal: 13),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.16),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search_rounded, color: AppColors.onNavyFaint),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            onChanged: (v) => setState(() => _query = v.trim()),
+                            style: const TextStyle(fontSize: 15, color: Colors.white),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              isDense: true,
+                              hintText: 'Search readers',
+                              hintStyle: TextStyle(color: AppColors.onNavyFaint),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Container(
+                color: AppColors.canvas,
+                child: FutureBuilder<List<_ReaderRow>>(
+                  future: _roster,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final rows = snapshot.data!
+                        .where((r) =>
+                            _query.isEmpty ||
+                            r.name.toLowerCase().contains(_query.toLowerCase()) ||
+                            r.participantId.toLowerCase().contains(_query.toLowerCase()))
+                        .toList();
+                    return ListView(
+                      padding: const EdgeInsets.fromLTRB(14, 14, 14, 22),
+                      children: [
+                        Row(
+                          children: [
+                            const Text(
+                              'ACTIVE CASELOAD',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body),
+                            ),
+                            const Spacer(),
+                            const Text('Sorted by last active', style: TextStyle(fontSize: 14, color: AppColors.muted)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        if (rows.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24),
+                            child: Text(
+                              'No readers yet. Add one to get started.',
+                              style: TextStyle(fontSize: 15, color: AppColors.muted),
+                            ),
+                          )
+                        else
+                          for (final row in rows) ...[
+                            _ReaderCard(
+                              row: row,
+                              onTap: () => Navigator.of(context)
+                                  .push(
+                                    MaterialPageRoute(
+                                      builder: (_) => ReaderDetailScreen(participantId: row.participantId),
+                                    ),
+                                  )
+                                  .then((_) => _load()),
+                              onStartSession: () => _promptStartSession(row.participantId, row.name),
+                            ),
+                            const SizedBox(height: 11),
+                          ],
+                        PrimaryButton(
+                          label: 'Add Reader',
+                          icon: Icons.person_add_rounded,
+                          backgroundColor: AppColors.teal,
+                          onPressed: () => Navigator.of(context)
+                              .push(MaterialPageRoute(builder: (_) => const AddReaderScreen()))
+                              .then((_) => _load()),
+                        ),
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Amber and grey markers flag readers whose accuracy is falling or '
+                          'who have not read in over a week.',
+                          style: TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: const TherapistBottomTabBar(current: TherapistTab.dashboard),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  const _StatChip({required this.value, required this.label});
+
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.13),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white, height: 1)),
+          Text(label, style: const TextStyle(fontSize: 14, color: AppColors.onNavyMuted, height: 1.3)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReaderCard extends StatelessWidget {
+  const _ReaderCard({required this.row, required this.onTap, required this.onStartSession});
+
+  final _ReaderRow row;
+  final VoidCallback onTap;
+  final VoidCallback onStartSession;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(13),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(color: AppColors.navyTint, shape: BoxShape.circle),
+                    child: const Icon(Icons.person_rounded, color: AppColors.navy),
+                  ),
+                  const SizedBox(width: 11),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          row.name,
+                          style: const TextStyle(fontFamily: 'NotoSansBengali', fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.ink),
+                        ),
+                        Text(row.meta, style: const TextStyle(fontSize: 14, color: AppColors.muted)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 7),
+              // Its own full-width line rather than squeezed beside the name
+              // column — a long status label ("Accuracy dropping") would
+              // otherwise crush the name into a sliver at large font sizes.
+              Wrap(
+                spacing: 10,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 11,
+                        height: 11,
+                        decoration: BoxDecoration(color: row.statusColor, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(row.statusLabel, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.body)),
+                    ],
+                  ),
+                  Text(row.lastActiveLabel, style: const TextStyle(fontSize: 14, color: AppColors.muted)),
+                ],
+              ),
+              const SizedBox(height: 9),
+              Wrap(
+                spacing: 7,
+                children: [
+                  _Tag(row.wpmLabel, AppColors.navyTint, AppColors.navy),
+                  _Tag('${row.accuracyLabel} accuracy', AppColors.tealTint, AppColors.tealText),
+                ],
+              ),
+              const SizedBox(height: 9),
+              Row(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: row.accuracyFraction.clamp(0, 1),
+                        minHeight: 8,
+                        backgroundColor: AppColors.trackAlt,
+                        color: AppColors.teal,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 9),
+                  const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                ],
+              ),
+              const SizedBox(height: 11),
+              SecondaryButton(
+                label: 'Start session',
+                icon: Icons.play_circle_fill_rounded,
+                onPressed: onStartSession,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Tag extends StatelessWidget {
+  const _Tag(this.label, this.background, this.foreground);
+
+  final String label;
+  final Color background;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(12)),
+      child: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: foreground)),
+    );
+  }
+}

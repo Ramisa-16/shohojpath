@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../data/mock_content.dart';
+import '../services/app_content.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/app_header.dart';
@@ -58,7 +60,7 @@ class HelpScreen extends StatelessWidget {
                         children: [
                           const Text('Accessibility features', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.navy)),
                           const SizedBox(height: 13),
-                          for (final f in MockContent.helpFeatures) ...[
+                          for (final f in context.watch<AppContent>().helpFeatures) ...[
                             Padding(
                               padding: const EdgeInsets.only(bottom: 12),
                               child: Row(
@@ -87,7 +89,7 @@ class HelpScreen extends StatelessWidget {
                       padding: EdgeInsets.zero,
                       child: Column(
                         children: [
-                          for (final faq in MockContent.faqs)
+                          for (final faq in context.watch<AppContent>().faqs)
                             ExpansionTile(
                               title: Text(
                                 faq.question,

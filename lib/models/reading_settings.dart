@@ -211,7 +211,12 @@ class ReadingSettings extends ChangeNotifier {
 
   // ---- Bounds (the Reading Settings screen must not exceed these) --------
   static const double minFontSize = 12;
-  static const double maxFontSize = 72;
+
+  /// The design's slider went to 72 px, which no reading UI survives: at that
+  /// size a single Bangla word fills the width and the app chrome around it
+  /// breaks. 48 px is still far above the 22 px Recommended and 28 px Custom
+  /// presets, and comfortably past the 40 px a low-vision reader asks for.
+  static const double maxFontSize = 48;
   static const double minLetterSpacingEm = 0;
   static const double maxLetterSpacingEm = 0.20;
   static const double minWordSpacingEm = 0;

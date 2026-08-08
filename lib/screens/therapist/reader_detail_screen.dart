@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../api/shohojpath_api.dart';
 import '../../data/passages.dart';
-import '../../services/reader_repository.dart';
 import '../../services/session_logger.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/duration_format.dart';
@@ -41,15 +41,30 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
     setState(() => _data = _fetch());
   }
 
+  /// Everything about one reader, from the server.
+  ///
+  /// The therapist sees the same figures the reader sees — progress and
+  /// statistics come from the same server-side computation, so the two can
+  /// never disagree about the same sessions.
   Future<_ReaderData> _fetch() async {
-    final readerRepo = context.read<ReaderRepository>();
-    final logger = context.read<SessionLogger>();
+    final api = context.read<ShohojpathApi>();
+    final id = widget.participantId;
 
-    final reader = await readerRepo.reader(widget.participantId);
-    final sessions = await logger.sessionsFor(widget.participantId);
-    final notes = await readerRepo.notesFor(widget.participantId);
+    final progress = await api.readerProgress(id);
+    final statistics = await api.readerStatistics(id);
+    final sessions = await api.readerSessions(id);
+    final notes = await api.readerNotes(id);
 
-    return _ReaderData(reader: reader, sessions: sessions, notes: notes);
+    return _ReaderData(
+      reader: {
+        'participant_id': id,
+        'name': progress['display_name'],
+      },
+      sessions: sessions,
+      notes: notes,
+      progress: progress,
+      statistics: statistics,
+    );
   }
 
   Future<void> _addNote() async {
@@ -74,7 +89,9 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
       ),
     );
     if (text == null || text.isEmpty || !mounted) return;
-    await context.read<ReaderRepository>().addNote(widget.participantId, text);
+    await context
+        .read<ShohojpathApi>()
+        .addReaderNote(widget.participantId, text);
     _load();
   }
 
@@ -175,11 +192,21 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
 }
 
 class _ReaderData {
-  const _ReaderData({required this.reader, required this.sessions, required this.notes});
+  const _ReaderData({
+    required this.reader,
+    required this.sessions,
+    required this.notes,
+    this.progress = const {},
+    this.statistics = const {},
+  });
 
   final Map<String, Object?>? reader;
   final List<Map<String, Object?>> sessions;
   final List<Map<String, Object?>> notes;
+
+  /// Server-computed, identical to what the reader sees on their own screens.
+  final Map<String, dynamic> progress;
+  final Map<String, dynamic> statistics;
 }
 
 /// The four tabs stretch evenly across the bar when they fit at a sensible

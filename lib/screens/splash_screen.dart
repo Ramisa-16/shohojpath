@@ -1,10 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../app/auth_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
+import 'home_shell.dart';
 import 'login_screen.dart';
+import 'therapist/therapist_dashboard_screen.dart';
 
 /// Screen 01 of the design. Loads for a moment (settings are already read
 /// from disk by the time `main` calls `runApp`, so this is UX pacing rather
@@ -32,11 +36,32 @@ class _SplashScreenState extends State<SplashScreen> {
     super.dispose();
   }
 
-  void _continue() {
+  /// Waits for the stored token to be read before deciding where to go.
+  ///
+  /// Without this a returning reader is shown the Login screen for a frame and
+  /// then bounced into the app, which reads as the app having forgotten them.
+  Future<void> _continue() async {
     _timer?.cancel();
     if (!mounted) return;
+
+    final auth = context.read<AuthState>();
+    while (auth.isRestoring) {
+      await Future<void>.delayed(const Duration(milliseconds: 40));
+      if (!mounted) return;
+    }
+    if (!mounted) return;
+
+    final Widget destination;
+    if (!auth.isSignedIn) {
+      destination = const LoginScreen();
+    } else if (auth.isTherapist) {
+      destination = const TherapistDashboardScreen();
+    } else {
+      destination = const HomeShell();
+    }
+
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => destination),
     );
   }
 
@@ -141,7 +166,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       const SizedBox(height: 18),
                       PrimaryButton(
                         label: 'Get Started',
-                        onPressed: _continue,
+                        onPressed: () => _continue(),
                         expand: false,
                       ),
                       const SizedBox(height: 28),

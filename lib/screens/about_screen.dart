@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../data/mock_content.dart';
+import '../services/app_content.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
 import 'researcher_screen.dart';
 
-/// Screen 18 of the design. University, researcher and supervisor are left
-/// as explicit placeholders — see [MockContent.about] — pending the real
-/// research team's details.
+/// Screen 18 of the design. The research details, accessibility summary and
+/// disclaimer come from [AppContent] — editable in the Django admin, since an
+/// ethics board may require exact wording — with the bundled strings standing
+/// in when the server cannot be reached.
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
@@ -63,7 +65,7 @@ class AboutScreen extends StatelessWidget {
                             'Interface Using Human-Centered Design Principles',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.55, color: AppColors.ink),
                           ),
-                          for (final a in MockContent.about)
+                          for (final a in context.watch<AppContent>().about)
                             Padding(
                               padding: const EdgeInsets.only(top: 10),
                               child: Container(
@@ -113,7 +115,7 @@ class AboutScreen extends StatelessWidget {
                         children: [
                           const Text('Accessibility summary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.navy)),
                           const SizedBox(height: 10),
-                          for (final line in MockContent.accessibilitySummary)
+                          for (final line in context.watch<AppContent>().accessibilitySummary)
                             Padding(
                               padding: const EdgeInsets.only(bottom: 9),
                               child: Row(

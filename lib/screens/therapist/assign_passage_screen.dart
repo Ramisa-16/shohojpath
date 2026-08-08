@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../data/mock_content.dart';
-import '../../services/reader_repository.dart';
+import '../../api/api_exception.dart';
+import '../../api/shohojpath_api.dart';
+import '../../models/passage.dart';
+import '../../services/passage_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_buttons.dart';
 import '../../widgets/app_header.dart';
@@ -26,7 +28,11 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
   String _category = 'All';
   String? _difficulty;
   Set<String> _assigned = {};
+  List<Passage> _passages = const [];
+  List<String> _categories = const ['All'];
+  static const List<String> _difficulties = ['Easy', 'Medium', 'Hard'];
   bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -34,42 +40,71 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
     _load();
   }
 
+  /// The catalogue and what is already set for this reader, both from the
+  /// server — a therapist must be assigning from the same library the
+  /// reader will actually see, not a list compiled into the app.
   Future<void> _load() async {
-    final ids = await context.read<ReaderRepository>().assignedPassageIds(widget.participantId);
-    if (!mounted) return;
-    setState(() {
-      _assigned = ids.toSet();
-      _loading = false;
-    });
-  }
-
-  String _idFor(LibraryEntry e) => e.passage?.id ?? e.title;
-
-  Future<void> _toggle(LibraryEntry e) async {
-    final id = _idFor(e);
-    final repo = context.read<ReaderRepository>();
-    if (_assigned.contains(id)) {
-      await repo.unassignPassage(widget.participantId, id);
+    final api = context.read<ShohojpathApi>();
+    try {
+      final passages = await context.read<PassageRepository>().library();
+      final assignments = await api.readerAssignments(widget.participantId);
       if (!mounted) return;
-      setState(() => _assigned.remove(id));
-    } else {
-      await repo.assignPassage(widget.participantId, id);
+      setState(() {
+        _passages = passages;
+        _categories = {'All', for (final p in passages) p.category}.toList();
+        _assigned = {
+          for (final a in assignments) a['passage_id'] as String,
+        };
+        _loading = false;
+        _error = null;
+      });
+    } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => _assigned.add(id));
+      setState(() {
+        _loading = false;
+        _error = e.message;
+      });
     }
   }
 
-  bool _matchesCategory(LibraryEntry e) {
-    if (_category == 'All') return true;
-    return e.category.toLowerCase().contains(_category.toLowerCase());
+  Future<void> _toggle(Passage passage) async {
+    final id = passage.id;
+    final api = context.read<ShohojpathApi>();
+    final wasAssigned = _assigned.contains(id);
+
+    // Optimistic, then reverted on failure: tapping a row should feel
+    // immediate, but a failed request must not leave the tick showing a
+    // state the server never accepted.
+    setState(() => wasAssigned ? _assigned.remove(id) : _assigned.add(id));
+    try {
+      if (wasAssigned) {
+        await api.unassignPassage(widget.participantId, id);
+      } else {
+        await api.assignPassage(
+          participantId: widget.participantId,
+          passageId: id,
+        );
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => wasAssigned ? _assigned.add(id) : _assigned.remove(id));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
+    }
   }
 
-  bool _matchesDifficulty(LibraryEntry e) => _difficulty == null || e.level == _difficulty;
+  bool _matchesCategory(Passage p) =>
+      _category == 'All' ||
+      p.category.toLowerCase().contains(_category.toLowerCase());
+
+  bool _matchesDifficulty(Passage p) =>
+      _difficulty == null ||
+      p.difficulty.label.toLowerCase() == _difficulty!.toLowerCase();
 
   @override
   Widget build(BuildContext context) {
-    final results = MockContent.library
-        .where((e) => _matchesCategory(e) && _matchesDifficulty(e))
+    final results = _passages
+        .where((p) => _matchesCategory(p) && _matchesDifficulty(p))
         .toList();
 
     return Scaffold(
@@ -84,10 +119,10 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
                 height: ChoiceTile.minHeight,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: MockContent.libraryCategories.length,
+                  itemCount: _categories.length,
                   separatorBuilder: (_, _) => const SizedBox(width: 7),
                   itemBuilder: (context, i) {
-                    final c = MockContent.libraryCategories[i];
+                    final c = _categories[i];
                     return ChoiceTile(
                       label: c,
                       selected: _category == c,
@@ -116,10 +151,10 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
                     height: ChoiceTile.minHeight,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
-                      itemCount: MockContent.libraryDifficulties.length,
+                      itemCount: _difficulties.length,
                       separatorBuilder: (_, _) => const SizedBox(width: 6),
                       itemBuilder: (context, i) {
-                        final d = MockContent.libraryDifficulties[i];
+                        final d = _difficulties[i];
                         final selected = _difficulty == d;
                         return ChoiceTile(
                           label: d,
@@ -146,6 +181,21 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
                 color: AppColors.canvas,
                 child: _loading
                     ? const Center(child: CircularProgressIndicator())
+                    : _error != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Text(
+                            _error!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              height: 1.6,
+                              color: AppColors.danger,
+                            ),
+                          ),
+                        ),
+                      )
                     : results.isEmpty
                         ? const Center(
                             child: Text('No passages match these filters.', style: TextStyle(fontSize: 15, color: AppColors.muted)),
@@ -156,7 +206,7 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
                             separatorBuilder: (_, _) => const SizedBox(height: 11),
                             itemBuilder: (context, i) {
                               final entry = results[i];
-                              final isAssigned = _assigned.contains(_idFor(entry));
+                              final isAssigned = _assigned.contains(entry.id);
                               return WhiteCard(
                                 onTap: () => _toggle(entry),
                                 child: Row(
@@ -186,8 +236,8 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
                                           Wrap(
                                             spacing: 6,
                                             children: [
-                                              _Tag(entry.time, AppColors.navyTint, AppColors.navy),
-                                              _Tag(entry.level, AppColors.tealTint, AppColors.tealDeep),
+                                              _Tag('${entry.estimatedMinutes} min', AppColors.navyTint, AppColors.navy),
+                                              _Tag(entry.difficulty.label, AppColors.tealTint, AppColors.tealDeep),
                                             ],
                                           ),
                                         ],

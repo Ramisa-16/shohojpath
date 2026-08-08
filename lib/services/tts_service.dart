@@ -228,17 +228,26 @@ class TtsService extends ChangeNotifier {
   /// Resumes a paused utterance from where it left off.
   Future<void> resume() async {
     if (!_paused || _fullText == null) return;
+
+    // Flipped before the await, not after: [init] turns on
+    // awaitSpeakCompletion, so `_tts.speak` does not resolve until the
+    // utterance *finishes*. Assigning the state afterwards would set
+    // `_speaking = true` at the moment playback ended — leaving the play/pause
+    // button stuck showing "pause" for the rest of the session.
+    _speaking = true;
+    _paused = false;
+    notifyListeners();
+
     try {
       // Handing the plugin the same full text it originally received is what
       // it uses to recognise this as a resume rather than a new utterance.
       await _tts.speak(_fullText!);
     } catch (e) {
       debugPrint('TTS resume failed: $e');
-      return;
+      _speaking = false;
+      _paused = true;
+      notifyListeners();
     }
-    _speaking = true;
-    _paused = false;
-    notifyListeners();
   }
 
   Future<void> stop() async {

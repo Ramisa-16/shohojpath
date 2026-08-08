@@ -53,12 +53,23 @@ void main() {
       expect(s.wordSpacingPx, closeTo(44 * 0.16, 0.0001));
     });
 
-    test('font size clamps to 12-72', () {
+    test('font size clamps to the configured bounds', () {
       final s = ReadingSettings();
       s.fontSize = 999;
-      expect(s.fontSize, 72);
+      expect(s.fontSize, ReadingSettings.maxFontSize);
       s.fontSize = 1;
-      expect(s.fontSize, 12);
+      expect(s.fontSize, ReadingSettings.minFontSize);
+    });
+
+    test('the maximum stays large enough to be worth offering', () {
+      // A low-vision reader asks for around 40 px; anything below that makes
+      // the control pointless. The ceiling exists to keep the UI usable, not
+      // to deny people the size they need.
+      expect(ReadingSettings.maxFontSize, greaterThanOrEqualTo(40));
+      expect(
+        ReadingSettings.maxFontSize,
+        greaterThan(ReadingPreset.customSeed.fontSize),
+      );
     });
 
     test('editing a value moves the participant into the Custom condition', () {

@@ -369,35 +369,46 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                             .fontSize =
                                                         v,
                                               ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
+                                              // Read from the bounds rather
+                                              // than typed in: these labels
+                                              // said "72 px" long after the
+                                              // maximum had changed. Expanded
+                                              // + alignment so they can never
+                                              // overflow the row at large
+                                              // text scales.
+                                              Row(
                                                 children: [
-                                                  Text(
-                                                    '12 px',
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                      color: AppColors.muted,
+                                                  Expanded(
+                                                    child: Text(
+                                                      '${ReadingSettings.minFontSize.round()} px',
+                                                      style: const TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color: AppColors.muted,
+                                                      ),
                                                     ),
                                                   ),
-                                                  Text(
-                                                    '72 px',
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                      color: AppColors.muted,
+                                                  Expanded(
+                                                    child: Text(
+                                                      '${ReadingSettings.maxFontSize.round()} px',
+                                                      textAlign:
+                                                          TextAlign.right,
+                                                      style: const TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color: AppColors.muted,
+                                                      ),
                                                     ),
                                                   ),
                                                 ],
                                               ),
                                               const SizedBox(height: 4),
                                               const Text(
-                                                'Applies to the whole app, not just '
-                                                'the passage.',
+                                                'Applies to the passage. Buttons and '
+                                                'labels grow with it up to a limit, so '
+                                                'the app stays usable.',
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   height: 1.5,

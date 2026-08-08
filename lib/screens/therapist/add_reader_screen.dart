@@ -1,17 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/reading_settings.dart';
-import '../../services/reader_repository.dart';
+import '../../api/api_exception.dart';
+import '../../api/shohojpath_api.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_buttons.dart';
-import '../../widgets/app_header.dart';
-import '../../widgets/settings_controls.dart';
+import '../../widgets/auth_form_field.dart';
 
-/// Screen `taddreader` of the v2 design — a therapist registering a new
-/// reader. Saving generates a real participant id and writes a real row via
-/// [ReaderRepository]; that id is what the reader then types into Login's
-/// Participant ID field to have their sessions attributed here.
+/// Screen `taddreader` — the directory of readers nobody has added yet.
+///
+/// The list only ever contains unclaimed readers: the moment any therapist
+/// adds someone they drop out of every other therapist's list, so two
+/// therapists can never unknowingly be working with the same participant.
+/// That rule is enforced on the server; this screen just reflects it.
 class AddReaderScreen extends StatefulWidget {
   const AddReaderScreen({super.key});
 
@@ -20,187 +23,401 @@ class AddReaderScreen extends StatefulWidget {
 }
 
 class _AddReaderScreenState extends State<AddReaderScreen> {
-  static const _startingProfileDescriptions = {
-    ReadingProfile.standard: 'Baseline — no reading aids, the study control.',
-    ReadingProfile.recommended: 'Evidence-based: audio, spacing, cream background.',
-    ReadingProfile.custom: 'A blank slate the reader tunes themselves.',
-  };
+  final _search = TextEditingController();
+  Timer? _debounce;
 
-  final _name = TextEditingController();
-  final _age = TextEditingController();
-  final _classGrade = TextEditingController();
-  final _school = TextEditingController();
-  final _notes = TextEditingController();
-  ReadingProfile _startingProfile = ReadingProfile.recommended;
-  bool _saving = false;
+  List<Map<String, dynamic>> _readers = const [];
+  bool _loading = true;
+  String? _error;
+
+  /// participant_ids currently being claimed, so a row shows a spinner and
+  /// cannot be double-tapped into two claim requests.
+  final Set<String> _claiming = {};
+
+  /// How many readers this visit added, shown on the way back so the
+  /// dashboard's roster count is not the only feedback.
+  int _addedCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
 
   @override
   void dispose() {
-    _name.dispose();
-    _age.dispose();
-    _classGrade.dispose();
-    _school.dispose();
-    _notes.dispose();
+    _debounce?.cancel();
+    _search.dispose();
     super.dispose();
   }
 
-  Future<void> _save() async {
-    final name = _name.text.trim();
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a name for this reader.')),
-      );
-      return;
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final results = await context.read<ShohojpathApi>().availableReaders(
+            search: _search.text.trim().isEmpty ? null : _search.text.trim(),
+          );
+      if (!mounted) return;
+      setState(() {
+        _readers = results;
+        _loading = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.message;
+        _loading = false;
+      });
     }
-    setState(() => _saving = true);
-    final repo = context.read<ReaderRepository>();
-    final existing = await repo.readerCount();
-    final participantId = 'P-${(existing + 1).toString().padLeft(2, '0')}';
-    await repo.addReader(
-      participantId: participantId,
-      name: name,
-      age: int.tryParse(_age.text.trim()),
-      classGrade: _classGrade.text.trim().isEmpty ? null : _classGrade.text.trim(),
-      school: _school.text.trim().isEmpty ? null : _school.text.trim(),
-      notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
-      startingProfile: _startingProfile,
-    );
+  }
+
+  void _onSearchChanged(String _) {
+    // Debounced: typing "Mitu" would otherwise fire four requests, and the
+    // slowest could land last and overwrite the right results.
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 350), _load);
+  }
+
+  Future<void> _add(Map<String, dynamic> reader) async {
+    final participantId = reader['participant_id'] as String;
+    final name = reader['display_name'] as String? ?? participantId;
+    setState(() => _claiming.add(participantId));
+
+    try {
+      await context.read<ShohojpathApi>().claimReader(participantId);
+      if (!mounted) return;
+      setState(() {
+        _readers = _readers
+            .where((r) => r['participant_id'] != participantId)
+            .toList();
+        _claiming.remove(participantId);
+        _addedCount++;
+      });
+      _toast('$name added. You can now see their progress.', AppColors.tealDeep);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _claiming.remove(participantId));
+
+      if (e.isConflict) {
+        // Someone else claimed them between this list loading and the tap.
+        // Dropping the row is the honest response — they are genuinely no
+        // longer available.
+        setState(() {
+          _readers = _readers
+              .where((r) => r['participant_id'] != participantId)
+              .toList();
+        });
+        _toast(
+          'Another therapist added $name first.',
+          AppColors.danger,
+        );
+      } else {
+        _toast(e.message, AppColors.danger);
+      }
+    }
+  }
+
+  void _toast(String message, Color colour) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$name added as $participantId.')),
-    );
-    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: colour,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Navigator.of(context).pop(_addedCount);
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.canvas,
+        appBar: AppBar(
+          title: const Text('Add a reader'),
+          actions: [
+            IconButton(
+              onPressed: _loading ? null : _load,
+              tooltip: 'Refresh',
+              icon: const Icon(Icons.refresh_rounded),
+            ),
+          ],
+        ),
+        body: Column(
           children: [
-            AppHeader(title: 'Add Reader', onBack: () => Navigator.of(context).maybePop()),
-            Expanded(
-              child: Container(
-                color: AppColors.canvas,
-                child: ListView(
-                  padding: const EdgeInsets.all(14),
-                  children: [
-                    _Field(label: 'Name', controller: _name, hint: 'সাদিয়া আক্তার'),
-                    const SizedBox(height: 13),
-                    // Two fields side by side only when there's genuinely
-                    // room for both at the current font size — otherwise
-                    // each gets the full width instead of being squeezed.
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final age = _Field(
-                          label: 'Age',
-                          controller: _age,
-                          hint: '10',
-                          keyboardType: TextInputType.number,
-                        );
-                        final classGrade = _Field(label: 'Class / Grade', controller: _classGrade, hint: 'Class 4');
-                        if (constraints.maxWidth < 280) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [age, const SizedBox(height: 13), classGrade],
-                          );
-                        }
-                        return Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(child: age),
-                            const SizedBox(width: 10),
-                            Expanded(child: classGrade),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 13),
-                    _Field(label: 'School (optional)', controller: _school, hint: 'Udayan Primary School'),
-                    const SizedBox(height: 13),
-                    _Field(
-                      label: 'Notes / observations',
-                      controller: _notes,
-                      hint: 'Referred by class teacher. Skips line endings, hesitates on conjuncts.',
-                      minLines: 3,
-                      maxLines: 5,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('Starting reading profile', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.body)),
-                    const SizedBox(height: 8),
-                    for (final profile in ReadingProfile.values) ...[
-                      ProfileOptionTile(
-                        title: profile.label,
-                        description: _startingProfileDescriptions[profile]!,
-                        selected: _startingProfile == profile,
-                        onTap: () => setState(() => _startingProfile = profile),
+            Container(
+              color: AppColors.navy,
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: AuthFormField(
+                label: '',
+                controller: _search,
+                icon: Icons.search_rounded,
+                hint: 'Search by name, ID or school',
+                onChanged: _onSearchChanged,
+                textInputAction: TextInputAction.search,
+                onSubmitted: (_) => _load(),
+                trailing: _search.text.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Clear search',
+                        icon: const Icon(Icons.close_rounded,
+                            size: 20, color: AppColors.muted),
+                        onPressed: () {
+                          _search.clear();
+                          _load();
+                        },
                       ),
-                      if (profile != ReadingProfile.values.last) const SizedBox(height: 8),
-                    ],
-                    const SizedBox(height: 18),
-                    PrimaryButton(
-                      label: 'Save Reader',
-                      backgroundColor: AppColors.teal,
-                      onPressed: _saving ? null : _save,
-                    ),
-                    const SizedBox(height: 10),
-                    SecondaryButton(
-                      label: 'Cancel',
-                      onPressed: () => Navigator.of(context).maybePop(),
-                    ),
-                  ],
-                ),
               ),
             ),
+            Expanded(child: _body()),
           ],
         ),
       ),
     );
   }
+
+  Widget _body() {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null) {
+      return _Message(
+        icon: Icons.cloud_off_rounded,
+        title: 'Could not load readers',
+        body: _error!,
+        action: PrimaryButton(label: 'Try again', onPressed: _load, expand: false),
+      );
+    }
+
+    if (_readers.isEmpty) {
+      final searching = _search.text.trim().isNotEmpty;
+      return _Message(
+        icon: searching ? Icons.search_off_rounded : Icons.groups_2_outlined,
+        title: searching ? 'No match' : 'Everyone has been added',
+        body: searching
+            ? 'No unassigned reader matches “${_search.text.trim()}”. They may '
+                'already be on another therapist\'s list.'
+            : 'Every reader who has signed up is already working with a '
+                'therapist. New sign-ups will appear here.',
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 20),
+        itemCount: _readers.length + 1,
+        separatorBuilder: (context, index) => const SizedBox(height: 10),
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(
+                '${_readers.length} reader${_readers.length == 1 ? '' : 's'} '
+                'available',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.84,
+                  color: AppColors.muted,
+                ),
+              ),
+            );
+          }
+          final reader = _readers[index - 1];
+          final id = reader['participant_id'] as String;
+          return _AvailableReaderRow(
+            reader: reader,
+            busy: _claiming.contains(id),
+            onAdd: () => _add(reader),
+          );
+        },
+      ),
+    );
+  }
 }
 
-class _Field extends StatelessWidget {
-  const _Field({
-    required this.label,
-    required this.controller,
-    this.hint,
-    this.keyboardType,
-    this.minLines,
-    this.maxLines = 1,
+class _AvailableReaderRow extends StatelessWidget {
+  const _AvailableReaderRow({
+    required this.reader,
+    required this.busy,
+    required this.onAdd,
   });
 
-  final String label;
-  final TextEditingController controller;
-  final String? hint;
-  final TextInputType? keyboardType;
-  final int? minLines;
-  final int maxLines;
+  final Map<String, dynamic> reader;
+  final bool busy;
+  final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.body)),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          minLines: minLines,
-          maxLines: maxLines,
-          style: const TextStyle(fontSize: 15, color: AppColors.ink),
-          decoration: InputDecoration(
-            hintText: hint,
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.borderStrong, width: 1.5),
+    final name = reader['display_name'] as String? ?? '—';
+    final participantId = reader['participant_id'] as String? ?? '';
+    final age = reader['age'] as int?;
+    final school = reader['school'] as String? ?? '';
+    final classGrade = reader['class_grade'] as String? ?? '';
+
+    final detail = [
+      if (age != null) 'Age $age',
+      if (classGrade.isNotEmpty) classGrade,
+      if (school.isNotEmpty) school,
+    ].join(' · ');
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(13),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: const BoxDecoration(
+              color: AppColors.tealTint,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              name.isEmpty ? '?' : name.characters.first,
+              style: const TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+                color: AppColors.tealDeep,
+              ),
             ),
           ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.ink,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  participantId,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.tealText,
+                  ),
+                ),
+                if (detail.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    detail,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.muted,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 92,
+            height: 44,
+            child: busy
+                ? const Center(
+                    child: SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2.5),
+                    ),
+                  )
+                : FilledButton.icon(
+                    onPressed: onAdd,
+                    icon: const Icon(Icons.add_rounded, size: 20),
+                    label: const Text('Add'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.navy,
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(92, 44),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(11),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Message extends StatelessWidget {
+  const _Message({
+    required this.icon,
+    required this.title,
+    required this.body,
+    this.action,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(30),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 52, color: AppColors.borderStrong),
+            const SizedBox(height: 14),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppColors.navy,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              body,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 15,
+                height: 1.6,
+                color: AppColors.body,
+              ),
+            ),
+            if (action != null) ...[const SizedBox(height: 18), action!],
+          ],
         ),
-      ],
+      ),
     );
   }
 }

@@ -35,7 +35,7 @@ class AppDatabase {
     final path = p.join(dir.path, 'shohojpath.db');
     final db = await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: (db, version) async {
         await _createSettingsTable(db);
         await _createSessionTables(db);
@@ -69,6 +69,15 @@ class AppDatabase {
           await db.rawUpdate(
             'UPDATE $readersTable SET name = ? WHERE name = participant_id',
             ['Guest'],
+          );
+        }
+        if (oldVersion < 6) {
+          // Sync bookkeeping. Null means "not yet acknowledged by the
+          // server", which is what [SyncService] queues on. Existing rows
+          // default to null so anything recorded before the backend existed
+          // gets uploaded on the first sync rather than being lost.
+          await db.execute(
+            'ALTER TABLE $sessionsTable ADD COLUMN synced_at TEXT',
           );
         }
       },
@@ -112,7 +121,8 @@ class AppDatabase {
         audio_help_stars INTEGER,
         helpful_settings TEXT,
         suggestion TEXT,
-        sus_score REAL
+        sus_score REAL,
+        synced_at TEXT
       )
     ''');
     await db.execute('''

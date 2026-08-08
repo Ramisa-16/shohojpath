@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/quiz_bank.dart';
+import '../services/passage_repository.dart';
 import '../models/quiz_question.dart';
 import '../models/study_session.dart';
 import '../services/session_logger.dart';
@@ -25,12 +26,24 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
-  late final List<QuizQuestion> _questions = QuizBank.forPassage(widget.session.passage.id);
+  /// Authored in the admin and fetched with the passage, so the researcher can
+  /// change the questions without shipping a new APK. Falls back to the
+  /// bundled bank when the server has none for this passage yet — a
+  /// participant who has just finished reading must not hit a dead end.
+  late final List<QuizQuestion> _questions = _resolveQuestions();
   int _index = 0;
   int? _selected;
   final Stopwatch _questionTimer = Stopwatch()..start();
 
   QuizQuestion get _question => _questions[_index];
+
+  List<QuizQuestion> _resolveQuestions() {
+    final fromServer = context
+        .read<PassageRepository>()
+        .questionsFor(widget.session.passage.id);
+    if (fromServer.isNotEmpty) return fromServer;
+    return QuizBank.forPassage(widget.session.passage.id);
+  }
 
   void _select(int optionIndex) {
     setState(() => _selected = optionIndex);

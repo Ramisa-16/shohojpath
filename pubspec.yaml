@@ -24,6 +24,14 @@ dependencies:
   # CSV export of session data for research analysis
   share_plus: ^12.0.0
 
+  # Backend: REST calls to the Django API
+  http: ^1.2.2
+  # JWTs are children's-data credentials, so they go in the Android keystore
+  # rather than plain SharedPreferences.
+  flutter_secure_storage: ^9.2.2
+  # Drives the sync queue: flush as soon as a connection comes back
+  connectivity_plus: ^6.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

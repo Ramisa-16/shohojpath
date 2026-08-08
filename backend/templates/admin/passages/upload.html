@@ -1,0 +1,40 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  <h1>Upload passages</h1>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="submit-row">
+      <input type="submit" value="Upload" class="default">
+      <a href="{% url 'admin:passages_passage_changelist' %}" class="button cancel-link">Cancel</a>
+    </div>
+  </form>
+
+  <h2>Expected format</h2>
+  <p>A single passage object, or a list of them. Each page is a list of paragraph strings.</p>
+  <pre style="background:#f6f8fa;padding:14px;border-radius:6px;overflow:auto">[
+  {
+    "slug": "bristir_dine_mitu",
+    "title": "বৃষ্টির দিনে মিতু",
+    "category": "Children Stories",
+    "difficulty": "easy",
+    "estimated_minutes": 3,
+    "is_published": true,
+    "pages": [
+      [
+        "একদিন সকালে ছোট্ট মেয়ে মিতু জানালার পাশে বসে ছিল।",
+        "হঠাৎ মিতু দেখল, একটা ছোট পাখি ভিজে গিয়ে বারান্দার কোণে বসে আছে।"
+      ],
+      [
+        "পাখিটার ডানা দুটো ভিজে ভারী হয়ে গেছে।"
+      ]
+    ]
+  }
+]</pre>
+  <p>
+    Re-uploading a slug that already exists replaces its pages completely, so
+    the file is always the full current version of that passage.
+  </p>
+{% endblock %}

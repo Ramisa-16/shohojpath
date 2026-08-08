@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../app/participant_state.dart';
 import '../../models/reading_settings.dart';
+import '../../api/shohojpath_api.dart';
 import '../../services/reader_profile_loader.dart';
 import '../../services/reader_repository.dart';
 import '../../services/session_logger.dart';
@@ -71,103 +72,92 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
     });
   }
 
+  /// The therapist's roster, from the server.
+  ///
+  /// One request rather than one per reader: `/api/therapist/readers-summary/`
+  /// returns a row per reader already aggregated, so a therapist with twenty
+  /// readers does not wait on twenty round trips to a host that may be waking
+  /// from sleep.
   Future<List<_ReaderRow>> _buildRoster() async {
-    final readerRepo = context.read<ReaderRepository>();
-    final logger = context.read<SessionLogger>();
+    final api = context.read<ShohojpathApi>();
 
-    final readers = await readerRepo.allReaders();
-    _readerCount = readers.length;
-    _sessionsThisWeek =
-        await logger.sessionsSince(DateTime.now().subtract(const Duration(days: 7)));
-    _susAverage = await logger.averageSusScore();
+    final overview = await api.therapistOverview();
+    final summary = await api.therapistReaderSummary();
 
-    final rows = <_ReaderRow>[];
-    for (final reader in readers) {
-      final participantId = reader['participant_id'] as String;
-      final sessions = await logger.sessionsFor(participantId);
+    _readerCount = (overview['reader_count'] as num?)?.toInt() ?? summary.length;
+    _sessionsThisWeek = (overview['sessions_this_week'] as num?)?.toInt() ?? 0;
+    // Not part of the overview payload; left null so the tile shows an em dash
+    // rather than a number the server never sent.
+    _susAverage = null;
 
-      String lastActiveLabel = 'Never';
-      String wpmLabel = '—';
-      String accuracyLabel = '—';
-      double accuracyFraction = 0;
-      String statusLabel = 'No recent activity';
-      Color statusColor = AppColors.muted;
-
-      if (sessions.isNotEmpty) {
-        final latest = sessions.first;
-        final startedAt = DateTime.tryParse(latest['started_at'] as String? ?? '');
-        if (startedAt != null) {
-          lastActiveLabel = _relativeDate(startedAt);
-          final daysSince = DateTime.now().difference(startedAt).inDays;
-          if (daysSince <= 7) {
-            statusLabel = 'Improving';
-            statusColor = AppColors.teal;
-          }
-        }
-
-        final seconds = (latest['total_reading_seconds'] as num?)?.toDouble();
-        final words = (latest['words_read'] as num?)?.toInt();
-        if (seconds != null && seconds > 0 && words != null) {
-          wpmLabel = '${(words / seconds * 60).round()} wpm';
-        }
-
-        final quizScore = (latest['quiz_score'] as num?)?.toInt();
-        final quizTotal = (latest['quiz_total'] as num?)?.toInt();
-        if (quizScore != null && quizTotal != null && quizTotal > 0) {
-          accuracyFraction = quizScore / quizTotal;
-          accuracyLabel = '${(accuracyFraction * 100).round()}%';
-
-          if (sessions.length > 1) {
-            final prev = sessions[1];
-            final prevScore = (prev['quiz_score'] as num?)?.toInt();
-            final prevTotal = (prev['quiz_total'] as num?)?.toInt();
-            if (prevScore != null && prevTotal != null && prevTotal > 0) {
-              final prevFraction = prevScore / prevTotal;
-              if (accuracyFraction < prevFraction) {
-                statusLabel = 'Accuracy dropping';
-                statusColor = AppColors.focus;
-              }
-            }
-          }
-        }
-      }
-
-      final age = reader['age'];
-      final classGrade = reader['class_grade'] as String?;
-      final metaParts = [
-        if (age != null) 'Age $age',
-        if (classGrade != null && classGrade.isNotEmpty) classGrade,
-      ];
-
-      rows.add(
-        _ReaderRow(
-          participantId: participantId,
-          name: reader['name'] as String? ?? participantId,
-          meta: metaParts.isEmpty ? participantId : metaParts.join(' · '),
-          lastActiveLabel: lastActiveLabel,
-          wpmLabel: wpmLabel,
-          accuracyLabel: accuracyLabel,
-          accuracyFraction: accuracyFraction,
-          statusLabel: statusLabel,
-          statusColor: statusColor,
-        ),
-      );
-    }
-    return rows;
+    return summary.map(_rowFrom).toList();
   }
 
-  static String _relativeDate(DateTime at) {
-    final days = DateTime.now().difference(at).inDays;
+  _ReaderRow _rowFrom(Map<String, dynamic> reader) {
+    final participantId = reader['participant_id'] as String? ?? '';
+    final name = reader['display_name'] as String? ?? participantId;
+    final age = reader['age'];
+    final sessionsTotal = (reader['sessions_total'] as num?)?.toInt() ?? 0;
+    final sessionsWeek = (reader['sessions_this_week'] as num?)?.toInt() ?? 0;
+    final minutesTotal = (reader['minutes_total'] as num?)?.toDouble() ?? 0;
+    final lastReadAt = DateTime.tryParse(reader['last_read_at'] as String? ?? '');
+
+    var lastActiveLabel = 'Never';
+    var statusLabel = 'No sessions yet';
+    var statusColor = AppColors.muted;
+
+    if (lastReadAt != null) {
+      lastActiveLabel = _relativeDate(lastReadAt.toLocal());
+      final daysSince = DateTime.now().difference(lastReadAt.toLocal()).inDays;
+      if (daysSince <= 7) {
+        statusLabel = sessionsWeek > 1 ? 'Reading regularly' : 'Active';
+        statusColor = AppColors.teal;
+      } else if (daysSince <= 21) {
+        statusLabel = 'Quiet lately';
+        statusColor = AppColors.focus;
+      } else {
+        statusLabel = 'Inactive';
+        statusColor = AppColors.danger;
+      }
+    }
+
+    final metaParts = [
+      if (age != null) 'Age $age',
+      if (sessionsTotal > 0)
+        '$sessionsTotal session${sessionsTotal == 1 ? '' : 's'}',
+    ];
+
+    return _ReaderRow(
+      participantId: participantId,
+      name: name,
+      meta: metaParts.join(' · '),
+      lastActiveLabel: lastActiveLabel,
+      wpmLabel: minutesTotal <= 0
+          ? '—'
+          : '${minutesTotal.toStringAsFixed(0)} min total',
+      accuracyLabel: sessionsWeek == 0 ? '—' : '$sessionsWeek this week',
+      // Bar reflects activity this week against a five-session target, since
+      // the summary carries no per-quiz accuracy.
+      accuracyFraction: (sessionsWeek / 5).clamp(0.0, 1.0),
+      statusLabel: statusLabel,
+      statusColor: statusColor,
+    );
+  }
+
+  /// "3 days ago" rather than a date: a therapist scanning a roster is
+  /// judging recency, not looking anything up by calendar day.
+  static String _relativeDate(DateTime when) {
+    final now = DateTime.now();
+    final days = DateTime(now.year, now.month, now.day)
+        .difference(DateTime(when.year, when.month, when.day))
+        .inDays;
     if (days <= 0) return 'Today';
     if (days == 1) return 'Yesterday';
-    return '$days days ago';
+    if (days < 7) return '$days days ago';
+    if (days < 30) return '${(days / 7).floor()} week(s) ago';
+    return '${when.day}/${when.month}/${when.year}';
   }
 
-  /// Asks which reading condition this session runs under before doing
-  /// anything else — a research-integrity gate, not a formality: Default
-  /// and Recommended lock the settings for the whole session, since a
-  /// reader who tweaks them mid-session has quietly left the condition the
-  /// logged data is supposed to represent.
   Future<void> _promptStartSession(String participantId, String name) async {
     final condition = await showStartSessionSheet(context, name: name, participantId: participantId);
     if (condition == null || !mounted) return;

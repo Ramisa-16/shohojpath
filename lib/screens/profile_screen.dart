@@ -1,15 +1,125 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../data/mock_content.dart';
+import '../api/shohojpath_api.dart';
+import '../app/auth_state.dart';
+import '../app/participant_state.dart';
 import '../theme/app_colors.dart';
+import '../widgets/api_data.dart';
 import '../widgets/app_buttons.dart';
+import '../widgets/therapist_password_dialog.dart';
 import 'app_settings_screen.dart';
 import 'history_screen.dart';
+import 'login_screen.dart';
 import 'statistics_screen.dart';
 
 /// Screen 15 of the design — the Profile tab of [HomeShell].
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  static String _displayName(BuildContext context) {
+    final auth = context.watch<AuthState>();
+    if ((auth.fullName ?? '').isNotEmpty) return auth.fullName!;
+    final participant = context.watch<ParticipantState>();
+    if (participant.displayName.isNotEmpty) return participant.displayName;
+    return 'Guest reader';
+  }
+
+  static String _initials(BuildContext context) {
+    final name = _displayName(context).trim();
+    if (name.isEmpty) return '?';
+    final parts = name.split(RegExp(r'\s+'));
+    if (parts.length == 1) return parts.first.characters.first.toUpperCase();
+    return (parts.first.characters.first + parts.last.characters.first)
+        .toUpperCase();
+  }
+
+  /// Falls back to the local participant id when signed out, so a guest still
+  /// sees which id their sessions are being filed under.
+  static String _subtitle(BuildContext context) {
+    final auth = context.watch<AuthState>();
+    final participant = context.watch<ParticipantState>();
+    final id = auth.participantId ?? participant.participantId;
+    final role = auth.isSignedIn ? 'Reader' : 'Guest';
+    return id.isEmpty ? role : '$role · $id';
+  }
+
+  /// Signs the reader out and returns to Login.
+  ///
+  /// A supervised session is password-gated, exactly like "End session" on
+  /// [TherapistSessionBanner]: the therapist started this session and owns
+  /// when it ends, so a reader must not be able to leave it — and reach the
+  /// Login screen — on their own. Without the gate this button would be a way
+  /// around the condition lock.
+  Future<void> _logOut(BuildContext context) async {
+    final participant = context.read<ParticipantState>();
+    final auth = context.read<AuthState>();
+    // Captured before the dialog: reaching back through `context` after an
+    // await is what `use_build_context_synchronously` warns about, and this
+    // route rebuilds the tree from the root.
+    final navigator = Navigator.of(context);
+
+    final bool confirmed;
+    if (participant.isSupervisedByTherapist) {
+      confirmed = await showTherapistPasswordDialog(
+        context,
+        title: 'Log out',
+        description: "This session was started by a therapist. Enter the "
+            "therapist's password to log out.",
+        confirmLabel: 'Log out',
+      );
+    } else {
+      confirmed = await _confirmLogOut(context);
+    }
+    if (!confirmed) return;
+
+    // AuthState.signOut, not just ParticipantState.signOut: the latter only
+    // clears the in-memory identity. The JWT would stay in the keystore and
+    // AuthState.restore() would sign this reader straight back in on the next
+    // launch — a logout that does not survive a restart is not a logout, and
+    // on a device handed between participants it is a data-attribution bug.
+    await auth.signOut();
+    // pushAndRemoveUntil, not push: the reader's screens hold the previous
+    // participant's context, and leaving them on the stack would let Back
+    // walk straight into another participant's data.
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
+  Future<bool> _confirmLogOut(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Log out?',
+          style: TextStyle(
+            fontSize: 19,
+            fontWeight: FontWeight.w800,
+            color: AppColors.navy,
+          ),
+        ),
+        content: const Text(
+          'Your reading settings and progress stay saved on this device. '
+          'You will need to sign in again to continue reading.',
+          style: TextStyle(fontSize: 15, height: 1.55, color: AppColors.body),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            child: const Text('Log out'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +153,10 @@ class ProfileScreen extends StatelessWidget {
                         color: AppColors.teal,
                         shape: BoxShape.circle,
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
-                          'MR',
-                          style: TextStyle(
+                          _initials(context),
+                          style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
@@ -57,21 +167,21 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(width: 14),
                     // Expanded: the name/ID line must never be squeezed off
                     // by the fixed-width avatar without anywhere to wrap.
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Mitu Rahman',
-                            style: TextStyle(
+                            _displayName(context),
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
                             ),
                           ),
                           Text(
-                            'Age 11 · Reader · P-04',
-                            style: TextStyle(
+                            _subtitle(context),
+                            style: const TextStyle(
                               fontSize: 15,
                               color: AppColors.onNavyMuted,
                             ),
@@ -91,59 +201,13 @@ class ProfileScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(14),
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (final pref in MockContent.profilePrefs) ...[
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: pref == MockContent.profilePrefs.last
-                              ? null
-                              : const BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: AppColors.divider,
-                                    ),
-                                  ),
-                                ),
-                          // Stacked and left-aligned, not a Row with a
-                          // right-aligned value: a value like "Noto Sans
-                          // Bengali" wraps to two lines at large font sizes,
-                          // and right-aligned wrapped text gives a ragged
-                          // left edge that's harder to track — exactly what
-                          // this app's typography is meant to avoid.
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                pref.key,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  color: AppColors.body,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                pref.value,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.navy,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
+                SizedBox(
+                  height: 250,
+                  child: ApiData<Map<String, dynamic>>(
+                    load: context.read<ShohojpathApi>().myProfile,
+                    padding: EdgeInsets.zero,
+                    builder: (context, profile, refresh) =>
+                        _PreferenceCard(profile: profile),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -170,6 +234,13 @@ class ProfileScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (_) => const AppSettingsScreen()),
                   ),
                 ),
+                const SizedBox(height: 18),
+                SecondaryButton(
+                  label: 'Log out',
+                  icon: Icons.logout_rounded,
+                  color: AppColors.danger,
+                  onPressed: () => _logOut(context),
+                ),
               ],
             ),
           ),
@@ -177,4 +248,91 @@ class ProfileScreen extends StatelessWidget {
       ],
     );
   }
+}
+
+/// The reader's own details, from `/api/me/profile/`.
+///
+/// Replaces the hard-coded preference rows: a participant looking at this
+/// screen should see who the study actually has them recorded as, including
+/// which therapist they are working with.
+class _PreferenceCard extends StatelessWidget {
+  const _PreferenceCard({required this.profile});
+
+  final Map<String, dynamic> profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final age = profile['age'];
+    final therapist = profile['therapist_name'] as String?;
+
+    final rows = <(String, String)>[
+      ('Participant ID', profile['participant_id'] as String? ?? '—'),
+      ('Email', profile['email'] as String? ?? 'No account'),
+      if (age != null) ('Age', '$age'),
+      if ((profile['class_grade'] as String? ?? '').isNotEmpty)
+        ('Class', profile['class_grade'] as String),
+      if ((profile['school'] as String? ?? '').isNotEmpty)
+        ('School', profile['school'] as String),
+      (
+        'Reading profile',
+        _profileLabel(profile['starting_profile'] as String? ?? ''),
+      ),
+      ('Therapist', therapist ?? 'Not assigned yet'),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: ListView.builder(
+        padding: EdgeInsets.zero,
+        itemCount: rows.length,
+        itemBuilder: (context, i) {
+          final (label, value) = rows[i];
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: i == rows.length - 1
+                ? null
+                : const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: AppColors.divider),
+                    ),
+                  ),
+            // Stacked and left-aligned, not a right-aligned Row: a long value
+            // wraps to two lines at large font sizes, and right-aligned
+            // wrapped text gives a ragged left edge that is harder to track.
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(fontSize: 15, color: AppColors.body),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.navy,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  static String _profileLabel(String id) => switch (id) {
+        'default' => 'Default',
+        'recommended' => 'Recommended',
+        'custom' => 'Custom',
+        _ => '—',
+      };
 }

@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/study_session.dart';
 import '../services/session_logger.dart';
+import '../services/sync_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/app_header.dart';
@@ -105,10 +108,23 @@ class _NasaTlxScreenState extends State<NasaTlxScreen> {
                     ],
                     PrimaryButton(
                       label: 'Submit session',
-                      onPressed: () {
-                        context.read<SessionLogger>().logTlx(session.sessionId, session.tlx);
+                      onPressed: () async {
+                        await context
+                            .read<SessionLogger>()
+                            .logTlx(session.sessionId, session.tlx);
+                        if (!context.mounted) return;
+
+                        // The session is complete on disk; push it now rather
+                        // than waiting for the next connectivity change, so a
+                        // therapist can see it while the participant is still
+                        // in the room. Not awaited — a sleeping server must
+                        // never hold up the Thank You screen.
+                        unawaited(context.read<SyncService>().syncNow());
+
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => ThankYouScreen(session: session)),
+                          MaterialPageRoute(
+                            builder: (_) => ThankYouScreen(session: session),
+                          ),
                         );
                       },
                     ),

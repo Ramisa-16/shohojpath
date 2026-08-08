@@ -4,13 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import 'api/api_client.dart';
+import 'api/shohojpath_api.dart';
 import 'app/app_nav_state.dart';
+import 'app/auth_state.dart';
 import 'app/participant_state.dart';
 import 'models/reading_settings.dart';
 import 'screens/splash_screen.dart';
 import 'services/app_config_repository.dart';
 import 'services/reader_repository.dart';
+import 'services/app_content.dart';
+import 'services/passage_repository.dart';
 import 'services/session_logger.dart';
+import 'services/sync_service.dart';
 import 'services/settings_repository.dart';
 import 'services/tts_service.dart';
 import 'theme/app_theme.dart';
@@ -105,6 +111,38 @@ class ShohojpathApp extends StatelessWidget {
         Provider.value(value: settingsRepository),
         Provider(create: (_) => ReaderRepository()),
         Provider(create: (_) => AppConfigRepository()),
+
+        // ---- Backend ----------------------------------------------------
+        // One ApiClient for the whole app: it owns the token store and the
+        // refresh-and-retry, and a second instance would refresh in parallel
+        // and invalidate the first one's rotated refresh token.
+        Provider(create: (_) => ApiClient(), dispose: (_, c) => c.close()),
+        ProxyProvider<ApiClient, ShohojpathApi>(
+          update: (context, client, previous) => ShohojpathApi(client),
+        ),
+        // Study material, fetched once and cached — so a reading session never
+        // depends on the network being up at the moment it starts.
+        ProxyProvider<ShohojpathApi, PassageRepository>(
+          update: (context, api, previous) => previous ?? PassageRepository(api),
+        ),
+        // Help/About copy, editable in the admin. Loaded once at startup with
+        // the bundled strings standing in until it arrives.
+        ChangeNotifierProxyProvider<ShohojpathApi, AppContent>(
+          create: (context) => AppContent(context.read<ShohojpathApi>())..load(),
+          update: (context, api, existing) => existing!,
+        ),
+        ChangeNotifierProxyProvider<ShohojpathApi, AuthState>(
+          create: (context) => AuthState(
+            api: ShohojpathApi(context.read<ApiClient>()),
+            participant: participant,
+          )..restore(),
+          update: (context, api, existing) => existing!,
+        ),
+        ChangeNotifierProxyProvider<ShohojpathApi, SyncService>(
+          create: (context) =>
+              SyncService(api: context.read<ShohojpathApi>())..start(),
+          update: (context, api, existing) => existing!,
+        ),
       ],
       child: MaterialApp(
         title: 'সহজপাঠ · Shohojpath',
@@ -126,9 +164,21 @@ class ShohojpathApp extends StatelessWidget {
           final isTherapist = context.watch<ParticipantState>().isTherapist;
           final fontSize = context.watch<ReadingSettings>().fontSize;
           final effectiveFontSize = isTherapist ? 16.0 : fontSize;
+
+          // Clamped, and this matters: the *passage* is not scaled here at all
+          // — BanglaPassage lays out with noScaling and an explicit fontSize,
+          // so a reader still gets the exact size they chose where they are
+          // actually reading. This scaler only grows the chrome (headers,
+          // buttons, the settings panel itself). Unclamped it grew everything
+          // by fontSize/16, which at the old 72 px maximum was 4.5x: the
+          // Reading Settings title wrapped over three lines, the slider labels
+          // overflowed, and there was no longer any way to reach the control
+          // that would turn the size back down.
+          final chromeScale = (effectiveFontSize / 16.0).clamp(1.0, 1.5);
+
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(effectiveFontSize / 16.0),
+              textScaler: TextScaler.linear(chromeScale),
             ),
             child: child ?? const SizedBox.shrink(),
           );

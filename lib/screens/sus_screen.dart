@@ -24,21 +24,6 @@ class SusScreen extends StatefulWidget {
 }
 
 class _SusScreenState extends State<SusScreen> {
-  static const _items = [
-    'I think that I would like to use this app frequently.',
-    'I found the app unnecessarily complex.',
-    'I thought the app was easy to use.',
-    'I think that I would need the support of a technical person to be able '
-        'to use this app.',
-    'I found the various functions in this app were well integrated.',
-    'I thought there was too much inconsistency in this app.',
-    'I would imagine that most people would learn to use this app very '
-        'quickly.',
-    'I found the app very cumbersome to use.',
-    'I felt very confident using the app.',
-    'I needed to learn a lot of things before I could get going with this '
-        'app.',
-  ];
 
   void _answer(int index, int rating) {
     setState(() => widget.session.susAnswers[index] = rating);
@@ -46,6 +31,9 @@ class _SusScreenState extends State<SusScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
+    final items = t.susItems;
+
     final session = widget.session;
     final score = session.susScore;
 
@@ -55,8 +43,8 @@ class _SusScreenState extends State<SusScreen> {
           children: [
             const TherapistSessionBanner(),
             AppHeader(
-              title: 'System Usability Scale',
-              subtitle: '10 statements · 1 = strongly disagree',
+              title: t.susTitle,
+              subtitle: t.susSubtitle,
               onBack: () => Navigator.of(context).maybePop(),
             ),
             Expanded(
@@ -65,7 +53,7 @@ class _SusScreenState extends State<SusScreen> {
                 child: ListView(
                   padding: const EdgeInsets.all(14),
                   children: [
-                    for (var i = 0; i < _items.length; i++) ...[
+                    for (var i = 0; i < items.length; i++) ...[
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(14),
@@ -86,7 +74,7 @@ class _SusScreenState extends State<SusScreen> {
                                 ),
                                 const SizedBox(width: 9),
                                 Expanded(
-                                  child: Text(_items[i], style: const TextStyle(fontSize: 15, height: 1.5, color: AppColors.ink)),
+                                  child: Text(items[i], style: const TextStyle(fontSize: 15, height: 1.5, color: AppColors.ink)),
                                 ),
                               ],
                             ),
@@ -110,15 +98,15 @@ class _SusScreenState extends State<SusScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'LIVE SUS SCORE',
+                                Text(
+                                  t.susLiveScore,
                                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 0.6, color: AppColors.onNavyMuted),
                                 ),
                                 const SizedBox(height: 3),
                                 Text(
                                   session.susComplete
-                                      ? (score >= 68 ? 'Above the 68 benchmark' : 'Below the 68 benchmark')
-                                      : 'Answer all 10 to see the score',
+                                      ? (score >= 68 ? t.susAboveBenchmark : t.susBelowBenchmark)
+                                      : t.susAnswerAll,
                                   style: const TextStyle(fontSize: 15, color: AppColors.onNavyMuted),
                                 ),
                               ],
@@ -136,7 +124,7 @@ class _SusScreenState extends State<SusScreen> {
                     ),
                     const SizedBox(height: 14),
                     PrimaryButton(
-                      label: context.t.continueToTlx,
+                      label: t.continueToTlx,
                       backgroundColor: AppColors.tealText,
                       onPressed: session.susComplete
                           ? () {

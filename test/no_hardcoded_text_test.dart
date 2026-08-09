@@ -67,19 +67,43 @@ void main() {
     );
   });
 
-  test('the SUS and NASA-TLX instruments are still flagged as untranslated',
-      () {
-    // Deliberately NOT localised, and this test says so out loud rather than
-    // leaving it to be noticed. The SUS is a validated scale whose 68-point
-    // benchmark only holds for the wording it was validated in; an ad-hoc
-    // Bangla rendering would silently break comparison to that benchmark.
-    // Translating it is a supervisor's call, not a developer's.
-    final sus = File('lib/screens/sus_screen.dart').readAsStringSync();
+  test('the English SUS wording is Brooke\'s original, unedited', () {
+    // The 68-point benchmark this study compares against was established on
+    // this exact wording. An item reworded "for clarity" is a different
+    // instrument, and the comparison quietly stops meaning anything.
+    final strings = File('lib/l10n/app_strings.dart').readAsStringSync();
+
+    const original = [
+      'I think that I would like to use this app frequently.',
+      'I found the app unnecessarily complex.',
+      'I thought the app was easy to use.',
+      'I found the various functions in this app were well integrated.',
+      'I thought there was too much inconsistency in this app.',
+      'I found the app very cumbersome to use.',
+      'I felt very confident using the app.',
+    ];
+
+    for (final item in original) {
+      expect(strings.contains(item), isTrue, reason: 'SUS item reworded: $item');
+    }
+  });
+
+  test('the Bangla SUS is present and scored the same way', () {
+    // A working translation supplied by the research team, NOT a validated
+    // one — it has had no forward/back translation or pilot. Scores from it
+    // must be reported as coming from a non-validated translation rather than
+    // held against 68 as though nothing changed. This test exists so that
+    // caveat stays attached to the code.
+    final strings = File('lib/l10n/app_strings.dart').readAsStringSync();
+
     expect(
-      sus.contains('I think that I would like to use this app frequently.'),
+      strings.contains('আমার মনে হয় আমি এই অ্যাপটি ঘনঘন ব্যবহার করতে চাইবো।'),
       isTrue,
-      reason: 'If the SUS has been translated, retire this test and record '
-          'which validated Bangla version was used.',
+    );
+    expect(
+      strings.contains('non-validated'),
+      isTrue,
+      reason: 'the caveat must stay next to the translation',
     );
   });
 }

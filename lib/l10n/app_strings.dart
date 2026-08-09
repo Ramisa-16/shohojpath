@@ -757,6 +757,62 @@ class AppStrings {
         'বন্ধ — থেরাপিস্টই সব সেশন শুরু করবেন',
         'Off — therapist starts all sessions',
       );
+
+  // ---- System Usability Scale ---------------------------------------------
+
+  /// The ten SUS statements.
+  ///
+  /// The English is Brooke's original wording, kept exactly: the 68-point
+  /// benchmark this study compares against was established on it, and an
+  /// edited item is no longer the same instrument. The Bangla is a working
+  /// translation supplied by the research team — it has not been through the
+  /// forward/back-translation and pilot that a validated version requires, so
+  /// scores from it must be reported as coming from a non-validated
+  /// translation rather than compared to 68 as though nothing changed.
+  List<String> get susItems => [
+        _s('আমার মনে হয় আমি এই অ্যাপটি ঘনঘন ব্যবহার করতে চাইবো।',
+            'I think that I would like to use this app frequently.'),
+        _s('অ্যাপটি আমার কাছে অপ্রয়োজনীয়ভাবে জটিল মনে হয়েছে।',
+            'I found the app unnecessarily complex.'),
+        _s('অ্যাপটি ব্যবহার করা বেশ সহজ ছিল।',
+            'I thought the app was easy to use.'),
+        _s(
+          'এই অ্যাপটি ঠিকঠাক চালাতে আমার কোনো টেকনিক্যাল মানুষের সাহায্য লাগবে।',
+          'I think that I would need the support of a technical person to be '
+              'able to use this app.',
+        ),
+        _s('অ্যাপের বিভিন্ন ফিচার ও ফাংশনগুলো খুব চমৎকারভাবে সাজানো আছে।',
+            'I found the various functions in this app were well integrated.'),
+        _s('আমার মনে হয়েছে এই অ্যাপটিতে অনেক অসামঞ্জস্য আছে।',
+            'I thought there was too much inconsistency in this app.'),
+        _s(
+          'আমার ধারণা বেশিরভাগ মানুষ খুব দ্রুত এই অ্যাপটি ব্যবহার করা শিখে যাবে।',
+          'I would imagine that most people would learn to use this app very '
+              'quickly.',
+        ),
+        _s('অ্যাপটি ব্যবহার করার সময় আমার কাছে এটি বেশ ঝামেলার মনে হয়েছে।',
+            'I found the app very cumbersome to use.'),
+        _s('অ্যাপটি ব্যবহার করার সময় আমি খুব আত্মবিশ্বাসী ছিলাম।',
+            'I felt very confident using the app.'),
+        _s(
+          'এই অ্যাপটি ব্যবহার শুরু করার আগে আমাকে অনেক কিছু শিখে নিতে হয়েছে।',
+          'I needed to learn a lot of things before I could get going with '
+              'this app.',
+        ),
+      ];
+
+  String get susTitle => _s('ব্যবহারযোগ্যতার মূল্যায়ন', 'System Usability Scale');
+  String get susSubtitle => _s(
+        '১০টি বাক্য · ১ = একদম দ্বিমত, ৫ = একদম একমত',
+        '10 statements · 1 = strongly disagree, 5 = strongly agree',
+      );
+  String get susLiveScore => _s('এখনকার SUS স্কোর', 'LIVE SUS SCORE');
+  String get susAboveBenchmark =>
+      _s('৬৮-এর বেঞ্চমার্কের ওপরে', 'Above the 68 benchmark');
+  String get susBelowBenchmark =>
+      _s('৬৮-এর বেঞ্চমার্কের নিচে', 'Below the 68 benchmark');
+  String get susAnswerAll =>
+      _s('স্কোর দেখতে ১০টিরই উত্তর দিন', 'Answer all 10 to see the score');
 }
 
 /// `context.t.startReading` at the call site.

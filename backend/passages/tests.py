@@ -400,6 +400,46 @@ class SeededPassageTests(APITestCase):
             self.assertLess(question.correct_index, len(question.options), str(question))
             self.assertTrue(question.prompt.strip(), str(question))
 
+    def test_the_answer_is_not_always_the_first_option(self):
+        # Authored with the correct option written first, 86 of 90 answers sat
+        # in slot 1: tapping the top choice scored 96% without reading, and
+        # comprehension_percent measured nothing at all.
+        from collections import Counter
+
+        mcq = QuizQuestion.objects.filter(kind="multiple_choice")
+        spread = Counter(mcq.values_list("correct_index", flat=True))
+        total = sum(spread.values())
+        self.assertGreater(total, 0)
+
+        for position, count in spread.items():
+            self.assertLess(
+                count / total,
+                0.45,
+                f"option {position + 1} holds {count} of {total} answers",
+            )
+
+    def test_true_and_false_statements_are_balanced(self):
+        # 24 of 28 were true, so answering সত্য to everything scored 86%.
+        tf = QuizQuestion.objects.filter(kind="true_false")
+        total = tf.count()
+        self.assertGreater(total, 0)
+
+        true_answers = tf.filter(correct_index=0).count()
+        share = true_answers / total
+        self.assertTrue(
+            0.35 <= share <= 0.65,
+            f"{true_answers} of {total} true/false answers are TRUE",
+        )
+
+    def test_guessing_cannot_beat_chance(self):
+        # The whole point of the quiz is to measure comprehension. If a
+        # strategy that ignores the passage scores well, it does not.
+        best = 0.0
+        for question in QuizQuestion.objects.all():
+            best += 1.0 / len(question.options)
+        rate = best / QuizQuestion.objects.count()
+        self.assertLess(rate, 0.45, f"random guessing scores {rate:.0%}")
+
     def test_paragraphs_survived_the_import_intact(self):
         for page in PassagePage.objects.all()[:40]:
             for paragraph in page.paragraphs:

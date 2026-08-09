@@ -61,12 +61,14 @@ Future<void> main() async {
   final logger = SessionLogger();
   settings.addChangeObserver(logger.logSettingsChange);
 
-  runApp(ShohojpathApp(
-    settings: settings,
-    logger: logger,
-    participant: participant,
-    settingsRepository: repository,
-  ));
+  runApp(
+    ShohojpathApp(
+      settings: settings,
+      logger: logger,
+      participant: participant,
+      settingsRepository: repository,
+    ),
+  );
 }
 
 /// Material's default overscroll effect wraps every scrollable in an
@@ -131,12 +133,14 @@ class ShohojpathApp extends StatelessWidget {
         // Study material, fetched once and cached — so a reading session never
         // depends on the network being up at the moment it starts.
         ProxyProvider<ShohojpathApi, PassageRepository>(
-          update: (context, api, previous) => previous ?? PassageRepository(api),
+          update: (context, api, previous) =>
+              previous ?? PassageRepository(api),
         ),
         // Help/About copy, editable in the admin. Loaded once at startup with
         // the bundled strings standing in until it arrives.
         ChangeNotifierProxyProvider<ShohojpathApi, AppContent>(
-          create: (context) => AppContent(context.read<ShohojpathApi>())..load(),
+          create: (context) =>
+              AppContent(context.read<ShohojpathApi>())..load(),
           update: (context, api, existing) => existing!,
         ),
         ChangeNotifierProxyProvider<ShohojpathApi, AuthState>(
@@ -152,58 +156,64 @@ class ShohojpathApp extends StatelessWidget {
           update: (context, api, existing) => existing!,
         ),
       ],
-      child: MaterialApp(
-        title: 'সহজপাঠ · Shohojpath',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light(),
-        scrollBehavior: const _NoOverscrollIndicator(),
-        // Lets a screen reload its numbers when the route above it is popped
-        // — see RefreshOnRouteReturn.
-        navigatorObservers: [appRouteObserver],
-        // Bangla is the default and the study language; English is here for
-        // supervisors. Driven by the in-app setting rather than the phone's
-        // locale, so a device left in English does not silently put an
-        // eleven-year-old through an English interface.
-        locale: context.watch<LanguageState>().locale,
-        supportedLocales: [
-          for (final language in AppLanguage.values) language.locale,
-        ],
-        localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        // The font size setting is a whole-app independent variable, not
-        // just a passage style — it has to scale every reader screen's
-        // text, not only the passage itself. The OS's own accessibility
-        // text scale is deliberately overridden rather than combined with,
-        // so the study's condition is exactly what was configured in-app
-        // and logged, never silently modified by a setting outside it.
-        //
-        // The therapist's own screens are exempt: they're clinical/roster
-        // UI, not part of any reading condition, and must not inherit
-        // whatever size a reader configured for themselves (including a
-        // leftover value from the reader session that was just supervised).
-        builder: (context, child) {
-          final isTherapist = context.watch<ParticipantState>().isTherapist;
-          final fontSize = context.watch<ReadingSettings>().fontSize;
-          final effectiveFontSize = isTherapist ? 16.0 : fontSize;
+      // Builder so this context sits BELOW the providers above. build()'s own
+      // context is the one this widget was created with, which is ABOVE the
+      // MultiProvider it returns — reading LanguageState from it threw
+      // ProviderNotFoundException on the very first frame.
+      child: Builder(
+        builder: (context) => MaterialApp(
+          title: 'সহজপাঠ · Shohojpath',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light(),
+          scrollBehavior: const _NoOverscrollIndicator(),
+          // Lets a screen reload its numbers when the route above it is popped
+          // — see RefreshOnRouteReturn.
+          navigatorObservers: [appRouteObserver],
+          // Bangla is the default and the study language; English is here for
+          // supervisors. Driven by the in-app setting rather than the phone's
+          // locale, so a device left in English does not silently put an
+          // eleven-year-old through an English interface.
+          locale: context.watch<LanguageState>().locale,
+          supportedLocales: [
+            for (final language in AppLanguage.values) language.locale,
+          ],
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          // The font size setting is a whole-app independent variable, not
+          // just a passage style — it has to scale every reader screen's
+          // text, not only the passage itself. The OS's own accessibility
+          // text scale is deliberately overridden rather than combined with,
+          // so the study's condition is exactly what was configured in-app
+          // and logged, never silently modified by a setting outside it.
+          //
+          // The therapist's own screens are exempt: they're clinical/roster
+          // UI, not part of any reading condition, and must not inherit
+          // whatever size a reader configured for themselves (including a
+          // leftover value from the reader session that was just supervised).
+          builder: (context, child) {
+            final isTherapist = context.watch<ParticipantState>().isTherapist;
+            final fontSize = context.watch<ReadingSettings>().fontSize;
+            final effectiveFontSize = isTherapist ? 16.0 : fontSize;
 
-          // Clamped, and this matters: the *passage* is not scaled here at all
-          // — BanglaPassage lays out with noScaling and an explicit fontSize,
-          // so a reader still gets the exact size they chose where they are
-          // actually reading. This scaler only grows the chrome (headers,
-          // buttons, the settings panel itself). Unclamped it grew everything
-          // by fontSize/16, which at the old 72 px maximum was 4.5x: the
-          // Reading Settings title wrapped over three lines, the slider labels
-          // overflowed, and there was no longer any way to reach the control
-          // that would turn the size back down.
-          final chromeScale = (effectiveFontSize / 16.0).clamp(1.0, 1.5);
+            // Clamped, and this matters: the *passage* is not scaled here at all
+            // — BanglaPassage lays out with noScaling and an explicit fontSize,
+            // so a reader still gets the exact size they chose where they are
+            // actually reading. This scaler only grows the chrome (headers,
+            // buttons, the settings panel itself). Unclamped it grew everything
+            // by fontSize/16, which at the old 72 px maximum was 4.5x: the
+            // Reading Settings title wrapped over three lines, the slider labels
+            // overflowed, and there was no longer any way to reach the control
+            // that would turn the size back down.
+            final chromeScale = (effectiveFontSize / 16.0).clamp(1.0, 1.5);
 
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(chromeScale),
-            ),
-            child: child ?? const SizedBox.shrink(),
-          );
-        },
-        home: const SplashScreen(),
+            return MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(chromeScale)),
+              child: child ?? const SizedBox.shrink(),
+            );
+          },
+          home: const SplashScreen(),
+        ),
       ),
     );
   }

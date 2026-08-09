@@ -11,6 +11,12 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Bangla month names, date formats and the strings inside Material's own
+  # widgets. Without this the interface switches language but a date picker
+  # or a text-selection menu stays English.
+  flutter_localizations:
+    sdk: flutter
+
   cupertino_icons: ^1.0.8
 
   # Bangla text-to-speech (read aloud + word highlighting)

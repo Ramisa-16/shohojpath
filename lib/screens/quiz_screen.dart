@@ -6,6 +6,7 @@ import '../services/passage_repository.dart';
 import '../models/quiz_question.dart';
 import '../models/study_session.dart';
 import '../services/session_logger.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../utils/duration_format.dart';
 import '../widgets/app_buttons.dart';
@@ -109,19 +110,21 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
+
     if (_questions.isEmpty) {
       return Scaffold(
         body: SafeArea(
           child: Column(
             children: [
               const TherapistSessionBanner(),
-              AppHeader(title: 'Comprehension', onBack: () => Navigator.of(context).maybePop()),
-              const Expanded(
+              AppHeader(title: t.comprehension, onBack: () => Navigator.of(context).maybePop()),
+              Expanded(
                 child: Center(
                   child: Text(
-                    'No comprehension questions are wired up for this passage yet.',
+                    t.noQuestionsForPassage,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 15, color: AppColors.muted),
+                    style: const TextStyle(fontSize: 15, color: AppColors.muted),
                   ),
                 ),
               ),
@@ -137,7 +140,7 @@ class _QuizScreenState extends State<QuizScreen> {
           children: [
             const TherapistSessionBanner(),
             AppHeader(
-              title: 'Comprehension',
+              title: t.comprehension,
               onBack: () => Navigator.of(context).maybePop(),
               trailing: [
                 Padding(
@@ -194,16 +197,16 @@ class _QuizScreenState extends State<QuizScreen> {
                               const SizedBox(width: 9),
                               Expanded(
                                 child: Text(
-                                  'Audio support: ${widget.session.readAloudWasOn ? "ON" : "OFF"} during this passage',
+                                  widget.session.readAloudWasOn ? t.audioOn : t.audioOff,
                                   style: const TextStyle(fontSize: 14, color: AppColors.muted, height: 1.4),
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 6),
-                          const Text(
-                            'Reading condition',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.muted),
+                          Text(
+                            t.readingCondition,
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.muted),
                           ),
                         ],
                       ),
@@ -222,8 +225,8 @@ class _QuizScreenState extends State<QuizScreen> {
                         children: [
                           Text(
                             _question.type == QuestionType.multipleChoice
-                                ? 'MULTIPLE CHOICE'
-                                : 'TRUE / FALSE',
+                                ? t.multipleChoice
+                                : t.trueFalse,
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w800,
@@ -296,8 +299,8 @@ class _QuizScreenState extends State<QuizScreen> {
                         children: [
                           const Icon(Icons.timer_rounded, color: AppColors.body, size: 22),
                           const SizedBox(width: 10),
-                          const Expanded(
-                            child: Text('Reading time recorded', style: TextStyle(fontSize: 15, color: AppColors.body)),
+                          Expanded(
+                            child: Text(t.readingTimeRecorded, style: const TextStyle(fontSize: 15, color: AppColors.body)),
                           ),
                           Text(
                             formatDuration(widget.session.readingDuration),
@@ -308,7 +311,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     ),
                     const SizedBox(height: 14),
                     PrimaryButton(
-                      label: _index == _questions.length - 1 ? 'Finish quiz' : 'Next question',
+                      label: _index == _questions.length - 1 ? t.finishQuiz : t.nextQuestion,
                       onPressed: _selected == null ? null : _next,
                     ),
                   ],
@@ -433,9 +436,8 @@ class _AnswerFeedback extends StatelessWidget {
   Widget build(BuildContext context) {
     // Worded without naming a colour: "the green one" is useless to a child
     // who cannot see the difference, and the marked option carries an icon.
-    final message = correct
-        ? 'ঠিক হয়েছে!'
-        : 'সঠিক উত্তরটি চিহ্নিত করা হয়েছে।';
+    final message =
+        correct ? context.t.answerCorrect : context.t.answerRevealed;
 
     return Semantics(
       liveRegion: true,

@@ -13,6 +13,7 @@ import 'package:shohojpath/api/token_store.dart';
 import 'package:shohojpath/app/app_nav_state.dart';
 import 'package:shohojpath/app/auth_state.dart';
 import 'package:shohojpath/app/participant_state.dart';
+import 'package:shohojpath/l10n/app_language.dart';
 import 'package:shohojpath/models/reading_settings.dart';
 import 'package:shohojpath/screens/home_shell.dart';
 import 'package:shohojpath/services/passage_repository.dart';
@@ -100,6 +101,7 @@ void main() {
           ChangeNotifierProvider.value(value: ReadingSettings()),
           ChangeNotifierProvider.value(value: participant),
           ChangeNotifierProvider.value(value: nav),
+          ChangeNotifierProvider(create: (_) => LanguageState()),
           Provider<ApiClient>.value(value: client),
           Provider<ShohojpathApi>.value(value: api),
           Provider<PassageRepository>(create: (_) => PassageRepository(api)),
@@ -146,7 +148,7 @@ void main() {
 
     // Browsing the library is not searching it; a keyboard would just cover
     // the passage list.
-    await tester.tap(tab('Library'));
+    await tester.tap(tab('পাঠাগার'));
     await tester.pumpAndSettle();
 
     expect(nav.tab, AppTab.library);
@@ -161,9 +163,9 @@ void main() {
 
     // Leave, come back the ordinary way: the earlier request must not still
     // be sitting there waiting to fire.
-    await tester.tap(tab('Home'));
+    await tester.tap(tab('হোম'));
     await tester.pumpAndSettle();
-    await tester.tap(tab('Library'));
+    await tester.tap(tab('পাঠাগার'));
     await tester.pumpAndSettle();
 
     expect(librarySearchHasFocus(tester), isFalse);

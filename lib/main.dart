@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
@@ -10,6 +11,7 @@ import 'app/app_nav_state.dart';
 import 'app/auth_state.dart';
 import 'app/participant_state.dart';
 import 'app/route_observer.dart';
+import 'l10n/app_language.dart';
 import 'models/reading_settings.dart';
 import 'screens/splash_screen.dart';
 import 'services/app_config_repository.dart';
@@ -107,6 +109,11 @@ class ShohojpathApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: settings),
         ChangeNotifierProvider(create: (_) => TtsService()..init()),
         ChangeNotifierProvider(create: (_) => AppNavState()),
+        // Restored before anything is drawn would be nicer, but the sign-in
+        // screen is the first thing shown and it has to be in the right
+        // language: restore() notifies, so the first frame after the read
+        // corrects itself.
+        ChangeNotifierProvider(create: (_) => LanguageState()..restore()),
         ChangeNotifierProvider.value(value: participant),
         Provider.value(value: logger),
         Provider.value(value: settingsRepository),
@@ -153,6 +160,15 @@ class ShohojpathApp extends StatelessWidget {
         // Lets a screen reload its numbers when the route above it is popped
         // — see RefreshOnRouteReturn.
         navigatorObservers: [appRouteObserver],
+        // Bangla is the default and the study language; English is here for
+        // supervisors. Driven by the in-app setting rather than the phone's
+        // locale, so a device left in English does not silently put an
+        // eleven-year-old through an English interface.
+        locale: context.watch<LanguageState>().locale,
+        supportedLocales: [
+          for (final language in AppLanguage.values) language.locale,
+        ],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
         // The font size setting is a whole-app independent variable, not
         // just a passage style — it has to scale every reader screen's
         // text, not only the passage itself. The OS's own accessibility

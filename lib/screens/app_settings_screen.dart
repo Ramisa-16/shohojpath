@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../models/reader_sign_in_display.dart';
 import '../models/reading_settings.dart';
 import '../services/app_config_repository.dart';
+import '../l10n/app_language.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/app_header.dart';
@@ -22,7 +24,6 @@ class AppSettingsScreen extends StatefulWidget {
 }
 
 class _AppSettingsScreenState extends State<AppSettingsScreen> {
-  bool _bangla = true;
   bool _reminders = true;
   bool _soundEffects = false;
   bool _shareAnonymisedData = true;
@@ -56,19 +57,17 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   }
 
   Future<void> _confirmReset() async {
+    final t = context.t;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reset all settings?'),
-        content: const Text(
-          'This returns every reading setting to the Default condition. '
-          'Your custom configuration will be lost.',
-        ),
+        title: Text(t.resetAllSettings),
+        content: Text(t.resetAllSettingsBody),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(t.cancel)),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Reset', style: TextStyle(color: AppColors.danger)),
+            child: Text(t.reset, style: const TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -76,46 +75,49 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     if (confirmed == true && mounted) {
       context.read<ReadingSettings>().resetAll();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All reading settings reset to Default.')),
+        SnackBar(content: Text(t.settingsReset)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final language = context.watch<LanguageState>();
+    final t = context.t;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            AppHeader(title: 'Settings', onBack: () => Navigator.of(context).maybePop()),
+            AppHeader(title: t.settings, onBack: () => Navigator.of(context).maybePop()),
             Expanded(
               child: Container(
                 color: AppColors.canvas,
                 child: ListView(
                   padding: const EdgeInsets.all(14),
                   children: [
-                    const Text(
-                      'LANGUAGE',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body),
+                    Text(
+                      t.languageHeading,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body),
                     ),
                     const SizedBox(height: 9),
+                    // Was a bool living in this screen's State: it moved the
+                    // highlight and nothing else. The language is device-wide
+                    // and has to outlive this route, so it lives in
+                    // LanguageState and is persisted.
                     Row(
                       children: [
-                        Expanded(
-                          child: ChoiceTile(
-                            label: 'বাংলা',
-                            selected: _bangla,
-                            onTap: () => setState(() => _bangla = true),
+                        for (final option in AppLanguage.values) ...[
+                          Expanded(
+                            child: ChoiceTile(
+                              label: option.label,
+                              selected: language.language == option,
+                              onTap: () => language.select(option),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 9),
-                        Expanded(
-                          child: ChoiceTile(
-                            label: 'English',
-                            selected: !_bangla,
-                            onTap: () => setState(() => _bangla = false),
-                          ),
-                        ),
+                          if (option != AppLanguage.values.last)
+                            const SizedBox(width: 9),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 14),
@@ -124,7 +126,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                       child: Column(
                         children: [
                           _SettingsToggle(
-                            label: 'Reading reminders',
+                            label: t.readingReminders,
                             value: _reminders,
                             onChanged: (v) => setState(() => _reminders = v),
                           ),

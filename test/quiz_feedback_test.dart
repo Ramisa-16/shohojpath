@@ -13,6 +13,7 @@ import 'package:shohojpath/screens/quiz_screen.dart';
 import 'package:shohojpath/services/passage_repository.dart';
 import 'package:shohojpath/services/session_logger.dart';
 import 'package:shohojpath/app/participant_state.dart';
+import 'package:shohojpath/l10n/app_language.dart';
 
 /// The quiz marks an answer the moment it is tapped. The rules that matter
 /// are not the colours: the tap must be final, the correct option must be
@@ -84,6 +85,7 @@ void main() {
         providers: [
           ChangeNotifierProvider.value(value: ReadingSettings()),
           ChangeNotifierProvider(create: (_) => ParticipantState()),
+          ChangeNotifierProvider(create: (_) => LanguageState()),
           Provider<SessionLogger>.value(value: _NoDbLogger()),
           Provider<PassageRepository>.value(
             value: _FixedRepository(api, questions),
@@ -149,7 +151,7 @@ void main() {
     await tester.tap(option('একটুকরো মাংস'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Next question'));
+    await tester.tap(find.text('পরের প্রশ্ন'));
     await tester.pumpAndSettle();
 
     expect(session.quizAnswers.single.selectedIndex, 2);
@@ -166,7 +168,7 @@ void main() {
 
     // They then sit looking at the feedback for a while before moving on.
     await tester.pump(const Duration(seconds: 30));
-    await tester.tap(find.text('Next question'));
+    await tester.tap(find.text('পরের প্রশ্ন'));
     await tester.pumpAndSettle();
 
     final recorded = session.quizAnswers.single.timeTaken;
@@ -179,7 +181,7 @@ void main() {
 
     await tester.tap(option('একটুকরো মাংস'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Next question'));
+    await tester.tap(find.text('পরের প্রশ্ন'));
     await tester.pumpAndSettle();
 
     expect(find.text('শিয়াল কী করেছিল?'), findsOneWidget);
@@ -190,7 +192,7 @@ void main() {
   testWidgets('Next does nothing until something is answered', (tester) async {
     await pumpQuiz(tester);
 
-    await tester.tap(find.text('Next question'));
+    await tester.tap(find.text('পরের প্রশ্ন'));
     await tester.pumpAndSettle();
 
     // Still on question one, and nothing recorded — skipping forward would

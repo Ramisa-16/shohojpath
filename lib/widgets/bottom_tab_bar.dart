@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../app/app_nav_state.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 
 /// The four-tab bar shown on Home, Library, Progress, Profile — and on
@@ -23,15 +24,17 @@ class BottomTabBar extends StatelessWidget {
     AppTab.profile: Icons.person_rounded,
   };
 
-  static const _labels = {
-    AppTab.home: 'Home',
-    AppTab.library: 'Library',
-    AppTab.progress: 'Progress',
-    AppTab.profile: 'Profile',
-  };
+  static String _label(AppStrings t, AppTab tab) => switch (tab) {
+        AppTab.home => t.tabHome,
+        AppTab.library => t.tabLibrary,
+        AppTab.progress => t.tabProgress,
+        AppTab.profile => t.tabProfile,
+      };
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -45,7 +48,7 @@ class BottomTabBar extends StatelessWidget {
               Expanded(
                 child: _TabButton(
                   icon: _icons[tab]!,
-                  label: _labels[tab]!,
+                  label: _label(t, tab),
                   selected: tab == current,
                   onTap: () {
                     context.read<AppNavState>().select(tab);

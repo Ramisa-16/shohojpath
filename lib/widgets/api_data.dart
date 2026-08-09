@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../api/api_exception.dart';
 import '../app/route_observer.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import 'app_buttons.dart';
 
@@ -19,7 +20,7 @@ class ApiData<T> extends StatefulWidget {
     required this.builder,
     this.isEmpty,
     this.emptyIcon = Icons.inbox_outlined,
-    this.emptyTitle = 'Nothing here yet',
+    this.emptyTitle,
     this.emptyBody = '',
     this.padding = const EdgeInsets.all(14),
   });
@@ -33,7 +34,7 @@ class ApiData<T> extends StatefulWidget {
   final bool Function(T data)? isEmpty;
 
   final IconData emptyIcon;
-  final String emptyTitle;
+  final String? emptyTitle;
   final String emptyBody;
   final EdgeInsets padding;
 
@@ -113,10 +114,10 @@ class _ApiDataState<T> extends State<ApiData<T>>
     if (_error != null && _data == null) {
       return ApiMessage(
         icon: Icons.cloud_off_rounded,
-        title: 'Could not load this',
+        title: context.t.couldNotLoad,
         body: _error!,
         action: PrimaryButton(
-          label: 'Try again',
+          label: context.t.tryAgain,
           onPressed: _load,
           expand: false,
         ),
@@ -134,7 +135,7 @@ class _ApiDataState<T> extends State<ApiData<T>>
             const SizedBox(height: 40),
             ApiMessage(
               icon: widget.emptyIcon,
-              title: widget.emptyTitle,
+              title: widget.emptyTitle ?? context.t.nothingHereYet,
               body: widget.emptyBody,
             ),
           ],
@@ -160,14 +161,14 @@ class _StaleBanner extends StatelessWidget {
       width: double.infinity,
       color: AppColors.chipNeutral,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.cloud_off_rounded, size: 18, color: AppColors.muted),
-          SizedBox(width: 8),
+          const Icon(Icons.cloud_off_rounded, size: 18, color: AppColors.muted),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Showing saved data — could not reach the server.',
-              style: TextStyle(fontSize: 14, color: AppColors.muted),
+              context.t.staleBanner,
+              style: const TextStyle(fontSize: 14, color: AppColors.muted),
             ),
           ),
         ],

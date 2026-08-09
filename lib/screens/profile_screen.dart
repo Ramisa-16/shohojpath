@@ -5,8 +5,8 @@ import '../api/shohojpath_api.dart';
 import '../app/auth_state.dart';
 import '../app/participant_state.dart';
 import '../theme/app_colors.dart';
-import '../widgets/api_data.dart';
 import '../widgets/app_buttons.dart';
+import '../widgets/change_password_dialog.dart';
 import '../widgets/therapist_password_dialog.dart';
 import 'app_settings_screen.dart';
 import 'history_screen.dart';
@@ -201,14 +201,29 @@ class ProfileScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(14),
               children: [
-                SizedBox(
-                  height: 250,
-                  child: ApiData<Map<String, dynamic>>(
-                    load: context.read<ShohojpathApi>().myProfile,
-                    padding: EdgeInsets.zero,
-                    builder: (context, profile, refresh) =>
-                        _PreferenceCard(profile: profile),
-                  ),
+                // Sized to its content. A fixed height with an inner
+                // ListView clipped Participant ID and Email off the top,
+                // and nesting a second scroll view inside the page's own
+                // is awkward to use even when nothing is hidden.
+                FutureBuilder<Map<String, dynamic>>(
+                  future: context.read<ShohojpathApi>().myProfile(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 28),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    final profile = snapshot.data;
+                    if (profile == null) {
+                      // A guest has no server profile, and neither does
+                      // anyone offline. The header above already shows who
+                      // they are, so say nothing rather than show an error.
+                      return const SizedBox.shrink();
+                    }
+                    return _PreferenceCard(profile: profile);
+                  },
                 ),
                 const SizedBox(height: 12),
                 ListRowButton(
@@ -234,6 +249,17 @@ class ProfileScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (_) => const AppSettingsScreen()),
                   ),
                 ),
+                if (context.watch<AuthState>().isSignedIn) ...[
+                  const SizedBox(height: 11),
+                  ListRowButton(
+                    leading: const Icon(Icons.lock_outline_rounded,
+                        color: AppColors.navy, size: 24),
+                    title: 'Change password',
+                    // Hidden for a guest: there is no account to change a
+                    // password on, and offering it would be a dead end.
+                    onTap: () => showChangePasswordDialog(context),
+                  ),
+                ],
                 const SizedBox(height: 18),
                 SecondaryButton(
                   label: 'Log out',
@@ -287,44 +313,51 @@ class _PreferenceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 15),
-      child: ListView.builder(
-        padding: EdgeInsets.zero,
-        itemCount: rows.length,
-        itemBuilder: (context, i) {
-          final (label, value) = rows[i];
-          return Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            decoration: i == rows.length - 1
-                ? null
-                : const BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: AppColors.divider),
+      // A Column, not a ListView: this card sits inside the page's own
+      // scroll view, where a ListView has no bounded height and throws
+      // "RenderBox was not laid out". There are at most seven rows, so there
+      // is nothing to virtualise anyway.
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < rows.length; i++)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: i == rows.length - 1
+                  ? null
+                  : const BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: AppColors.divider),
+                      ),
+                    ),
+              // Stacked and left-aligned, not a right-aligned Row: a long
+              // value wraps to two lines at large font sizes, and
+              // right-aligned wrapped text gives a ragged left edge that is
+              // harder to track — exactly what this app's typography avoids.
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    rows[i].$1,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: AppColors.body,
                     ),
                   ),
-            // Stacked and left-aligned, not a right-aligned Row: a long value
-            // wraps to two lines at large font sizes, and right-aligned
-            // wrapped text gives a ragged left edge that is harder to track.
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(fontSize: 15, color: AppColors.body),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.navy,
+                  const SizedBox(height: 4),
+                  Text(
+                    rows[i].$2,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.navy,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          );
-        },
+        ],
       ),
     );
   }

@@ -33,9 +33,21 @@ class _QuizScreenState extends State<QuizScreen> {
   late final List<QuizQuestion> _questions = _resolveQuestions();
   int _index = 0;
   int? _selected;
+
+  /// Captured the moment they tap, not when they press Next: the seconds spent
+  /// reading the feedback afterwards are not deciding time, and folding them
+  /// in would inflate every answer a child paused over.
+  Duration? _answerTime;
+
   final Stopwatch _questionTimer = Stopwatch()..start();
 
   QuizQuestion get _question => _questions[_index];
+
+  /// Answering is a one-way door. Showing the right answer *and* allowing a
+  /// change would turn quiz_score into a measure of who noticed the colour.
+  bool get _answered => _selected != null;
+
+  bool get _isCorrect => _selected == _question.correctIndex;
 
   List<QuizQuestion> _resolveQuestions() {
     final fromServer = context
@@ -46,7 +58,12 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _select(int optionIndex) {
-    setState(() => _selected = optionIndex);
+    if (_answered) return;
+    _questionTimer.stop();
+    setState(() {
+      _selected = optionIndex;
+      _answerTime = _questionTimer.elapsed;
+    });
   }
 
   void _next() {
@@ -57,7 +74,7 @@ class _QuizScreenState extends State<QuizScreen> {
       QuizAnswer(
         selectedIndex: selected,
         correct: selected == _question.correctIndex,
-        timeTaken: _questionTimer.elapsed,
+        timeTaken: _answerTime ?? _questionTimer.elapsed,
       ),
     );
 
@@ -74,10 +91,20 @@ class _QuizScreenState extends State<QuizScreen> {
     setState(() {
       _index++;
       _selected = null;
+      _answerTime = null;
       _questionTimer
         ..reset()
         ..start();
     });
+  }
+
+  /// How one option should read once the answer is in. The correct option is
+  /// marked whether or not they picked it — that is the teaching moment.
+  _OptionState _stateFor(int optionIndex) {
+    if (!_answered) return _OptionState.idle;
+    if (optionIndex == _question.correctIndex) return _OptionState.correct;
+    if (optionIndex == _selected) return _OptionState.wrong;
+    return _OptionState.idle;
   }
 
   @override
@@ -226,7 +253,8 @@ class _QuizScreenState extends State<QuizScreen> {
                                       child: _OptionButton(
                                         label: _question.options[i],
                                         selected: _selected == i,
-                                        onTap: () => _select(i),
+                                        state: _stateFor(i),
+                                        onTap: _answered ? null : () => _select(i),
                                       ),
                                     ),
                                     if (i != _question.options.length - 1) const SizedBox(width: 9),
@@ -241,12 +269,17 @@ class _QuizScreenState extends State<QuizScreen> {
                                   _OptionButton(
                                     label: _question.options[i],
                                     selected: _selected == i,
-                                    onTap: () => _select(i),
+                                    state: _stateFor(i),
+                                    onTap: _answered ? null : () => _select(i),
                                   ),
                                   if (i != _question.options.length - 1) const SizedBox(height: 9),
                                 ],
                               ],
                             ),
+                          if (_answered) ...[
+                            const SizedBox(height: 13),
+                            _AnswerFeedback(correct: _isCorrect),
+                          ],
                         ],
                       ),
                     ),
@@ -289,22 +322,71 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 }
 
+/// How an option reads once the answer is in.
+enum _OptionState { idle, correct, wrong }
+
 class _OptionButton extends StatelessWidget {
-  const _OptionButton({required this.label, required this.selected, required this.onTap});
+  const _OptionButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.state = _OptionState.idle,
+  });
 
   final String label;
   final bool selected;
-  final VoidCallback onTap;
+
+  /// Null once the question is answered — the options stop being controls.
+  final VoidCallback? onTap;
+
+  final _OptionState state;
 
   @override
   Widget build(BuildContext context) {
+    // Every state carries an icon and a word as well as a colour. Around one
+    // boy in twelve cannot separate red from green, and this app exists for
+    // children who already find reading hard — a cue only some of them can
+    // see is not a cue.
+    final (background, border, foreground, icon) = switch (state) {
+      _OptionState.correct => (
+          AppColors.tealTint,
+          AppColors.teal,
+          AppColors.tealDeep,
+          Icons.check_circle_rounded,
+        ),
+      _OptionState.wrong => (
+          AppColors.dangerTint,
+          AppColors.danger,
+          AppColors.danger,
+          Icons.cancel_rounded,
+        ),
+      _OptionState.idle when selected => (
+          AppColors.navyTint,
+          AppColors.navy,
+          AppColors.navy,
+          null,
+        ),
+      _OptionState.idle => (
+          Colors.white,
+          AppColors.borderStrong,
+          AppColors.ink,
+          null,
+        ),
+    };
+
+    final emphasised = selected || state != _OptionState.idle;
+
     return Material(
-      color: selected ? AppColors.navyTint : Colors.white,
+      color: background,
       borderRadius: BorderRadius.circular(13),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(13),
-        child: Container(
+        child: AnimatedContainer(
+          // Short and plain: a colour settling in, no shake and no bounce. A
+          // wrong answer should not feel like a punishment.
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
           width: double.infinity,
           constraints: const BoxConstraints(minHeight: 52),
           padding: const EdgeInsets.all(16),
@@ -312,19 +394,82 @@ class _OptionButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(13),
             border: Border.all(
-              color: selected ? AppColors.navy : AppColors.borderStrong,
-              width: selected ? 2.5 : 1.5,
+              color: border,
+              width: emphasised ? 2.5 : 1.5,
             ),
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'NotoSansBengali',
-              fontSize: 17,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-              color: selected ? AppColors.navy : AppColors.ink,
-            ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'NotoSansBengali',
+                    fontSize: 17,
+                    fontWeight: emphasised ? FontWeight.w600 : FontWeight.w400,
+                    color: foreground,
+                  ),
+                ),
+              ),
+              if (icon != null) ...[
+                const SizedBox(width: 10),
+                Icon(icon, size: 24, color: border),
+              ],
+            ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The line under the options once an answer is in.
+class _AnswerFeedback extends StatelessWidget {
+  const _AnswerFeedback({required this.correct});
+
+  final bool correct;
+
+  @override
+  Widget build(BuildContext context) {
+    // Worded without naming a colour: "the green one" is useless to a child
+    // who cannot see the difference, and the marked option carries an icon.
+    final message = correct
+        ? 'ঠিক হয়েছে!'
+        : 'সঠিক উত্তরটি চিহ্নিত করা হয়েছে।';
+
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+        decoration: BoxDecoration(
+          color: correct ? AppColors.tealTint : AppColors.dangerTint,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: correct ? AppColors.tealLine : AppColors.dangerBorder,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              correct ? Icons.check_circle_rounded : Icons.lightbulb_rounded,
+              size: 22,
+              color: correct ? AppColors.teal : AppColors.danger,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  fontFamily: 'NotoSansBengali',
+                  fontSize: 16,
+                  height: 1.5,
+                  fontWeight: FontWeight.w600,
+                  color: correct ? AppColors.tealDeep : AppColors.danger,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

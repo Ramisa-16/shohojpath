@@ -137,31 +137,36 @@ class _Body extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: _MetricCard(
-                title: 'Reading speed',
-                value: wpm == null ? '—' : wpm.toStringAsFixed(0),
-                unit: ' wpm',
-                note: 'Speed is read alongside accuracy.',
+        // stretch pairs the two cards to a common height so their notes line
+        // up, but a Row inside this ListView has unbounded height — without
+        // IntrinsicHeight to measure it first, "stretch" means infinity.
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _MetricCard(
+                  title: 'Reading speed',
+                  value: wpm == null ? '—' : wpm.toStringAsFixed(0),
+                  unit: ' wpm',
+                  note: 'Speed is read alongside accuracy.',
+                ),
               ),
-            ),
-            const SizedBox(width: 11),
-            Expanded(
-              child: _MetricCard(
-                title: 'Comprehension',
-                value: comprehension == null
-                    ? '—'
-                    : comprehension.toStringAsFixed(0),
-                unit: '%',
-                note: comprehension == null
-                    ? 'No quiz completed yet.'
-                    : 'Across all quizzes taken.',
+              const SizedBox(width: 11),
+              Expanded(
+                child: _MetricCard(
+                  title: 'Comprehension',
+                  value: comprehension == null
+                      ? '—'
+                      : comprehension.toStringAsFixed(0),
+                  unit: '%',
+                  note: comprehension == null
+                      ? 'No quiz completed yet.'
+                      : 'Across all quizzes taken.',
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 12),
         WhiteCard(
@@ -214,44 +219,48 @@ class _Body extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: _SmallStat(
-                label: 'Average session',
-                value: formatDurationLong(
-                  Duration(seconds: avgSeconds.round()),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _SmallStat(
+                  label: 'Average session',
+                  value: formatDurationLong(
+                    Duration(seconds: avgSeconds.round()),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 11),
-            Expanded(
-              child: _SmallStat(
-                label: 'Sessions logged',
-                value: '$sessions',
+              const SizedBox(width: 11),
+              Expanded(
+                child: _SmallStat(
+                  label: 'Sessions logged',
+                  value: '$sessions',
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 11),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: _SmallStat(
-                label: 'Passages read',
-                value: '$finished',
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _SmallStat(
+                  label: 'Passages read',
+                  value: '$finished',
+                ),
               ),
-            ),
-            const SizedBox(width: 11),
-            Expanded(
-              child: _SmallStat(
-                label: 'Words per minute',
-                value: wpm == null ? '—' : wpm.toStringAsFixed(1),
+              const SizedBox(width: 11),
+              Expanded(
+                child: _SmallStat(
+                  label: 'Words per minute',
+                  value: wpm == null ? '—' : wpm.toStringAsFixed(1),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 12),
         WhiteCard(

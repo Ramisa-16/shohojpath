@@ -30,10 +30,12 @@ class HomeShell extends StatelessWidget {
             Expanded(
               child: IndexedStack(
                 index: AppTab.values.indexOf(tab),
+                // showBack: false — these are tabs, not pushed routes, so
+                // there is nothing beneath them to go back to.
                 children: const [
                   HomeScreen(),
-                  LibraryScreen(),
-                  ProgressScreen(),
+                  LibraryScreen(showBack: false),
+                  ProgressScreen(showBack: false),
                   ProfileScreen(),
                 ],
               ),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -6,9 +8,11 @@ import '../api/shohojpath_api.dart';
 import '../app/app_nav_state.dart';
 import '../app/auth_state.dart';
 import '../app/participant_state.dart';
+import '../app/route_observer.dart';
 import '../services/passage_repository.dart';
 import '../data/mock_content.dart';
 import '../theme/app_colors.dart';
+import '../utils/greeting.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/app_header.dart';
 import 'notifications_screen.dart';
@@ -28,7 +32,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with RefreshOnRouteReturn<HomeScreen> {
   late Future<List<LibraryEntry>> _assigned;
   late Future<_HomeSummary> _summary;
 
@@ -38,6 +43,12 @@ class _HomeScreenState extends State<HomeScreen> {
     _assigned = _loadAssigned();
     _summary = _loadSummary();
   }
+
+  /// Coming back from Reading, Bookmarks or History means these counts are a
+  /// snapshot from before whatever the reader just did. Bookmarking a page and
+  /// returning used to leave the tile reading "0 saved".
+  @override
+  void onRouteReturn() => _refresh();
 
   Future<void> _refresh() async {
     setState(() {
@@ -100,10 +111,14 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         AppHeader(
           title: '',
+          leading: const _Greeting(),
           trailing: const [NotificationBell()],
           bottom: HeaderSearchField(
             hint: 'Search passages…',
-            onTap: () => context.read<AppNavState>().select(AppTab.library),
+            // Not just select(library): this field is a search affordance, so
+            // it hands over to Library's real one with the cursor already in
+            // it. The other Home shortcuts only change tab.
+            onTap: () => context.read<AppNavState>().openLibrarySearch(),
           ),
         ),
         Expanded(
@@ -114,8 +129,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(14),
               children: [
-                const _Greeting(),
-                const SizedBox(height: 12),
                 FutureBuilder<List<LibraryEntry>>(
                   future: _assigned,
                   builder: (context, snapshot) {
@@ -286,16 +299,36 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _Greeting extends StatelessWidget {
+class _Greeting extends StatefulWidget {
   const _Greeting();
 
-  /// Time-aware rather than a fixed "Good morning": a study session run in
-  /// the afternoon should not greet a child with the wrong time of day.
-  static String _greeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+  @override
+  State<_Greeting> createState() => _GreetingState();
+}
+
+class _GreetingState extends State<_Greeting> {
+  Timer? _tick;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleNextChange();
+  }
+
+  @override
+  void dispose() {
+    _tick?.cancel();
+    super.dispose();
+  }
+
+  /// Wakes exactly when the wording is due to change, rather than polling.
+  void _scheduleNextChange() {
+    _tick?.cancel();
+    _tick = Timer(untilGreetingChanges(DateTime.now()), () {
+      if (!mounted) return;
+      setState(() {});
+      _scheduleNextChange();
+    });
   }
 
   static String _initials(String name) {
@@ -318,6 +351,8 @@ class _Greeting extends StatelessWidget {
             ? participant.displayName
             : 'Reader');
 
+    // Sits on the navy header alongside the notification bell, so the
+    // colours here are the on-navy pair rather than the page's ink/muted.
     return Row(
       children: [
         Material(
@@ -327,13 +362,13 @@ class _Greeting extends StatelessWidget {
             customBorder: const CircleBorder(),
             onTap: () => context.read<AppNavState>().select(AppTab.profile),
             child: SizedBox(
-              width: 46,
-              height: 46,
+              width: 40,
+              height: 40,
               child: Center(
                 child: Text(
                   _initials(name),
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
                   ),
@@ -342,14 +377,20 @@ class _Greeting extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                _greeting(),
-                style: const TextStyle(fontSize: 14, color: AppColors.muted),
+                greetingFor(DateTime.now()),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.onNavyMuted,
+                ),
               ),
               Text(
                 name,
@@ -358,7 +399,7 @@ class _Greeting extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 19,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.ink,
+                  color: Colors.white,
                 ),
               ),
             ],
@@ -555,11 +596,54 @@ class _ContinueReadingCardState extends State<_ContinueReadingCard> {
       );
     }
 
-    final title = current['title'] as String? ?? '';
     final passageId = current['passage_id'] as String? ?? '';
-    final percent = (current['percent'] as num?)?.toDouble() ?? 0;
+    final available = current['available'] != false;
+    final title = current['title'] as String? ?? passageId;
+    final percent = (current['percent'] as num?)?.toDouble();
     final pagesRead = (current['pages_read'] as num?)?.toInt() ?? 0;
     final pageCount = (current['page_count'] as num?)?.toInt() ?? 0;
+
+    // The passage this session names is gone — study material gets
+    // replaced between rounds. Say so rather than offering a tap that
+    // opens the wrong text.
+    if (!available) {
+      return WhiteCard(
+        onTap: () => context.read<AppNavState>().select(AppTab.library),
+        child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'LAST READ',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.6,
+                color: AppColors.muted,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'That passage is no longer in the library',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: AppColors.ink,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Your reading is still recorded. Pick something new from the '
+              'Library.',
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.5,
+                color: AppColors.muted,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return WhiteCard(
       onTap: _opening || passageId.isEmpty ? null : () => _open(passageId),
@@ -603,30 +687,33 @@ class _ContinueReadingCardState extends State<_ContinueReadingCard> {
             ),
           ),
           const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(5),
-                  child: LinearProgressIndicator(
-                    value: (percent / 100).clamp(0, 1),
-                    minHeight: 9,
-                    backgroundColor: AppColors.trackAlt,
-                    color: AppColors.teal,
+          // No bar when the server could not work out a percentage —
+          // an empty bar reads as "no progress", which is a claim.
+          if (percent != null)
+            Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: LinearProgressIndicator(
+                      value: (percent / 100).clamp(0, 1),
+                      minHeight: 9,
+                      backgroundColor: AppColors.trackAlt,
+                      color: AppColors.teal,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '${percent.round()}%',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.body,
+                const SizedBox(width: 8),
+                Text(
+                  '${percent.round()}%',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.body,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           if (pageCount > 0) ...[
             const SizedBox(height: 6),
             Text(

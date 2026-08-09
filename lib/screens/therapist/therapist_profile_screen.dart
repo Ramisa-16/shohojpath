@@ -6,7 +6,7 @@ import '../../api/shohojpath_api.dart';
 import '../../app/auth_state.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_buttons.dart';
-import '../../widgets/change_password_dialog.dart';
+import '../../widgets/change_password_sheet.dart';
 import '../../widgets/export_data_action.dart';
 import '../../widgets/settings_controls.dart';
 import '../../widgets/therapist_bottom_tab_bar.dart';
@@ -160,7 +160,7 @@ class _TherapistProfileScreenState extends State<TherapistProfileScreen> {
                         ListRowButton(
                           leading: const Icon(Icons.lock_outline_rounded, color: AppColors.navy, size: 24),
                           title: 'Change password',
-                          onTap: () => showChangePasswordDialog(context),
+                          onTap: () => showChangePasswordSheet(context),
                         ),
                         const SizedBox(height: 11),
                         ListRowButton(

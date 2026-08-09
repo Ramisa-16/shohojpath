@@ -9,6 +9,7 @@ import 'api/shohojpath_api.dart';
 import 'app/app_nav_state.dart';
 import 'app/auth_state.dart';
 import 'app/participant_state.dart';
+import 'app/route_observer.dart';
 import 'models/reading_settings.dart';
 import 'screens/splash_screen.dart';
 import 'services/app_config_repository.dart';
@@ -149,6 +150,9 @@ class ShohojpathApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),
         scrollBehavior: const _NoOverscrollIndicator(),
+        // Lets a screen reload its numbers when the route above it is popped
+        // — see RefreshOnRouteReturn.
+        navigatorObservers: [appRouteObserver],
         // The font size setting is a whole-app independent variable, not
         // just a passage style — it has to scale every reader screen's
         // text, not only the passage itself. The OS's own accessibility

@@ -173,8 +173,10 @@ class _CurrentPassageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final percent = (current['percent'] as num?)?.toDouble() ?? 0;
-    final title = current['title'] as String? ?? '';
+    final percent = (current['percent'] as num?)?.toDouble();
+    final available = current['available'] != false;
+    final title = current['title'] as String? ??
+        (current['passage_id'] as String? ?? '');
     final pagesRead = (current['pages_read'] as num?)?.toInt() ?? 0;
     final pageCount = (current['page_count'] as num?)?.toInt() ?? 0;
 
@@ -196,7 +198,7 @@ class _CurrentPassageCard extends StatelessWidget {
                 ),
               ),
               Text(
-                '${percent.toStringAsFixed(0)}%',
+                percent == null ? '—' : '${percent.toStringAsFixed(0)}%',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
@@ -206,15 +208,16 @@ class _CurrentPassageCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 11),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(5),
-            child: LinearProgressIndicator(
-              value: (percent / 100).clamp(0, 1),
-              minHeight: 10,
-              backgroundColor: AppColors.trackAlt,
-              color: AppColors.teal,
+          if (percent != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: LinearProgressIndicator(
+                value: (percent / 100).clamp(0, 1),
+                minHeight: 10,
+                backgroundColor: AppColors.trackAlt,
+                color: AppColors.teal,
+              ),
             ),
-          ),
           const SizedBox(height: 9),
           Text(
             title,
@@ -229,6 +232,12 @@ class _CurrentPassageCard extends StatelessWidget {
             Text(
               'Page $pagesRead of $pageCount',
               style: const TextStyle(fontSize: 14, color: AppColors.muted),
+            ),
+          ] else if (!available) ...[
+            const SizedBox(height: 3),
+            const Text(
+              'No longer in the library — your reading is still recorded.',
+              style: TextStyle(fontSize: 14, height: 1.4, color: AppColors.muted),
             ),
           ],
         ],

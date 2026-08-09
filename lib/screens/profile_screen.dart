@@ -6,7 +6,7 @@ import '../app/auth_state.dart';
 import '../app/participant_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
-import '../widgets/change_password_dialog.dart';
+import '../widgets/change_password_sheet.dart';
 import '../widgets/therapist_password_dialog.dart';
 import 'app_settings_screen.dart';
 import 'history_screen.dart';
@@ -257,7 +257,7 @@ class ProfileScreen extends StatelessWidget {
                     title: 'Change password',
                     // Hidden for a guest: there is no account to change a
                     // password on, and offering it would be a dead end.
-                    onTap: () => showChangePasswordDialog(context),
+                    onTap: () => showChangePasswordSheet(context),
                   ),
                 ],
                 const SizedBox(height: 18),

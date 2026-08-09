@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../api/api_exception.dart';
+import '../api/shohojpath_api.dart';
+import '../app/auth_state.dart';
 import '../app/participant_state.dart';
 import '../models/passage.dart';
 import '../models/reading_settings.dart';
@@ -50,7 +53,22 @@ class _ReadingScreenState extends State<ReadingScreen> {
 
   ConjunctCluster? _selectedConjunct;
   bool _showFloatingCard = false;
-  bool _bookmarked = false;
+
+  /// Page index -> server id, for this passage only. A bookmark is saved
+  /// against a page rather than a passage, so the icon has to reflect the page
+  /// on screen, and deleting one needs the id the server gave it.
+  final Map<int, int> _bookmarkIds = {};
+  bool _bookmarkBusy = false;
+
+  bool get _bookmarked => _bookmarkIds.containsKey(_pageIndex);
+
+  /// The same fact as [_bookmarked], published for the settings panel, which
+  /// is a separate route and so cannot be rebuilt by this screen's setState.
+  /// Updated through [_publishBookmarkState] wherever the map or the page
+  /// changes, so the two can't disagree.
+  final ValueNotifier<bool> _bookmarkedNow = ValueNotifier(false);
+
+  void _publishBookmarkState() => _bookmarkedNow.value = _bookmarked;
 
   late final String _sessionId;
 
@@ -85,12 +103,93 @@ class _ReadingScreenState extends State<ReadingScreen> {
       profile: _settings.profile,
     );
     context.read<TtsService>().resetSpokenDuration();
+    _loadBookmarks();
+  }
+
+  /// Which pages of this passage the reader has already saved. Failure is
+  /// silent on purpose: an unreachable server means the icon starts hollow,
+  /// which is a worse guess than the truth but not worth interrupting reading
+  /// for. Saving, where the reader is watching for a result, does report.
+  Future<void> _loadBookmarks() async {
+    if (!context.read<AuthState>().isSignedIn) return;
+    try {
+      final rows = await context.read<ShohojpathApi>().bookmarks();
+      if (!mounted) return;
+      setState(() {
+        for (final row in rows) {
+          if (row['passage_id'] != widget.passage.id) continue;
+          final id = (row['id'] as num?)?.toInt();
+          final page = (row['page_index'] as num?)?.toInt();
+          if (id != null && page != null) _bookmarkIds[page] = id;
+        }
+      });
+      _publishBookmarkState();
+    } on ApiException {
+      // Leave the map empty; the reader can still save from here.
+    }
+  }
+
+  /// The opening line of the page, so the Bookmarks list shows the reader
+  /// where they were rather than a bare page number.
+  String get _pageExcerpt {
+    final text = _page.paragraphs.isEmpty ? '' : _page.paragraphs.first.trim();
+    return text.length <= 120 ? text : '${text.substring(0, 120).trim()}…';
+  }
+
+  Future<void> _toggleBookmark() async {
+    if (_bookmarkBusy) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    if (!context.read<AuthState>().isSignedIn) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Sign in to save bookmarks.')),
+      );
+      return;
+    }
+
+    final api = context.read<ShohojpathApi>();
+    final page = _pageIndex;
+    final existing = _bookmarkIds[page];
+    setState(() => _bookmarkBusy = true);
+
+    try {
+      if (existing != null) {
+        await api.deleteBookmark(existing);
+        if (!mounted) return;
+        setState(() => _bookmarkIds.remove(page));
+        _publishBookmarkState();
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Bookmark removed.')),
+        );
+      } else {
+        final saved = await api.addBookmark(
+          passageId: widget.passage.id,
+          pageIndex: page,
+          excerpt: _pageExcerpt,
+        );
+        if (!mounted) return;
+        final id = (saved['id'] as num?)?.toInt();
+        if (id != null) setState(() => _bookmarkIds[page] = id);
+        _publishBookmarkState();
+        messenger.showSnackBar(
+          SnackBar(content: Text('Bookmarked page ${page + 1}.')),
+        );
+      }
+    } on ApiException catch (e) {
+      // The icon never flipped, so it still tells the truth — but say why,
+      // rather than letting a tap look like it did nothing.
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => _bookmarkBusy = false);
+    }
   }
 
   @override
   void dispose() {
     _logger.endActiveSession(_sessionId);
     _scrollController.dispose();
+    _bookmarkedNow.dispose();
     super.dispose();
   }
 
@@ -107,6 +206,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
       _selectedConjunct = null;
       _showFloatingCard = false;
     });
+    // A bookmark belongs to a page, so turning one changes the answer.
+    _publishBookmarkState();
     _pageStopwatch
       ..reset()
       ..start();
@@ -180,8 +281,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
   Future<void> _openSettings() async {
     await showReadingSettingsPanel(
       context,
-      bookmarked: _bookmarked,
-      onToggleBookmark: () => setState(() => _bookmarked = !_bookmarked),
+      bookmarked: _bookmarkedNow,
+      onToggleBookmark: _toggleBookmark,
     );
   }
 
@@ -213,7 +314,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
               bookmarked: _bookmarked,
               settingsLocked: settingsLocked,
               onBack: () => Navigator.of(context).maybePop(),
-              onBookmark: () => setState(() => _bookmarked = !_bookmarked),
+              onBookmark: _toggleBookmark,
               onSettings: _openSettings,
             ),
             _ProgressBar(progress: _progress, surface: surface),

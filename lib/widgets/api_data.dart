@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../api/api_exception.dart';
+import '../app/route_observer.dart';
 import '../theme/app_colors.dart';
 import 'app_buttons.dart';
 
@@ -40,7 +41,8 @@ class ApiData<T> extends StatefulWidget {
   State<ApiData<T>> createState() => _ApiDataState<T>();
 }
 
-class _ApiDataState<T> extends State<ApiData<T>> {
+class _ApiDataState<T> extends State<ApiData<T>>
+    with RefreshOnRouteReturn<ApiData<T>> {
   T? _data;
   String? _error;
   bool _loading = true;
@@ -55,6 +57,13 @@ class _ApiDataState<T> extends State<ApiData<T>> {
     super.initState();
     _load();
   }
+
+  /// Whatever the reader did on the screen above may have changed this one:
+  /// bookmarking from Reading, deleting from Bookmarks, finishing a quiz.
+  /// The existing data stays on screen while this runs, so it re-reads
+  /// without a flash of spinner.
+  @override
+  void onRouteReturn() => _load();
 
   Future<void> _load() async {
     if (!mounted) return;

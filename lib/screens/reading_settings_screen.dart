@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -15,9 +16,14 @@ import '../widgets/therapist_password_dialog.dart';
 /// sliding in from the right over a dimmed backdrop, exactly as drawn there
 /// (`position:absolute;top:0;right:0;bottom:0;width:352px`) rather than the
 /// bottom sheet Material usually reaches for.
+///
+/// [bookmarked] is a listenable rather than a bool because saving is a round
+/// trip to the server: the panel is already on screen when the answer arrives,
+/// and a captured bool would leave its chip showing the state from before the
+/// tap.
 Future<void> showReadingSettingsPanel(
   BuildContext context, {
-  required bool bookmarked,
+  required ValueListenable<bool> bookmarked,
   required VoidCallback onToggleBookmark,
 }) {
   return Navigator.of(context).push(
@@ -57,7 +63,7 @@ class ReadingSettingsScreen extends StatefulWidget {
     required this.onToggleBookmark,
   });
 
-  final bool bookmarked;
+  final ValueListenable<bool> bookmarked;
   final VoidCallback onToggleBookmark;
 
   @override
@@ -891,7 +897,7 @@ class _AssistanceGrid extends StatelessWidget {
     required this.onToggleBookmark,
   });
 
-  final bool bookmarked;
+  final ValueListenable<bool> bookmarked;
   final VoidCallback onToggleBookmark;
 
   void _notImplemented(BuildContext context, String feature) {
@@ -907,14 +913,17 @@ class _AssistanceGrid extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: ChoiceTile(
-            label: 'Bookmark',
-            selected: bookmarked,
-            onTap: onToggleBookmark,
-            child: Icon(
-              bookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-              color: bookmarked ? Colors.white : AppColors.navy,
-              size: 20,
+          child: ValueListenableBuilder<bool>(
+            valueListenable: bookmarked,
+            builder: (context, saved, _) => ChoiceTile(
+              label: 'Bookmark',
+              selected: saved,
+              onTap: onToggleBookmark,
+              child: Icon(
+                saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                color: saved ? Colors.white : AppColors.navy,
+                size: 20,
+              ),
             ),
           ),
         ),

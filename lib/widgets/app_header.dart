@@ -17,18 +17,38 @@ class AppHeader extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.onBack,
+    this.leading,
     this.trailing = const [],
     this.bottom,
+    this.alwaysShowBack = false,
   });
 
   final String title;
   final String? subtitle;
   final VoidCallback? onBack;
+
+  /// Replaces the title/subtitle block for a screen whose heading is not two
+  /// lines of text — Home puts the reader's avatar and greeting here, so it
+  /// shares the bar with the notification bell instead of costing a row of
+  /// the page below.
+  final Widget? leading;
+
   final List<Widget> trailing;
   final Widget? bottom;
 
+  /// Forces the arrow on even at the root of a navigator — for the rare
+  /// screen whose back action is something other than popping a route.
+  final bool alwaysShowBack;
+
   @override
   Widget build(BuildContext context) {
+    // A back arrow with nothing to pop is a dead control, and the reader has
+    // no way to tell it apart from a broken app. Library and Progress live
+    // inside HomeShell's IndexedStack, where there is no route beneath them —
+    // checking here fixes every screen at once rather than one at a time.
+    final canGoBack =
+        onBack != null && (alwaysShowBack || Navigator.of(context).canPop());
+
     return Container(
       width: double.infinity,
       color: AppColors.navy,
@@ -38,7 +58,7 @@ class AppHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              if (onBack != null)
+              if (canGoBack)
                 IconOnlyButton(
                   onPressed: onBack,
                   tooltip: 'Back',
@@ -47,32 +67,35 @@ class AppHeader extends StatelessWidget {
                 )
               else
                 const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                    if (subtitle != null)
+              if (leading != null)
+                Expanded(child: leading!)
+              else
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       Text(
-                        subtitle!,
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.onNavyMuted,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
                         ),
                       ),
-                  ],
+                      if (subtitle != null)
+                        Text(
+                          subtitle!,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.onNavyMuted,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
               ...trailing,
             ],
           ),

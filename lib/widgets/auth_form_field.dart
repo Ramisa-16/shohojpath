@@ -12,6 +12,7 @@ class AuthFormField extends StatelessWidget {
     super.key,
     required this.label,
     required this.controller,
+    this.focusNode,
     this.hint,
     this.icon,
     this.obscure = false,
@@ -27,6 +28,11 @@ class AuthFormField extends StatelessWidget {
 
   final String label;
   final TextEditingController controller;
+
+  /// Lets a caller move focus here — Library's search field is focused on
+  /// arrival when the reader came from Home's search shortcut.
+  final FocusNode? focusNode;
+
   final String? hint;
   final IconData? icon;
   final bool obscure;
@@ -74,6 +80,7 @@ class AuthFormField extends StatelessWidget {
               Expanded(
                 child: TextField(
                   controller: controller,
+                  focusNode: focusNode,
                   obscureText: obscure,
                   enabled: enabled,
                   keyboardType: keyboardType,

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../app/app_nav_state.dart';
 import '../models/passage.dart';
 import '../services/passage_repository.dart';
 import '../theme/app_colors.dart';
@@ -27,7 +28,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
   static const _difficulties = ['Easy', 'Medium', 'Hard'];
 
   final _search = TextEditingController();
+  final _searchFocus = FocusNode();
   Timer? _debounce;
+
+  late final AppNavState _nav;
 
   String _category = 'All';
   String? _difficulty;
@@ -38,14 +42,30 @@ class _LibraryScreenState extends State<LibraryScreen> {
   @override
   void initState() {
     super.initState();
+    _nav = context.read<AppNavState>();
+    _nav.addListener(_onNavChanged);
     _loadCategories();
   }
 
   @override
   void dispose() {
+    _nav.removeListener(_onNavChanged);
     _debounce?.cancel();
+    _searchFocus.dispose();
     _search.dispose();
     super.dispose();
+  }
+
+  /// Arriving from Home's search shortcut: put the cursor in the field so the
+  /// keyboard is already up and the reader can just type.
+  void _onNavChanged() {
+    if (_nav.tab != AppTab.library) return;
+    if (!_nav.takeSearchFocusRequest()) return;
+    // After the frame that switches the tab — until then this field is the
+    // hidden child of an IndexedStack and cannot take focus.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _searchFocus.requestFocus();
+    });
   }
 
   Future<void> _loadCategories() async {
@@ -77,6 +97,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
               bottom: AuthFormField(
                 label: '',
                 controller: _search,
+                focusNode: _searchFocus,
                 icon: Icons.search_rounded,
                 hint: 'Search by title or topic',
                 onChanged: _onSearchChanged,

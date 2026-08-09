@@ -21,4 +21,24 @@ class AppNavState extends ChangeNotifier {
     _tab = tab;
     notifyListeners();
   }
+
+  bool _searchFocusRequested = false;
+
+  /// Home's search field is a shortcut into Library's real one, so switching
+  /// tabs is only half the job: arriving at a search screen with the keyboard
+  /// down leaves the reader to tap a second time for the thing they already
+  /// asked for.
+  void openLibrarySearch() {
+    _searchFocusRequested = true;
+    _tab = AppTab.library;
+    notifyListeners();
+  }
+
+  /// Reads the request and clears it. One-shot on purpose — a later rebuild
+  /// of Library (a filter tap, a rotation) must not pop the keyboard back up.
+  bool takeSearchFocusRequest() {
+    if (!_searchFocusRequested) return false;
+    _searchFocusRequested = false;
+    return true;
+  }
 }

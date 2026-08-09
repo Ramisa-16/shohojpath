@@ -4,21 +4,34 @@ import 'package:flutter/foundation.dart';
 
 /// Where the Django backend lives.
 ///
-/// Override at build time so a device build never has to be edited by hand:
+/// Override at build time when neither default is right — a second server, or
+/// testing a release build against a laptop:
 ///
-///   flutter run --dart-define=API_BASE_URL=https://shohojpath.onrender.com
+///   flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8001
 abstract final class ApiConfig {
   static const String _override = String.fromEnvironment('API_BASE_URL');
 
+  /// The deployed study backend.
+  static const String production = 'https://shohojpath.pythonanywhere.com';
+
+  /// Release builds talk to the server, debug builds talk to the laptop.
+  ///
+  /// Keyed on the build mode rather than left to a `--dart-define` on every
+  /// release: an APK is what goes on a study device, and one built without
+  /// the flag would silently point at a development machine that is not
+  /// there. Forgetting a flag should not be able to produce an app that
+  /// looks fine and records nothing.
+  ///
   /// The Android emulator cannot reach the host machine on `localhost` — that
   /// resolves to the emulator itself. 10.0.2.2 is the loopback alias the
   /// emulator maps to the host, and getting this wrong is the single most
   /// common reason a local backend "doesn't work" from the app.
   static String get baseUrl {
     if (_override.isNotEmpty) return _override;
-    if (kIsWeb) return 'http://127.0.0.1:8000';
-    if (Platform.isAndroid) return 'http://10.0.2.2:8000';
-    return 'http://127.0.0.1:8000';
+    if (kReleaseMode) return production;
+    if (kIsWeb) return 'http://127.0.0.1:8001';
+    if (Platform.isAndroid) return 'http://10.0.2.2:8001';
+    return 'http://127.0.0.1:8001';
   }
 
   static Uri url(String path, [Map<String, dynamic>? query]) {

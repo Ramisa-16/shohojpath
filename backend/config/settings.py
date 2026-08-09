@@ -87,6 +87,17 @@ DATABASES = {
 }
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
 
+# SQLite is the production database on PythonAnywhere's free tier, whose
+# filesystem is persistent (unlike the ephemeral disks on Render and friends)
+# but network-backed, so a lock is held for longer than on a local disk. The
+# default five-second timeout is enough to turn two readers syncing at once
+# into "database is locked"; twenty is not noticeable to anyone and removes
+# the failure. WAL is deliberately NOT enabled — it needs shared memory that
+# network filesystems do not provide.
+if DATABASES["default"]["ENGINE"].endswith("sqlite3"):
+    DATABASES["default"].setdefault("OPTIONS", {})
+    DATABASES["default"]["OPTIONS"]["timeout"] = env.int("SQLITE_TIMEOUT", default=20)
+
 AUTH_USER_MODEL = "accounts.User"
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -154,3 +165,20 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+    # Children's reading data and the admin password travel over this, so a
+    # real host must set SECURE_SSL_REDIRECT=True in its .env — deploy/env.example
+    # does, and `manage.py check --deploy` fails the deploy script if it is
+    # missing.
+    #
+    # Not defaulted to True: the test runner also runs with DEBUG=False, and a
+    # blanket redirect turns every test request into a 301 before it reaches a
+    # view. Defaulting it on silently broke 73 tests. The check is the guard
+    # here, not the default.
+    SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=False)
+
+# security.W021 asks for SECURE_HSTS_PRELOAD. Preloading is a submission to a
+# list browsers ship, and it applies to the whole domain — on a shared host
+# like username.pythonanywhere.com that domain belongs to someone else, so
+# asking for it would be both ineffective and presumptuous. HSTS itself is on.
+SILENCED_SYSTEM_CHECKS = ["security.W021"]

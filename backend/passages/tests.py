@@ -350,9 +350,9 @@ class QuizQuestionTests(APITestCase):
 class SeededPassageTests(APITestCase):
     """A fresh install must find a real Library, not an empty one.
 
-    The passages the app used to carry compiled in are seeded by migration, so
-    a researcher can open the admin and edit study material rather than being
-    handed a blank database.
+    The study material is the ঈশপের গল্প set, seeded by migration so a new
+    machine or a first deploy converges on the same library rather than
+    resurrecting the sample passages the app used to carry.
     """
 
     def setUp(self):
@@ -364,35 +364,73 @@ class SeededPassageTests(APITestCase):
 
     def test_the_library_is_populated_on_a_fresh_database(self):
         response = self.client.get(reverse("passages:list"))
-        self.assertGreaterEqual(len(response.data["results"]), 5)
-
-    def test_the_sample_story_has_its_pages_and_questions(self):
-        response = self.client.get(
-            reverse("passages:detail", args=["bristir_dine_mitu"])
+        self.assertGreaterEqual(
+            response.data["count"], 20, "the study needs at least 20 passages"
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["title"], "বৃষ্টির দিনে মিতু")
-        self.assertEqual(len(response.data["pages"]), 6)
-        self.assertEqual(len(response.data["questions"]), 5)
+
+    def test_the_retired_sample_passages_are_gone(self):
+        slugs = [p["id"] for p in self.client.get(reverse("passages:list")).data["results"]]
+        for retired in ("bristir_dine_mitu", "amader_gram", "nodir_golpo"):
+            self.assertNotIn(retired, slugs)
+
+    def test_every_seeded_passage_has_pages(self):
+        for passage in Passage.objects.all():
+            self.assertGreater(
+                passage.pages.count(), 0, f"{passage.slug} has no pages"
+            )
+
+    def test_every_seeded_passage_has_questions(self):
+        # The seed originally imported pages but not questions. Locally that
+        # went unnoticed because the questions had been loaded separately, so
+        # only a fresh database — the first real deploy — would have shown
+        # thirty stories with an empty quiz on every one.
+        for passage in Passage.objects.filter(is_published=True):
+            self.assertGreater(
+                passage.questions.count(),
+                0,
+                f"{passage.slug} would open an empty comprehension screen",
+            )
+
+    def test_seeded_questions_are_answerable(self):
+        # A question whose correct_index points past the end of its options
+        # can never be got right, and the comprehension score would be wrong
+        # for every reader who met it.
+        for question in QuizQuestion.objects.all():
+            self.assertGreaterEqual(len(question.options), 2, str(question))
+            self.assertLess(question.correct_index, len(question.options), str(question))
+            self.assertTrue(question.prompt.strip(), str(question))
 
     def test_paragraphs_survived_the_import_intact(self):
-        page = Passage.objects.get(slug="bristir_dine_mitu").pages.first()
-        paragraphs = page.paragraphs
-        self.assertEqual(len(paragraphs), 2)
-        # Dart concatenated adjacent literals; a bad import shows up as a
-        # doubled space at the seam or a word split across it.
-        for paragraph in paragraphs:
-            self.assertNotIn('  ', paragraph)
-        self.assertTrue(paragraphs[0].startswith('একদিন সকালে'))
-        self.assertIn('ঝিরিঝিরি বৃষ্টি', paragraphs[0])
+        for page in PassagePage.objects.all()[:40]:
+            for paragraph in page.paragraphs:
+                self.assertNotIn('  ', paragraph)
+                self.assertTrue(paragraph.strip())
 
-    def test_every_seeded_question_is_answerable(self):
-        for question in QuizQuestion.objects.all():
-            self.assertGreaterEqual(len(question.options), 2)
-            self.assertLess(question.correct_index, len(question.options))
+    def test_the_broken_bengali_aa_was_repaired(self):
+        # Some source posts encode আ as অ + া, a Bijoy-to-Unicode artefact.
+        # It looks nearly identical but is a different character sequence, and
+        # the conjunct scanner works at exactly that level.
+        for passage in Passage.objects.all():
+            self.assertNotIn('\u0985\u09be', passage.title)
+            for page in passage.pages.all():
+                self.assertNotIn('\u0985\u09be', page.body)
 
     def test_all_difficulties_are_represented(self):
         # The Library's difficulty filter is worth nothing if every passage is
         # Easy — the seed spans the range so the control can be exercised.
         levels = set(Passage.objects.values_list("difficulty", flat=True))
         self.assertGreaterEqual(len(levels), 3)
+
+    def test_the_material_actually_contains_conjuncts(self):
+        # The whole prototype is about যুক্তাক্ষর. Study material without them
+        # would make the conjunct settings unmeasurable.
+        hasant = '\u09cd'
+        total = sum(
+            page.body.count(hasant) for page in PassagePage.objects.all()
+        )
+        self.assertGreater(total, 200)
+
+    def test_every_seeded_question_is_answerable(self):
+        for question in QuizQuestion.objects.all():
+            self.assertGreaterEqual(len(question.options), 2)
+            self.assertLess(question.correct_index, len(question.options))

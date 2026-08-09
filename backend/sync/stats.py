@@ -17,7 +17,7 @@ from django.utils import timezone
 
 from passages.models import Passage
 
-from .models import SettingsChange, StudySession
+from .models import PageTime, SettingsChange, StudySession
 
 
 def sessions_for(participant_id):
@@ -34,7 +34,16 @@ def build_progress(participant_id):
     seconds_today = today_sessions.aggregate(total=Sum("total_reading_seconds"))[
         "total"
     ] or 0
-    pages_today = today_sessions.aggregate(pages=Count("page_times"))["pages"] or 0
+    # Distinct pages of distinct passages, not page-time rows. A reader who
+    # closes a story and opens it again starts a new session, and counting
+    # every visit made one 2-page fable opened twice read as four pages.
+    # Re-reading is not new reading, so the same page counts once a day.
+    pages_today = (
+        PageTime.objects.filter(session__in=today_sessions)
+        .values("session__passage_id", "page_index")
+        .distinct()
+        .count()
+    )
 
     # Seven days ending today, zero-filled: the chart needs a bar for every
     # weekday, including the ones with no reading.
@@ -60,12 +69,19 @@ def build_progress(participant_id):
         passage = Passage.objects.filter(slug=latest.passage_id).first()
         pages_done = latest.page_times.count()
         total_pages = passage.page_count if passage else 0
+
+        # Study material gets replaced between rounds, and a session outlives
+        # the passage it names. Saying so is better than showing the raw slug
+        # as a title and 0% next to pages the participant demonstrably read.
         current = {
             "passage_id": latest.passage_id,
-            "title": passage.title if passage else latest.passage_id,
+            "title": passage.title if passage else None,
+            "available": passage is not None,
             "pages_read": pages_done,
             "page_count": total_pages,
-            "percent": round(100 * pages_done / total_pages, 1) if total_pages else 0,
+            "percent": (
+                round(100 * pages_done / total_pages, 1) if total_pages else None
+            ),
             "last_read_at": latest.started_at.isoformat(),
         }
 

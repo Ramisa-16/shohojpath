@@ -174,6 +174,39 @@ class DerivedDataTests(APITestCase):
         self.assertEqual(response.data["pages_today"], 2)
         self.assertEqual(len(response.data["week"]), 7)
 
+    def test_reopening_a_passage_does_not_recount_its_pages(self):
+        # A reader who closes a story and opens it again starts a second
+        # session over the same pages. Counting page-time rows made one
+        # 2-page fable opened three times report six pages read.
+        for sid in ("s2", "s3"):
+            self.client.post(
+                reverse("sync:upload"),
+                {"sessions": [session_payload(sid, self.reader.participant_id)]},
+                format="json",
+            )
+
+        response = self.client.get(reverse("sync:progress"))
+        self.assertEqual(response.data["sessions_total"], 3)
+        self.assertEqual(response.data["pages_today"], 2)
+
+    def test_pages_today_counts_each_passage_separately(self):
+        # Two different stories, same page indexes: these are four distinct
+        # pages, so deduplicating must not collapse them to two.
+        self.client.post(
+            reverse("sync:upload"),
+            {
+                "sessions": [
+                    session_payload(
+                        "s2", self.reader.participant_id, passage_id="other"
+                    )
+                ]
+            },
+            format="json",
+        )
+
+        response = self.client.get(reverse("sync:progress"))
+        self.assertEqual(response.data["pages_today"], 4)
+
     def test_progress_reports_current_passage_percent(self):
         response = self.client.get(reverse("sync:progress"))
         current = response.data["current_passage"]

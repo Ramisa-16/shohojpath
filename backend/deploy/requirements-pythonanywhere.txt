@@ -1,0 +1,14 @@
+# PythonAnywhere free tier: 512 MB disk for everything — the virtualenv, the
+# repo, the database and the collected static files. This is the full
+# requirements list minus the two packages that host does not use:
+#
+#   psycopg[binary]  ~35 MB, only needed for PostgreSQL
+#   gunicorn         PythonAnywhere serves WSGI itself
+#
+# Keep in step with ../requirements.txt when versions change.
+Django==5.2.13
+djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
+django-cors-headers==4.9.0
+django-environ==0.13.0
+whitenoise==6.12.0

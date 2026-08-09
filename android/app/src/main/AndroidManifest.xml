@@ -1,4 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Flutter's template declares this only in the debug and profile
+         manifests, so a release APK ships with no network access at all: the
+         app runs, looks correct, and reports "No connection to the server"
+         forever. The study build is a release build, so it belongs here. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Read before syncing, so a queued session waits for a real connection
+         instead of being retried against a radio that is switched off. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
     <application
         android:label="সহজপাঠ"
         android:name="${applicationName}"

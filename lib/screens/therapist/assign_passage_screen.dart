@@ -9,6 +9,7 @@ import '../../theme/app_colors.dart';
 import '../../widgets/app_buttons.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/settings_controls.dart';
+import '../../l10n/app_strings.dart';
 
 /// Screen `tassign` of the v2 design — a therapist picking which library
 /// passages a reader should see. Each toggle writes straight to
@@ -111,7 +112,7 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            AppHeader(title: 'Assign Passages', onBack: () => Navigator.of(context).maybePop()),
+            AppHeader(title: context.t.assignPassagesTitle, onBack: () => Navigator.of(context).maybePop()),
             Container(
               color: Colors.white,
               padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
@@ -138,11 +139,11 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const FittedBox(
+                  FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'DIFFICULTY',
+                      context.t.difficulty,
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body),
                     ),
                   ),
@@ -197,8 +198,8 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
                         ),
                       )
                     : results.isEmpty
-                        ? const Center(
-                            child: Text('No passages match these filters.', style: TextStyle(fontSize: 15, color: AppColors.muted)),
+                        ? Center(
+                            child: Text(context.t.noPassagesMatch, style: TextStyle(fontSize: 15, color: AppColors.muted)),
                           )
                         : ListView.separated(
                             padding: const EdgeInsets.all(14),

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../data/mock_content.dart';
 import '../services/app_content.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/app_header.dart';
@@ -27,7 +28,7 @@ class HelpScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            AppHeader(title: 'Help', onBack: () => Navigator.of(context).maybePop()),
+            AppHeader(title: context.t.help, onBack: () => Navigator.of(context).maybePop()),
             Expanded(
               child: Container(
                 color: AppColors.canvas,
@@ -40,8 +41,8 @@ class HelpScreen extends StatelessWidget {
                       decoration: BoxDecoration(color: AppColors.navyTint, borderRadius: BorderRadius.circular(16)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('How to use Shohojpath', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.navy)),
+                        children: [
+                          Text(context.t.howToUse, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.navy)),
                           SizedBox(height: 8),
                           Text(
                             'Pick a passage from the Library, then tap the settings button while '
@@ -58,7 +59,7 @@ class HelpScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Accessibility features', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.navy)),
+                          Text(context.t.accessibilityFeatures, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.navy)),
                           const SizedBox(height: 13),
                           for (final f in context.watch<AppContent>().helpFeatures) ...[
                             Padding(
@@ -110,11 +111,11 @@ class HelpScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     ListRowButton(
                       leading: const Icon(Icons.mail_rounded, color: AppColors.navy, size: 24),
-                      title: 'Contact the research team',
+                      title: context.t.contactResearchTeam,
                       onTap: () => showDialog<void>(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Contact the research team'),
+                          title: Text(context.t.contactResearchTeam),
                           content: const Text('research-team@example.edu (placeholder contact address).'),
                           actions: [
                             TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK')),

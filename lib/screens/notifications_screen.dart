@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../api/api_exception.dart';
 import '../api/shohojpath_api.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/api_data.dart';
 import '../widgets/app_header.dart';
@@ -45,13 +46,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         child: Column(
           children: [
             AppHeader(
-              title: 'Notifications',
+              title: context.t.notifications,
               onBack: () => Navigator.of(context).maybePop(),
               trailing: [
                 TextButton(
                   onPressed: _markAllRead,
-                  child: const Text(
-                    'Mark all read',
+                  child: Text(
+                    context.t.markAllRead,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -69,9 +70,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   load: api.notifications,
                   isEmpty: (rows) => rows.isEmpty,
                   emptyIcon: Icons.notifications_none_rounded,
-                  emptyTitle: 'No messages',
-                  emptyBody: 'When a therapist adds you or assigns a passage, '
-                      'it will appear here.',
+                  emptyTitle: context.t.noMessages,
+                  emptyBody: context.t.noNotificationsBody,
                   builder: (context, rows, refresh) => RefreshIndicator(
                     onRefresh: refresh,
                     child: ListView.separated(
@@ -203,7 +203,7 @@ class _NotificationCard extends StatelessWidget {
                   if (created != null) ...[
                     const SizedBox(height: 7),
                     Text(
-                      _ago(created.toLocal()),
+                      _ago(context.t, created.toLocal()),
                       style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.muted,
@@ -212,8 +212,8 @@ class _NotificationCard extends StatelessWidget {
                   ],
                   if (!isRead) ...[
                     const SizedBox(height: 6),
-                    const Text(
-                      'Tap to mark as read',
+                    Text(
+                      context.t.tapToMarkRead,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -230,12 +230,12 @@ class _NotificationCard extends StatelessWidget {
     );
   }
 
-  static String _ago(DateTime when) {
+  static String _ago(AppStrings t, DateTime when) {
     final diff = DateTime.now().difference(when);
-    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 1) return t.justNow;
     if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
     if (diff.inHours < 24) return '${diff.inHours} h ago';
-    if (diff.inDays == 1) return 'Yesterday';
+    if (diff.inDays == 1) return t.yesterday;
     if (diff.inDays < 7) return '${diff.inDays} days ago';
     return '${when.day}/${when.month}/${when.year}';
   }
@@ -278,7 +278,7 @@ class _NotificationBellState extends State<NotificationBell> {
       alignment: Alignment.center,
       children: [
         IconButton(
-          tooltip: 'Notifications',
+          tooltip: context.t.notifications,
           icon: Icon(Icons.notifications_rounded, color: widget.color, size: 26),
           onPressed: () async {
             await Navigator.of(context).push(

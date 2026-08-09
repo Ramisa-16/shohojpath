@@ -7,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
 import '../widgets/export_data_action.dart';
 import '../widgets/settings_controls.dart';
+import '../l10n/app_strings.dart';
 
 /// Not on any menu — reached only by a long-press on the version number on
 /// the About screen. A researcher running the study needs a quick way to
@@ -46,17 +47,17 @@ class _ResearcherScreenState extends State<ResearcherScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear all data?'),
+        title: Text(context.tOnce.clearAllDataQuestion),
         content: const Text(
           'Deletes every session, settings-change log, quiz answer, SUS '
           'response and NASA-TLX rating for every participant. This cannot '
           'be undone — export first if you need a copy.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(context.tOnce.cancel)),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Clear everything', style: TextStyle(color: AppColors.danger)),
+            child: Text(context.tOnce.clearEverything, style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -65,7 +66,7 @@ class _ResearcherScreenState extends State<ResearcherScreen> {
     await context.read<SessionLogger>().clearAllData();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('All session data cleared.')),
+      SnackBar(content: Text(context.tOnce.allDataCleared)),
     );
     _refresh();
   }
@@ -76,7 +77,7 @@ class _ResearcherScreenState extends State<ResearcherScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            AppHeader(title: 'Researcher', onBack: () => Navigator.of(context).maybePop()),
+            AppHeader(title: context.t.researcher, onBack: () => Navigator.of(context).maybePop()),
             Expanded(
               child: Container(
                 color: AppColors.canvas,
@@ -95,7 +96,7 @@ class _ResearcherScreenState extends State<ResearcherScreen> {
                                   _sessionCount?.toString() ?? '—',
                                   style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.navy),
                                 ),
-                                const Text('Sessions logged', style: TextStyle(fontSize: 14, color: AppColors.muted)),
+                                Text(context.t.sessionsLogged, style: TextStyle(fontSize: 14, color: AppColors.muted)),
                               ],
                             ),
                           ),
@@ -111,7 +112,7 @@ class _ResearcherScreenState extends State<ResearcherScreen> {
                                   _readerCount?.toString() ?? '—',
                                   style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.navy),
                                 ),
-                                const Text('Readers registered', style: TextStyle(fontSize: 14, color: AppColors.muted)),
+                                Text(context.t.readersRegistered, style: TextStyle(fontSize: 14, color: AppColors.muted)),
                               ],
                             ),
                           ),
@@ -122,11 +123,11 @@ class _ResearcherScreenState extends State<ResearcherScreen> {
                     WhiteCard(
                       onTap: () => exportAndShareCsv(context),
                       child: Row(
-                        children: const [
+                        children: [
                           Icon(Icons.download_rounded, color: AppColors.navy, size: 24),
                           SizedBox(width: 11),
                           Expanded(
-                            child: Text('Export all data as CSV', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                            child: Text(context.t.exportAllCsv, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
                           ),
                           Icon(Icons.chevron_right_rounded, color: AppColors.muted),
                         ],
@@ -146,11 +147,11 @@ class _ResearcherScreenState extends State<ResearcherScreen> {
                             border: Border.all(color: AppColors.dangerBorder, width: 1.5),
                           ),
                           child: Row(
-                            children: const [
+                            children: [
                               Icon(Icons.delete_forever_rounded, color: AppColors.danger, size: 24),
                               SizedBox(width: 11),
                               Text(
-                                'Clear all data',
+                                context.t.clearAllData,
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.danger),
                               ),
                             ],

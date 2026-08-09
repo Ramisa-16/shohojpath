@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../services/csv_export.dart';
+import '../l10n/app_strings.dart';
 
 /// Generates the CSV files and opens the platform share sheet with all of
 /// them at once — the one place both the Settings screen's "Export session
@@ -21,7 +22,7 @@ Future<void> exportAndShareCsv(BuildContext context) async {
   } catch (e) {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Export failed: $e')),
+      SnackBar(content: Text('${context.tOnce.exportFailed}: $e')),
     );
   }
 }

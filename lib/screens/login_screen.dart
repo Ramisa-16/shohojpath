@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../app/auth_state.dart';
 import '../app/participant_state.dart';
 import '../services/reader_repository.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/auth_form_field.dart';
@@ -42,9 +43,9 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _validate() {
     setState(() {
       _emailError =
-          _email.text.trim().isEmpty ? 'Please enter your email.' : null;
+          _email.text.trim().isEmpty ? context.t.enterYourEmail : null;
       _passwordError =
-          _password.text.isEmpty ? 'Please enter your password.' : null;
+          _password.text.isEmpty ? context.t.enterYourPassword : null;
     });
     return _emailError == null && _passwordError == null;
   }
@@ -113,8 +114,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Welcome back',
+            Text(
+              context.t.welcomeBack,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
@@ -132,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
             if (auth.error != null) AuthErrorBanner(message: auth.error!),
 
             AuthFormField(
-              label: 'Email',
+              label: context.t.email,
               controller: _email,
               icon: Icons.mail_outline_rounded,
               hint: 'you@example.com',
@@ -145,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 14),
             AuthFormField(
-              label: 'Password',
+              label: context.t.password,
               controller: _password,
               icon: Icons.lock_outline_rounded,
               obscure: _obscure,
@@ -157,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
               onSubmitted: (_) => _logIn(),
               trailing: IconButton(
                 onPressed: () => setState(() => _obscure = !_obscure),
-                tooltip: _obscure ? 'Show password' : 'Hide password',
+                tooltip: _obscure ? context.t.showPassword : context.t.hidePassword,
                 icon: Icon(
                   _obscure
                       ? Icons.visibility_off_rounded
@@ -195,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 16),
 
             SecondaryButton(
-              label: 'Continue as Guest',
+              label: context.t.continueAsGuest,
               onPressed: auth.isBusy ? null : _continueAsGuest,
             ),
             const SizedBox(height: 8),
@@ -218,8 +219,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   TextButton(
                     onPressed: auth.isBusy ? null : _openSignUp,
-                    child: const Text(
-                      'Create an account',
+                    child: Text(
+                      context.t.createAnAccount,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,

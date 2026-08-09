@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../services/app_content.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
 import 'researcher_screen.dart';
@@ -19,7 +20,7 @@ class AboutScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            AppHeader(title: 'About', onBack: () => Navigator.of(context).maybePop()),
+            AppHeader(title: context.t.about, onBack: () => Navigator.of(context).maybePop()),
             Expanded(
               child: Container(
                 color: AppColors.canvas,
@@ -55,8 +56,8 @@ class AboutScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'RESEARCH TITLE',
+                          Text(
+                            context.t.researchTitle,
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body),
                           ),
                           const SizedBox(height: 8),
@@ -113,7 +114,7 @@ class AboutScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Accessibility summary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.navy)),
+                          Text(context.t.accessibilitySummary, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.navy)),
                           const SizedBox(height: 10),
                           for (final line in context.watch<AppContent>().accessibilitySummary)
                             Padding(
@@ -141,8 +142,8 @@ class AboutScreen extends StatelessWidget {
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('Disclaimer', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.focusText)),
+                        children: [
+                          Text(context.t.disclaimer, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.focusText)),
                           SizedBox(height: 8),
                           Text(
                             'This application is a reading support tool. It is not a diagnostic '
@@ -159,8 +160,8 @@ class AboutScreen extends StatelessWidget {
                         onLongPress: () => Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const ResearcherScreen()),
                         ),
-                        child: const Text(
-                          'Version 1.0 · Research Prototype',
+                        child: Text(
+                          context.t.versionLine,
                           style: TextStyle(fontSize: 14, color: AppColors.muted),
                         ),
                       ),

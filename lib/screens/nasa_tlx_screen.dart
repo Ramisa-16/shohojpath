@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../models/study_session.dart';
 import '../services/session_logger.dart';
 import '../services/sync_service.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/app_header.dart';
@@ -45,7 +46,7 @@ class _NasaTlxScreenState extends State<NasaTlxScreen> {
             const TherapistSessionBanner(),
             AppHeader(
               title: 'NASA-TLX',
-              subtitle: 'Optional · workload rating',
+              subtitle: context.t.optionalWorkload,
               onBack: () => Navigator.of(context).maybePop(),
             ),
             Expanded(
@@ -86,15 +87,15 @@ class _NasaTlxScreenState extends State<NasaTlxScreen> {
                               divisions: 20,
                               onChanged: (v) => setState(() => session.tlx[name] = v.round()),
                             ),
-                            const Row(
+                            Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
-                                  child: Text('Very low', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.muted)),
+                                  child: Text(context.t.veryLow, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.muted)),
                                 ),
                                 Expanded(
                                   child: Text(
-                                    'Very high',
+                                    context.t.veryHigh,
                                     textAlign: TextAlign.end,
                                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.muted),
                                   ),
@@ -107,7 +108,7 @@ class _NasaTlxScreenState extends State<NasaTlxScreen> {
                       const SizedBox(height: 13),
                     ],
                     PrimaryButton(
-                      label: 'Submit session',
+                      label: context.t.submitSession,
                       onPressed: () async {
                         await context
                             .read<SessionLogger>()

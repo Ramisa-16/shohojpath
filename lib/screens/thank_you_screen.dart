@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../app/app_nav_state.dart';
 import '../models/study_session.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../utils/duration_format.dart';
 import '../widgets/app_buttons.dart';
@@ -49,8 +50,8 @@ class ThankYouScreen extends StatelessWidget {
                         child: const Icon(Icons.check_rounded, color: Colors.white, size: 50),
                       ),
                       const SizedBox(height: 16),
-                      const Text(
-                        'Thank you!',
+                      Text(
+                        context.t.thankYou,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.navy),
                       ),
@@ -73,17 +74,17 @@ class ThankYouScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _Row('Reading time', formatDurationLong(session.readingDuration)),
+                            _Row(context.t.readingTime, formatDurationLong(session.readingDuration)),
                             const SizedBox(height: 8),
-                            _Row('Comprehension', '${session.quizScore} / ${session.quizAnswers.length}'),
+                            _Row(context.t.comprehension, '${session.quizScore} / ${session.quizAnswers.length}'),
                             const SizedBox(height: 8),
-                            _Row('SUS score', session.susComplete ? session.susScore.toStringAsFixed(1) : '—'),
+                            _Row(context.t.susScore, session.susComplete ? session.susScore.toStringAsFixed(1) : '—'),
                           ],
                         ),
                       ),
                       const SizedBox(height: 20),
                       PrimaryButton(
-                        label: 'Back to Home',
+                        label: context.t.backToHome,
                         expand: false,
                         onPressed: () {
                           context.read<AppNavState>().select(AppTab.home);

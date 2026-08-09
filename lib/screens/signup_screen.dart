@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../app/auth_state.dart';
 import '../app/participant_state.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/auth_form_field.dart';
@@ -49,17 +50,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   bool _validate() {
     setState(() {
-      _nameError = _name.text.trim().isEmpty ? 'Please enter a name.' : null;
+      _nameError = _name.text.trim().isEmpty ? context.t.enterAName : null;
       final email = _email.text.trim();
       _emailError = email.isEmpty
-          ? 'Please enter an email address.'
+          ? context.t.enterAnEmail
           : (!email.contains('@') || !email.contains('.'))
-              ? 'That does not look like an email address.'
+              ? context.t.notAnEmail
               : null;
       // Mirrors the server's MinimumLengthValidator, so the obvious case is
       // caught without a round trip. The server remains the authority.
       _passwordError = _password.text.length < 8
-          ? 'Use at least 8 characters.'
+          ? context.t.useAtLeast8
           : null;
     });
     return _nameError == null && _emailError == null && _passwordError == null;
@@ -130,7 +131,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               children: [
                 Expanded(
                   child: _RoleChip(
-                    label: 'Reader',
+                    label: context.t.reader,
                     selected: isReader,
                     onTap: () => setState(() => _role = UserRole.reader),
                   ),
@@ -138,7 +139,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(width: 9),
                 Expanded(
                   child: _RoleChip(
-                    label: 'Therapist',
+                    label: context.t.therapistRole,
                     selected: !isReader,
                     onTap: () => setState(() => _role = UserRole.therapist),
                   ),
@@ -148,7 +149,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             const SizedBox(height: 18),
 
             AuthFormField(
-              label: 'Full name',
+              label: context.t.fullName,
               controller: _name,
               icon: Icons.person_outline_rounded,
               hint: isReader ? 'e.g. Mitu Rahman' : 'e.g. Dr A. Karim',
@@ -161,7 +162,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             const SizedBox(height: 14),
 
             AuthFormField(
-              label: 'Email',
+              label: context.t.email,
               controller: _email,
               icon: Icons.mail_outline_rounded,
               hint: 'you@example.com',
@@ -175,10 +176,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
             const SizedBox(height: 14),
 
             AuthFormField(
-              label: 'Password',
+              label: context.t.password,
               controller: _password,
               icon: Icons.lock_outline_rounded,
-              hint: 'At least 8 characters',
+              hint: context.t.atLeast8Characters,
               obscure: _obscure,
               errorText: _passwordError,
               textInputAction: TextInputAction.next,
@@ -187,7 +188,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               onChanged: (_) => _clear(),
               trailing: IconButton(
                 onPressed: () => setState(() => _obscure = !_obscure),
-                tooltip: _obscure ? 'Show password' : 'Hide password',
+                tooltip: _obscure ? context.t.showPassword : context.t.hidePassword,
                 icon: Icon(
                   _obscure
                       ? Icons.visibility_off_rounded
@@ -217,9 +218,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: AuthFormField(
-                      label: 'School (optional)',
+                      label: context.t.schoolOptional,
                       controller: _school,
-                      hint: 'Shimultoli High',
+                      hint: context.t.schoolExampleHint,
                       textInputAction: TextInputAction.done,
                       enabled: !auth.isBusy,
                       onSubmitted: (_) => _submit(),

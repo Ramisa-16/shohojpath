@@ -4,6 +4,8 @@ import '../../models/reading_settings.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_buttons.dart';
 import '../../widgets/settings_controls.dart';
+import '../../l10n/app_strings.dart';
+import '../../l10n/label_extensions.dart';
 
 /// The sheet a therapist sees on "Start session" — a research-integrity
 /// gate, not just a formality: Default and Recommended lock the reading
@@ -68,7 +70,7 @@ class _StartSessionSheetState extends State<StartSessionSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text('Start session', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: AppColors.navy)),
+              Text(context.t.startSession, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: AppColors.navy)),
               const SizedBox(height: 4),
               Text(
                 '${widget.name} · ${widget.participantId}',
@@ -82,7 +84,7 @@ class _StartSessionSheetState extends State<StartSessionSheet> {
               const SizedBox(height: 8),
               for (final profile in ReadingProfile.values) ...[
                 ProfileOptionTile(
-                  title: profile.label,
+                  title: profile.localisedLabel(context.t),
                   description: _descriptions[profile]!,
                   selected: _condition == profile,
                   onTap: () => setState(() => _condition = profile),
@@ -91,7 +93,7 @@ class _StartSessionSheetState extends State<StartSessionSheet> {
               ],
               const SizedBox(height: 18),
               PrimaryButton(
-                label: 'Start',
+                label: context.t.start,
                 onPressed: () => Navigator.of(context).pop(_condition),
               ),
             ],

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../api/shohojpath_api.dart';
 import '../services/passage_repository.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../utils/duration_format.dart';
 import '../widgets/api_data.dart';
@@ -32,7 +33,7 @@ class HistoryScreen extends StatelessWidget {
         child: Column(
           children: [
             AppHeader(
-              title: 'Reading History',
+              title: context.t.readingHistoryTitle,
               subtitle: readerName,
               onBack: () => Navigator.of(context).maybePop(),
             ),
@@ -44,7 +45,7 @@ class HistoryScreen extends StatelessWidget {
                       id == null ? api.mySessions() : api.readerSessions(id),
                   isEmpty: (rows) => rows.isEmpty,
                   emptyIcon: Icons.history_rounded,
-                  emptyTitle: 'No sessions yet',
+                  emptyTitle: context.t.noSessionsYet,
                   emptyBody: id == null
                       ? 'Finished readings appear here once they have synced.'
                       : 'This reader has not completed a session yet.',
@@ -97,7 +98,7 @@ class _SessionCardState extends State<_SessionCard> {
 
     if (passage.pages.isEmpty) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('That passage has no pages yet.')),
+        SnackBar(content: Text(context.tOnce.passageHasNoPages)),
       );
       return;
     }
@@ -160,7 +161,7 @@ class _SessionCardState extends State<_SessionCard> {
                 icon: readAloud
                     ? Icons.volume_up_rounded
                     : Icons.volume_off_rounded,
-                text: readAloud ? 'Read aloud' : 'No audio',
+                text: readAloud ? context.t.readAloudLabel : context.t.noAudio,
               ),
             ],
           ),
@@ -171,7 +172,7 @@ class _SessionCardState extends State<_SessionCard> {
           if (widget.canContinue) ...[
             const SizedBox(height: 9),
             PrimaryButton(
-              label: _opening ? 'Opening…' : 'Read again',
+              label: _opening ? context.t.opening : context.t.readAgain,
               onPressed: _opening ? null : _continue,
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../screens/therapist/therapist_profile_screen.dart';
 import '../theme/app_colors.dart';
+import '../l10n/app_strings.dart';
 
 /// The therapist side's two destinations — Dashboard is the root route
 /// (reached via `pushReplacement` from Login), Profile is always exactly one
@@ -20,10 +21,10 @@ class TherapistBottomTabBar extends StatelessWidget {
     TherapistTab.profile: Icons.person_rounded,
   };
 
-  static const _labels = {
-    TherapistTab.dashboard: 'Dashboard',
-    TherapistTab.profile: 'Profile',
-  };
+  static String _label(AppStrings t, TherapistTab tab) => switch (tab) {
+        TherapistTab.dashboard => t.dashboard,
+        TherapistTab.profile => t.tabProfile,
+      };
 
   void _goTo(BuildContext context, TherapistTab tab) {
     if (tab == current) return;
@@ -51,7 +52,7 @@ class TherapistBottomTabBar extends StatelessWidget {
               Expanded(
                 child: _TabButton(
                   icon: _icons[tab]!,
-                  label: _labels[tab]!,
+                  label: _label(context.t, tab),
                   selected: tab == current,
                   onTap: () => _goTo(context, tab),
                 ),

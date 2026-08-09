@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../l10n/app_strings.dart';
 
 /// The one password behind every therapist-gated action in this prototype
 /// (therapist login, unlocking a locked session's settings, ending a
@@ -59,7 +60,7 @@ class _TherapistPasswordDialogState extends State<_TherapistPasswordDialog> {
       Navigator.of(context).pop(true);
       return;
     }
-    setState(() => _error = 'Incorrect password.');
+    setState(() => _error = context.tOnce.incorrectPassword);
   }
 
   @override
@@ -80,14 +81,14 @@ class _TherapistPasswordDialogState extends State<_TherapistPasswordDialog> {
             obscureText: true,
             autofocus: true,
             onSubmitted: (_) => _submit(),
-            decoration: InputDecoration(hintText: 'Password', errorText: _error),
+            decoration: InputDecoration(hintText: context.t.password, errorText: _error),
           ),
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(context.t.cancel),
         ),
         FilledButton(onPressed: _submit, child: Text(widget.confirmLabel)),
       ],

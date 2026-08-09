@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../api/api_exception.dart';
 import '../api/shohojpath_api.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import 'app_buttons.dart';
 import 'auth_form_field.dart';
@@ -31,7 +32,7 @@ Future<bool> showChangePasswordSheet(BuildContext context) async {
   );
   if (changed == true && context.mounted) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Password changed.')),
+      SnackBar(content: Text(context.tOnce.passwordChanged)),
     );
   }
   return changed ?? false;
@@ -62,19 +63,19 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
 
   Future<void> _save() async {
     if (_current.text.isEmpty) {
-      setState(() => _error = 'Enter your current password.');
+      setState(() => _error = context.tOnce.enterCurrentPassword);
       return;
     }
     // Mirrors the server's MinimumLengthValidator so the obvious case does not
     // cost a round trip. The server stays the authority.
     if (_next.text.length < 8) {
-      setState(() => _error = 'Use at least 8 characters.');
+      setState(() => _error = context.tOnce.useAtLeast8);
       return;
     }
     // A mistyped new password would otherwise lock someone out of an account
     // they can no longer sign in to in order to fix.
     if (_next.text != _confirm.text) {
-      setState(() => _error = 'The two new passwords do not match.');
+      setState(() => _error = context.tOnce.passwordsDoNotMatch);
       return;
     }
 
@@ -101,6 +102,8 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
+
     return Padding(
       // Lifts the sheet clear of the keyboard, so the field being typed into
       // is never the one hidden behind it.
@@ -135,7 +138,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
               const SizedBox(height: 16),
               if (_error != null) AuthErrorBanner(message: _error!),
               AuthFormField(
-                label: 'Current password',
+                label: t.currentPassword,
                 controller: _current,
                 icon: Icons.lock_outline_rounded,
                 obscure: true,
@@ -144,17 +147,17 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
               ),
               const SizedBox(height: 12),
               AuthFormField(
-                label: 'New password',
+                label: t.newPassword,
                 controller: _next,
                 icon: Icons.lock_reset_rounded,
-                hint: 'At least 8 characters',
+                hint: t.atLeast8Characters,
                 obscure: true,
                 enabled: !_saving,
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 12),
               AuthFormField(
-                label: 'Confirm new password',
+                label: t.confirmNewPassword,
                 controller: _confirm,
                 icon: Icons.check_circle_outline_rounded,
                 obscure: true,
@@ -164,7 +167,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
               ),
               const SizedBox(height: 18),
               PrimaryButton(
-                label: _saving ? 'Saving…' : 'Change password',
+                label: _saving ? t.saving : t.changePassword,
                 onPressed: _saving ? null : _save,
               ),
               const SizedBox(height: 6),
@@ -172,7 +175,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                 child: TextButton(
                   onPressed:
                       _saving ? null : () => Navigator.of(context).pop(false),
-                  child: const Text('Cancel'),
+                  child: Text(t.cancel),
                 ),
               ),
             ],

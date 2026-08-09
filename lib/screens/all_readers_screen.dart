@@ -4,6 +4,7 @@ import '../models/reader_sign_in_display.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
 import '../widgets/reader_tile.dart';
+import '../l10n/app_strings.dart';
 
 /// The overflow screen from Login's "Show all readers (N)" — a search field
 /// plus every reader grouped alphabetically, using the exact same
@@ -61,7 +62,7 @@ class _AllReadersScreenState extends State<AllReadersScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            AppHeader(title: 'All Readers', onBack: () => Navigator.of(context).maybePop()),
+            AppHeader(title: context.t.allReaders, onBack: () => Navigator.of(context).maybePop()),
             Container(
               color: Colors.white,
               padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
@@ -69,7 +70,7 @@ class _AllReadersScreenState extends State<AllReadersScreen> {
                 controller: _search,
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
-                  hintText: _showNameAsPrimary ? 'Search by name' : 'Search by ID',
+                  hintText: _showNameAsPrimary ? context.t.searchByName : context.t.searchById,
                   prefixIcon: const Icon(Icons.search_rounded),
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -81,8 +82,8 @@ class _AllReadersScreenState extends State<AllReadersScreen> {
               child: Container(
                 color: AppColors.canvas,
                 child: letters.isEmpty
-                    ? const Center(
-                        child: Text('No readers match your search.', style: TextStyle(fontSize: 15, color: AppColors.muted)),
+                    ? Center(
+                        child: Text(context.t.noReadersMatch, style: TextStyle(fontSize: 15, color: AppColors.muted)),
                       )
                     : ListView(
                         padding: const EdgeInsets.fromLTRB(14, 12, 14, 22),

@@ -15,6 +15,7 @@ import 'add_reader_screen.dart';
 import 'reader_detail_screen.dart';
 import 'start_session_sheet.dart';
 import 'therapist_profile_screen.dart';
+import '../../l10n/app_strings.dart';
 
 /// One row of the caseload list — everything the roster card needs,
 /// computed from this reader's actual session rows rather than carried as
@@ -103,20 +104,20 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
     final lastReadAt = DateTime.tryParse(reader['last_read_at'] as String? ?? '');
 
     var lastActiveLabel = 'Never';
-    var statusLabel = 'No sessions yet';
+    var statusLabel = context.t.noSessionsYet;
     var statusColor = AppColors.muted;
 
     if (lastReadAt != null) {
       lastActiveLabel = _relativeDate(lastReadAt.toLocal());
       final daysSince = DateTime.now().difference(lastReadAt.toLocal()).inDays;
       if (daysSince <= 7) {
-        statusLabel = sessionsWeek > 1 ? 'Reading regularly' : 'Active';
+        statusLabel = sessionsWeek > 1 ? context.t.readingRegularly : context.t.active;
         statusColor = AppColors.teal;
       } else if (daysSince <= 21) {
-        statusLabel = 'Quiet lately';
+        statusLabel = context.t.quietLately;
         statusColor = AppColors.focus;
       } else {
-        statusLabel = 'Inactive';
+        statusLabel = context.t.inactive;
         statusColor = AppColors.danger;
       }
     }
@@ -210,12 +211,12 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
                 children: [
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Therapist', style: TextStyle(fontSize: 14, color: AppColors.onNavyMuted, fontWeight: FontWeight.w600)),
-                            Text('My Readers', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: Colors.white)),
+                            Text(context.t.therapistRole, style: TextStyle(fontSize: 14, color: AppColors.onNavyMuted, fontWeight: FontWeight.w600)),
+                            Text(context.t.myReaders, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: Colors.white)),
                           ],
                         ),
                       ),
@@ -223,7 +224,7 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const TherapistProfileScreen()),
                         ),
-                        tooltip: 'Therapist profile',
+                        tooltip: context.t.therapistProfile,
                         icon: Icons.account_circle_rounded,
                         color: Colors.white,
                       ),
@@ -238,14 +239,14 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(child: _StatChip(value: '$_readerCount', label: 'Readers')),
+                        Expanded(child: _StatChip(value: '$_readerCount', label: context.t.readers)),
                         const SizedBox(width: 8),
-                        Expanded(child: _StatChip(value: '$_sessionsThisWeek', label: 'Sessions this week')),
+                        Expanded(child: _StatChip(value: '$_sessionsThisWeek', label: context.t.sessionsThisWeek)),
                         const SizedBox(width: 8),
                         Expanded(
                           child: _StatChip(
                             value: _susAverage == null ? '—' : _susAverage!.toStringAsFixed(0),
-                            label: 'SUS average',
+                            label: context.t.susAverage,
                           ),
                         ),
                       ],
@@ -268,10 +269,10 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
                           child: TextField(
                             onChanged: (v) => setState(() => _query = v.trim()),
                             style: const TextStyle(fontSize: 15, color: Colors.white),
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               border: InputBorder.none,
                               isDense: true,
-                              hintText: 'Search readers',
+                              hintText: context.t.searchReaders,
                               hintStyle: TextStyle(color: AppColors.onNavyFaint),
                             ),
                           ),
@@ -302,20 +303,20 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
                       children: [
                         Row(
                           children: [
-                            const Text(
-                              'ACTIVE CASELOAD',
+                            Text(
+                              context.t.activeCaseload,
                               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body),
                             ),
                             const Spacer(),
-                            const Text('Sorted by last active', style: TextStyle(fontSize: 14, color: AppColors.muted)),
+                            Text(context.t.sortedByLastActive, style: TextStyle(fontSize: 14, color: AppColors.muted)),
                           ],
                         ),
                         const SizedBox(height: 8),
                         if (rows.isEmpty)
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.symmetric(vertical: 24),
                             child: Text(
-                              'No readers yet. Add one to get started.',
+                              context.t.noReadersYet,
                               style: TextStyle(fontSize: 15, color: AppColors.muted),
                             ),
                           )
@@ -335,7 +336,7 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
                             const SizedBox(height: 11),
                           ],
                         PrimaryButton(
-                          label: 'Add Reader',
+                          label: context.t.addReader,
                           icon: Icons.person_add_rounded,
                           backgroundColor: AppColors.teal,
                           onPressed: () => Navigator.of(context)
@@ -488,7 +489,7 @@ class _ReaderCard extends StatelessWidget {
               ),
               const SizedBox(height: 11),
               SecondaryButton(
-                label: 'Start session',
+                label: context.t.startSession,
                 icon: Icons.play_circle_fill_rounded,
                 onPressed: onStartSession,
               ),

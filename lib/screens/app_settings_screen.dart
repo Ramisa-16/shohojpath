@@ -6,6 +6,7 @@ import '../models/reading_settings.dart';
 import '../services/app_config_repository.dart';
 import '../l10n/app_language.dart';
 import '../l10n/app_strings.dart';
+import '../l10n/label_extensions.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/app_header.dart';
@@ -57,7 +58,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   }
 
   Future<void> _confirmReset() async {
-    final t = context.t;
+    final t = context.tOnce;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -132,13 +133,13 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           ),
                           const Divider(height: 1),
                           _SettingsToggle(
-                            label: 'Session sound effects',
+                            label: t.sessionSoundEffects,
                             value: _soundEffects,
                             onChanged: (v) => setState(() => _soundEffects = v),
                           ),
                           const Divider(height: 1),
                           _SettingsToggle(
-                            label: 'Share anonymised data',
+                            label: t.shareAnonymisedData,
                             value: _shareAnonymisedData,
                             onChanged: (v) => setState(() => _shareAnonymisedData = v),
                             last: true,
@@ -175,14 +176,14 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                     const SizedBox(height: 12),
                     ListRowButton(
                       leading: const Icon(Icons.download_rounded, color: AppColors.navy, size: 24),
-                      title: 'Export session data',
-                      subtitle: 'CSV for research analysis',
+                      title: t.exportSessionData,
+                      subtitle: t.csvForAnalysis,
                       onTap: () => exportAndShareCsv(context),
                     ),
                     const SizedBox(height: 11),
                     ListRowButton(
                       leading: const Icon(Icons.shield_rounded, color: AppColors.navy, size: 24),
-                      title: 'Privacy & consent',
+                      title: t.privacyAndConsent,
                       onTap: () => _notImplemented('Privacy & consent'),
                     ),
                     const SizedBox(height: 11),
@@ -236,13 +237,6 @@ class _ReaderSignInOption extends StatelessWidget {
   final VoidCallback onTap;
   final bool last;
 
-  static const _captions = {
-    ReaderSignInDisplay.names: 'Default — for a single-user device at home.',
-    ReaderSignInDisplay.participantIdsOnly: 'For shared study devices.',
-    ReaderSignInDisplay.off: 'Hides the reader picker; every session starts '
-        'from the Therapist Dashboard.',
-  };
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -271,12 +265,12 @@ class _ReaderSignInOption extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    option.label,
+                    option.localisedLabel(context.t),
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _captions[option]!,
+                    option.localisedCaption(context.t),
                     style: const TextStyle(fontSize: 14, color: AppColors.body, height: 1.4),
                   ),
                 ],

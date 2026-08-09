@@ -10,6 +10,8 @@ import '../models/reading_settings.dart';
 import '../models/study_session.dart';
 import '../services/session_logger.dart';
 import '../services/tts_service.dart';
+import '../l10n/app_strings.dart';
+import '../l10n/label_extensions.dart';
 import '../theme/app_colors.dart';
 import '../theme/reading_surface.dart';
 import '../utils/bangla_text.dart';
@@ -142,11 +144,12 @@ class _ReadingScreenState extends State<ReadingScreen> {
     final messenger = ScaffoldMessenger.of(context);
     if (!context.read<AuthState>().isSignedIn) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Sign in to save bookmarks.')),
+        SnackBar(content: Text(context.tOnce.signInToBookmark)),
       );
       return;
     }
 
+    final t = context.tOnce;
     final api = context.read<ShohojpathApi>();
     final page = _pageIndex;
     final existing = _bookmarkIds[page];
@@ -159,7 +162,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
         setState(() => _bookmarkIds.remove(page));
         _publishBookmarkState();
         messenger.showSnackBar(
-          const SnackBar(content: Text('Bookmark removed.')),
+          SnackBar(content: Text(t.bookmarkRemoved)),
         );
       } else {
         final saved = await api.addBookmark(
@@ -172,7 +175,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
         if (id != null) setState(() => _bookmarkIds[page] = id);
         _publishBookmarkState();
         messenger.showSnackBar(
-          SnackBar(content: Text('Bookmarked page ${page + 1}.')),
+          SnackBar(content: Text(t.bookmarkedPage(page + 1))),
         );
       }
     } on ApiException catch (e) {
@@ -389,7 +392,7 @@ class _Header extends StatelessWidget {
         children: [
           _HeaderButton(
             icon: Icons.arrow_back_rounded,
-            label: 'Back to library',
+            label: context.t.backToLibrary,
             onPressed: onBack,
           ),
           Expanded(
@@ -421,7 +424,7 @@ class _Header extends StatelessWidget {
             icon: bookmarked
                 ? Icons.bookmark_rounded
                 : Icons.bookmark_border_rounded,
-            label: bookmarked ? 'Remove bookmark' : 'Bookmark this page',
+            label: bookmarked ? context.t.removeBookmark : context.t.bookmarkThisPage,
             onPressed: onBookmark,
           ),
           Stack(
@@ -429,7 +432,7 @@ class _Header extends StatelessWidget {
             children: [
               _HeaderButton(
                 icon: Icons.tune_rounded,
-                label: settingsLocked ? 'Reading settings (locked for this session)' : 'Open reading settings',
+                label: settingsLocked ? context.t.settingsLocked : context.t.openReadingSettings,
                 onPressed: onSettings,
               ),
               if (settingsLocked)
@@ -562,8 +565,8 @@ class _ReaderBody extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               settings.highlightConjuncts
-                  ? 'Tap any underlined conjunct to see and hear it'
-                  : 'Tap any conjunct to see and hear it',
+                  ? context.t.tapUnderlinedConjunct
+                  : context.t.tapAnyConjunct,
               style: TextStyle(
                 fontSize: 14,
                 height: 1.5,
@@ -610,7 +613,7 @@ class _ModeNote extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'READING MODE · ${settings.profile.label.toUpperCase()}',
+            context.t.readingModeLine(settings.profile.localisedLabel(context.t)),
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w800,
@@ -669,7 +672,7 @@ class _ReaderControls extends StatelessWidget {
                 children: [
                   Expanded(
                     child: SecondaryButton(
-                      label: 'Previous',
+                      label: context.t.previous,
                       icon: Icons.chevron_left_rounded,
                       color: AppColors.body,
                       expand: false,
@@ -679,7 +682,7 @@ class _ReaderControls extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: PrimaryButton(
-                      label: isLastPage ? 'Finish' : 'Next',
+                      label: isLastPage ? context.t.finish : context.t.next,
                       icon: isLastPage ? Icons.check_rounded : Icons.chevron_right_rounded,
                       expand: false,
                       onPressed: onNext,
@@ -736,10 +739,10 @@ class _ReadAloudBar extends StatelessWidget {
           Semantics(
             button: true,
             label: tts.isSpeaking
-                ? 'Pause read aloud'
+                ? context.t.pauseReadAloud
                 : tts.isPaused
-                    ? 'Resume read aloud'
-                    : 'Play read aloud',
+                    ? context.t.resumeReadAloud
+                    : context.t.playReadAloud,
             child: Material(
               color: noVoice ? AppColors.borderStrong : AppColors.teal,
               borderRadius: BorderRadius.circular(18),
@@ -764,7 +767,7 @@ class _ReadAloudBar extends StatelessWidget {
             const SizedBox(width: 6),
             Semantics(
               button: true,
-              label: 'Stop read aloud',
+              label: context.t.stopReadAloud,
               child: Material(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
@@ -809,11 +812,11 @@ class _ReadAloudBar extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   noVoice
-                      ? 'No Bangla voice on this device — install one in '
-                          'Android TTS settings'
+                      ? context.t.noBanglaVoiceInline +
+                          context.t.androidTtsSettings
                       : settings.highlightSpokenWord
-                          ? 'Word highlighting on'
-                          : 'Word highlighting off',
+                          ? context.t.wordHighlightOn
+                          : context.t.wordHighlightOff,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,

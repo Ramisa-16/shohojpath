@@ -558,7 +558,7 @@ class _ContinueReadingCardState extends State<_ContinueReadingCard> {
 
     if (passage.pages.isEmpty) {
       messenger.showSnackBar(
-        SnackBar(content: Text(context.t.passageHasNoPages)),
+        SnackBar(content: Text(context.tOnce.passageHasNoPages)),
       );
       return;
     }

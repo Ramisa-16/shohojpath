@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/study_session.dart';
 import '../services/session_logger.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../utils/duration_format.dart';
 import '../widgets/app_buttons.dart';
@@ -58,7 +59,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         child: Column(
           children: [
             const TherapistSessionBanner(),
-            AppHeader(title: 'Your Feedback', onBack: () => Navigator.of(context).maybePop()),
+            AppHeader(title: context.t.yourFeedback, onBack: () => Navigator.of(context).maybePop()),
             Expanded(
               child: Container(
                 color: AppColors.canvas,
@@ -92,7 +93,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     ),
                     const SizedBox(height: 12),
                     _CardBlock(
-                      title: 'Was the reading easy?',
+                      title: context.t.wasReadingEasy,
                       child: _StarRow(
                         value: session.easeStars,
                         onChanged: (v) => setState(() => session.easeStars = v),
@@ -100,7 +101,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     ),
                     const SizedBox(height: 11),
                     _CardBlock(
-                      title: 'Did read aloud help?',
+                      title: context.t.didReadAloudHelp,
                       child: _StarRow(
                         value: session.audioHelpStars,
                         onChanged: (v) => setState(() => session.audioHelpStars = v),
@@ -108,7 +109,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     ),
                     const SizedBox(height: 11),
                     _CardBlock(
-                      title: 'Which settings helped most?',
+                      title: context.t.whichSettingsHelped,
                       child: Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -128,13 +129,13 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     ),
                     const SizedBox(height: 11),
                     _CardBlock(
-                      title: 'Any suggestions?',
+                      title: context.t.anySuggestions,
                       child: TextField(
                         controller: _suggestion,
                         onChanged: (v) => session.suggestion = v,
                         maxLines: 3,
                         decoration: InputDecoration(
-                          hintText: 'Tell us what would make reading easier…',
+                          hintText: context.t.suggestionsHint,
                           filled: true,
                           fillColor: AppColors.canvas,
                           border: OutlineInputBorder(
@@ -146,7 +147,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     ),
                     const SizedBox(height: 14),
                     PrimaryButton(
-                      label: 'Continue to SUS',
+                      label: context.t.continueToSus,
                       onPressed: () {
                         context.read<SessionLogger>().logFeedback(
                               session.sessionId,

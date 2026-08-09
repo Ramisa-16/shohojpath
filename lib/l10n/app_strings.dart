@@ -298,9 +298,476 @@ class AppStrings {
   String pageNumber(int page) => _s('পৃষ্ঠা $page', 'Page $page');
   String get opening => _s('খুলছে…', 'Opening…');
   String get continueLabel => _s('চালিয়ে যান', 'Continue');
+
+  // ---- Auth ---------------------------------------------------------------
+
+  String get welcomeBack => _s('আবার স্বাগতম', 'Welcome back');
+  String get signInBlurb => _s(
+        'সাইন ইন করলে আপনার পড়ার সেটিংস আর অগ্রগতি সব ডিভাইসে জমা থাকবে।',
+        'Sign in to save your reading settings and progress across devices.',
+      );
+  String get logIn => _s('লগ ইন', 'Log in');
+  String get signingIn => _s('সাইন ইন হচ্ছে…', 'Signing in…');
+  String get creatingAccount => _s('অ্যাকাউন্ট তৈরি হচ্ছে…', 'Creating account…');
+  String get showPassword => _s('পাসওয়ার্ড দেখান', 'Show password');
+  String get hidePassword => _s('পাসওয়ার্ড লুকান', 'Hide password');
+  String get continueAsGuest => _s('অতিথি হিসেবে চালিয়ে যান', 'Continue as Guest');
+  String get guestBlurb => _s(
+        'অতিথি হিসেবে পড়লে সব কিছু শুধু এই ফোনেই থাকে — কিছুই পাঠানো হয় না।',
+        'Guest reading stays on this device only — nothing is uploaded.',
+      );
+  String get newHere => _s('নতুন এসেছেন? ', 'New here? ');
+  String get guest => _s('অতিথি', 'Guest');
+  String get guestReader => _s('অতিথি পাঠক', 'Guest reader');
+  String get enterYourEmail => _s('আপনার ইমেইল লিখুন।', 'Please enter your email.');
+  String get enterYourPassword =>
+      _s('আপনার পাসওয়ার্ড লিখুন।', 'Please enter your password.');
+  String get enterAName => _s('একটি নাম লিখুন।', 'Please enter a name.');
+  String get enterAnEmail =>
+      _s('একটি ইমেইল ঠিকানা লিখুন।', 'Please enter an email address.');
+  String get notAnEmail => _s(
+        'এটি ইমেইল ঠিকানার মতো মনে হচ্ছে না।',
+        'That does not look like an email address.',
+      );
+  String get noAccount => _s('অ্যাকাউন্ট নেই', 'No account');
+
+  // ---- Profile ------------------------------------------------------------
+
+  String get logOutQuestion => _s('লগ আউট করবেন?', 'Log out?');
+  String get logOutBody => _s(
+        'আপনার পড়ার সেটিংস আর অগ্রগতি এই ফোনে জমা থাকবে। আবার পড়তে হলে '
+            'আবার সাইন ইন করতে হবে।',
+        'Your reading settings and progress stay saved on this device. You '
+            'will need to sign in again to continue reading.',
+      );
+  String get therapistPasswordToLogOut => _s(
+        'এই সেশনটি একজন থেরাপিস্ট শুরু করেছেন। লগ আউট করতে থেরাপিস্টের '
+            'পাসওয়ার্ড দিন।',
+        "This session was started by a therapist. Enter the therapist's "
+            'password to log out.',
+      );
+  String get myStatistics => _s('আমার পরিসংখ্যান', 'My statistics');
+  String get appSettings => _s('অ্যাপ সেটিংস', 'App settings');
+  String get classLabel => _s('শ্রেণি', 'Class');
+
+  // ---- Reading profiles & surfaces ---------------------------------------
+
+  String get profileDefault => _s('ডিফল্ট', 'Default');
+  String get profileRecommended => _s('সুপারিশকৃত', 'Recommended');
+  String get profileCustom => _s('নিজের মতো', 'Custom');
+  String get surfaceWhite => _s('সাদা', 'White');
+  String get surfaceCream => _s('ক্রিম', 'Cream');
+  String get surfaceYellow => _s('হলুদ', 'Yellow');
+  String get surfaceDark => _s('গাঢ়', 'Dark');
+  String get surfaceContrast => _s('উচ্চ বৈসাদৃশ্য', 'Contrast');
+
+  // ---- History ------------------------------------------------------------
+
+  String get readingHistoryTitle => _s('পড়ার ইতিহাস', 'Reading History');
+  String get noSessionsYet => _s('এখনও কোনো পড়া নেই', 'No sessions yet');
+  String get noSessionsBody => _s(
+        'পড়া শেষ হয়ে সিঙ্ক হলে এখানে দেখা যাবে।',
+        'Finished readings appear here once they have synced.',
+      );
+  String get readerNoSessions => _s(
+        'এই পাঠক এখনও কোনো পড়া শেষ করেননি।',
+        'This reader has not completed a session yet.',
+      );
+  String get readAloudLabel => _s('শব্দ সহায়তা', 'Read aloud');
+  String get noAudio => _s('শব্দ ছাড়া', 'No audio');
+  String get readAgain => _s('আবার পড়ুন', 'Read again');
+  String get today => _s('আজ', 'Today');
+  String get yesterday => _s('গতকাল', 'Yesterday');
+  String get justNow => _s('এইমাত্র', 'Just now');
+  String conditionLabel(String profile) =>
+      _s('$profile অবস্থা', '$profile condition');
+
+  // ---- Feedback, SUS, TLX -------------------------------------------------
+
+  String get yourFeedback => _s('আপনার মতামত', 'Your Feedback');
+  String quizScoreLine(int score, int total) =>
+      _s('কুইজ ফল: $score / $total', 'Quiz score: $score / $total');
+  String get wasReadingEasy => _s('পড়তে কি সহজ লেগেছে?', 'Was the reading easy?');
+  String get didReadAloudHelp =>
+      _s('শব্দ সহায়তা কি কাজে লেগেছে?', 'Did read aloud help?');
+  String get whichSettingsHelped =>
+      _s('কোন সেটিংস সবচেয়ে বেশি কাজে লেগেছে?', 'Which settings helped most?');
+  String get anySuggestions => _s('কিছু বলার আছে?', 'Any suggestions?');
+  String get suggestionsHint => _s(
+        'পড়া আরও সহজ করতে কী করা যায় লিখুন…',
+        'Tell us what would make reading easier…',
+      );
+  String get continueToSus => _s('পরবর্তী ধাপে যান', 'Continue to SUS');
+  String get continueToTlx => _s('পরবর্তী ধাপে যান', 'Continue to NASA-TLX');
+  String get submitSession => _s('জমা দিন', 'Submit session');
+  String get thankYou => _s('ধন্যবাদ!', 'Thank you!');
+  String get thankYouBody => _s(
+        'আপনার সেশন জমা হয়েছে। আপনার উত্তর আমাদের আরও ভালো পড়ার অ্যাপ '
+            'বানাতে সাহায্য করবে।',
+        'Your session has been recorded. Your responses help us design better '
+            'reading support.',
+      );
+  String get readingTime => _s('পড়ার সময়', 'Reading time');
+  String get susScore => _s('SUS স্কোর', 'SUS score');
+  String get backToHome => _s('হোমে ফিরুন', 'Back to Home');
+  String get veryLow => _s('খুব কম', 'Very low');
+  String get veryHigh => _s('খুব বেশি', 'Very high');
+  String get optionalWorkload =>
+      _s('ঐচ্ছিক · কাজের চাপ', 'Optional · workload rating');
+
+  // ---- Notifications ------------------------------------------------------
+
+  String get notifications => _s('বার্তা', 'Notifications');
+  String get markAllRead => _s('সব পড়া হয়েছে', 'Mark all read');
+  String get noMessages => _s('কোনো বার্তা নেই', 'No messages');
+  String get tapToMarkRead =>
+      _s('পড়া হয়েছে বলে চিহ্নিত করুন', 'Tap to mark as read');
+
+  // ---- Splash / About / Help ---------------------------------------------
+
+  String get loadingPreferences =>
+      _s('আপনার সেটিংস আনা হচ্ছে…', 'Loading your preferences…');
+  String get getStarted => _s('শুরু করুন', 'Get Started');
+  String get versionLine =>
+      _s('সংস্করণ ১.০ · গবেষণা সংস্করণ', 'Version 1.0 · Research Prototype');
+  String get researchTitle => _s('গবেষণার শিরোনাম', 'RESEARCH TITLE');
+  String get accessibilitySummary => _s('প্রবেশগম্যতা', 'Accessibility summary');
+  String get disclaimer => _s('দ্রষ্টব্য', 'Disclaimer');
+  String get howToUse =>
+      _s('সহজপাঠ যেভাবে ব্যবহার করবেন', 'How to use Shohojpath');
+  String get accessibilityFeatures => _s('সহায়ক সুবিধা', 'Accessibility features');
+  String get contactResearchTeam =>
+      _s('গবেষক দলের সাথে যোগাযোগ', 'Contact the research team');
+
+  // ---- Reading screen -----------------------------------------------------
+
+  String get tapUnderlinedConjunct => _s(
+        'যেকোনো দাগ দেওয়া যুক্তাক্ষরে চাপ দিন — দেখা ও শোনা যাবে',
+        'Tap any underlined conjunct to see and hear it',
+      );
+  String get tapAnyConjunct => _s(
+        'যেকোনো যুক্তাক্ষরে চাপ দিন — দেখা ও শোনা যাবে',
+        'Tap any conjunct to see and hear it',
+      );
+  String readingModeLine(String profile) =>
+      _s('পড়ার ধরন · $profile', 'READING MODE · $profile');
+  String get pauseReadAloud => _s('পড়া থামান', 'Pause read aloud');
+  String get resumeReadAloud => _s('আবার শুরু করুন', 'Resume read aloud');
+  String get playReadAloud => _s('পড়ে শোনান', 'Play read aloud');
+  String get stopReadAloud => _s('বন্ধ করুন', 'Stop read aloud');
+  String get wordHighlightOn =>
+      _s('শব্দ চিহ্নিত করা চালু', 'Word highlighting on');
+  String get wordHighlightOff =>
+      _s('শব্দ চিহ্নিত করা বন্ধ', 'Word highlighting off');
+  String get noBanglaVoiceShort =>
+      _s('বাংলা কণ্ঠ পাওয়া যায়নি', 'No Bangla voice found');
+  String get androidTtsSettings =>
+      _s('অ্যান্ড্রয়েড TTS সেটিংস', 'Android TTS settings');
+  String get noBanglaVoiceInline => _s(
+        'এই ফোনে বাংলা কণ্ঠ নেই — যোগ করুন ',
+        'No Bangla voice on this device — install one in ',
+      );
+  String get noBanglaVoiceBody => _s(
+        'এই ফোনে বাংলা টেক্সট-টু-স্পিচ কণ্ঠ নেই, তাই পড়ে শোনানো যাবে না।',
+        'This device has no Bengali text-to-speech voice installed, so read '
+            'aloud is unavailable.',
+      );
+  String get noBanglaVoiceHow => _s(
+        'অ্যান্ড্রয়েড সেটিংস > ভাষা ও ইনপুট > টেক্সট-টু-স্পিচ থেকে যোগ করে '
+            'আবার এই গল্পে আসুন।',
+        'Install one from Android Settings > Language & input > '
+            'Text-to-speech, then come back to this passage.',
+      );
+  String get hearThisConjunct =>
+      _s('যুক্তাক্ষরটি শুনুন', 'Hear this conjunct read aloud');
+  String get endSession => _s('সেশন শেষ করুন', 'End session');
+
+  // ---- Reading settings ---------------------------------------------------
+
+  String get readingSettingsTitle => _s('পড়ার সেটিংস', 'Reading Settings');
+  String get closeReadingSettings =>
+      _s('সেটিংস বন্ধ করুন', 'Close reading settings');
+  String get readAloudSection => _s('পড়ে শোনানো', 'Read Aloud');
+  String get evidenceBased => _s('গবেষণা-ভিত্তিক', 'Evidence-based');
+  String get personalPreference => _s('ব্যক্তিগত পছন্দ', 'Personal preference');
+  String get researchFeature => _s('গবেষণার সুবিধা', 'Research feature');
+  String get comfort => _s('আরাম', 'Comfort');
+  String get highlightSpokenWord => _s(
+        'যে শব্দ পড়া হচ্ছে তা চিহ্নিত করুন',
+        'Highlight each word as it is spoken',
+      );
+  String get speed => _s('গতি', 'Speed');
+  String get voice => _s('কণ্ঠ', 'Voice');
+  String get banglaReadingSupport =>
+      _s('বাংলা পড়ার সহায়তা', 'Bangla Reading Support');
+  String get highlightConjuncts =>
+      _s('যুক্তাক্ষর চিহ্নিত করুন', 'Highlight conjuncts');
+  String get splitConjuncts => _s(
+        'যুক্তাক্ষর আলাদা করুন: ক্ষ দেখাবে ক্‌ + ষ',
+        'Split conjuncts: ক্ষ shows as ক্‌ + ষ',
+      );
+  String get emphasiseMatra =>
+      _s('মাত্রা স্পষ্ট করুন', 'Emphasise the matra headline');
+  String get syllableBreaks =>
+      _s('বড় শব্দে অক্ষর ভাগ করুন', 'Syllable breaks in long words');
+  String get typography => _s('অক্ষরের ধরন', 'Typography');
+  String get fontSize => _s('অক্ষরের আকার', 'Font size');
+  String get boldText => _s('মোটা অক্ষর', 'Bold text');
+  String get spacing => _s('ফাঁক', 'Spacing');
+  String get letterSpacing => _s('অক্ষরের ফাঁক', 'Letter spacing');
+  String get wordSpacing => _s('শব্দের ফাঁক', 'Word spacing');
+  String get lineSpacing => _s('লাইনের ফাঁক', 'Line spacing');
+  String get paragraphSpacing => _s('অনুচ্ছেদের ফাঁক', 'Paragraph spacing');
+  String get theme => _s('রং', 'Theme');
+  String get readingFocus => _s('পড়ায় মনোযোগ', 'Reading focus');
+  String get highlightCurrentLine =>
+      _s('চলতি লাইন চিহ্নিত করুন', 'Highlight current line');
+  String get readingRuler => _s('পড়ার রুলার', 'Reading ruler');
+  String get highlightCurrentParagraph =>
+      _s('চলতি অনুচ্ছেদ চিহ্নিত করুন', 'Highlight current paragraph');
+  String get hideImages => _s('ছবি লুকান', 'Hide decorative images');
+  String get focusMode => _s('মনোযোগ মোড', 'Focus mode');
+  String get readingAssistance => _s('পড়ার সহায়তা', 'Reading assistance');
+  String get returnToReading => _s('পড়ায় ফিরুন', 'Return to reading');
+  String get applyAndReturn => _s('প্রয়োগ করে ফিরুন', 'Apply & return');
+  String get settingsLockedForSession => _s(
+        'এই সেশনে সেটিংস বন্ধ রাখা হয়েছে',
+        'Settings are locked for this session',
+      );
+  String get unlockTherapist => _s('খুলুন (থেরাপিস্ট)', 'Unlock (therapist)');
+  String get unlockSettings => _s('সেটিংস খুলুন', 'Unlock settings');
+  String get unlock => _s('খুলুন', 'Unlock');
+  String get readingProfileHeading => _s('পড়ার ধরন', 'READING PROFILE');
+  String get bookmark => _s('বুকমার্ক', 'Bookmark');
+  String get dictionary => _s('অভিধান', 'Dictionary');
+  String get highlight => _s('দাগ দিন', 'Highlight');
+
+  // ---- Statistics ---------------------------------------------------------
+
+  String get wordsReadThisWeek =>
+      _s('এই সপ্তাহে পড়া শব্দ', 'WORDS READ THIS WEEK');
+  String get sameAsLastWeek => _s('গত সপ্তাহের সমান', 'Same as last week');
+  String get settingsChangedMost =>
+      _s('যে সেটিংস সবচেয়ে বেশি বদলেছে', 'Settings changed most');
+  String get noSettingsChanged => _s(
+        'এখনও কোনো সেটিংস বদলানো হয়নি।',
+        'No settings have been changed yet.',
+      );
+  String get noStatisticsBody => _s(
+        'প্রথম পড়া শেষ হয়ে সিঙ্ক হলে গতি, বোঝাপড়া আর সেটিংস ব্যবহারের হিসাব '
+            'দেখা যাবে।',
+        'Reading speed, comprehension and settings use are calculated once '
+            'the first session has been completed and synced.',
+      );
+
+  // ---- Errors -------------------------------------------------------------
+
+  String get errorTimeout => _s(
+        'সার্ভার সাড়া দিতে অনেক সময় নিচ্ছে। একটু পরে আবার চেষ্টা করুন।',
+        'The server took too long to respond. It may be waking up — try again '
+            'in a moment.',
+      );
+  String get errorBadRequest =>
+      _s('অনুরোধটি ঠিক ছিল না।', 'That request was not valid.');
+  String get errorSignInAgain =>
+      _s('আবার সাইন ইন করুন।', 'Please sign in again.');
+  String get errorForbidden => _s(
+        'এটি করার অনুমতি আপনার নেই।',
+        'You do not have permission to do that.',
+      );
+  String get errorNotFound => _s('পাওয়া যায়নি।', 'Not found.');
+  String get errorConflict => _s(
+        'এটি ইতিমধ্যে অন্য কেউ করে ফেলেছেন।',
+        'That has already been done by someone else.',
+      );
+  String get errorServer => _s(
+        'সার্ভারে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।',
+        'The server had a problem. Try again shortly.',
+      );
+
+  // ---- Reading settings captions -----------------------------------------
+
+  String get captionAudioSupport => _s(
+        'ডিসলেক্সিয়া মূলত ধ্বনি চেনার অসুবিধা। শব্দ সহায়তা সরাসরি সেখানেই '
+            'কাজ করে।',
+        'Dyslexia is a phonological difficulty. Audio support addresses it '
+            'directly.',
+      );
+  String get captionConjuncts => _s(
+        'বাংলা যুক্তাক্ষর ভেতরের অক্ষরগুলো ঢেকে রাখে। এই সুবিধাগুলো সেগুলো '
+            'স্পষ্ট করে দেখায়।',
+        'Bangla conjuncts hide the letters inside them. These options make the '
+            'parts visible.',
+      );
+  String get captionFontChoice => _s(
+        'অক্ষরের ধরন আরামের ব্যাপার। কোনো একটি ফন্ট সবার জন্য ভালো — গবেষণায় '
+            'তা প্রমাণিত হয়নি।',
+        'Font choice is a comfort preference. Research has not shown any '
+            'single font to be better for everyone.',
+      );
+  String get captionFontSizeApplies => _s(
+        'এটি গল্পের লেখায় প্রয়োগ হয়। বোতাম আর লেখাও একটু বড় হয়, তবে অ্যাপ '
+            'যেন ব্যবহারযোগ্য থাকে সেই সীমা পর্যন্ত।',
+        'Applies to the passage. Buttons and labels grow with it up to a '
+            'limit, so the app stays usable.',
+      );
+  String get captionThemeComfort => _s(
+        'পেছনের রং আরামে প্রভাব ফেলে, পড়ার সঠিকতায় নয়।',
+        'Background colour affects comfort, not decoding accuracy.',
+      );
+  String get captionIllustrations => _s(
+        'ছবি সাধারণত সাহায্য করে, তবে কারও কারও মনোযোগ সরে যায়।',
+        'Illustrations often help, but can distract some readers.',
+      );
+  String get profileDescDefault => _s(
+        'মূল অবস্থা — কোনো সহায়তা ছাড়া, গবেষণার নিয়ন্ত্রণ শর্ত।',
+        'Baseline — no reading aids, the study control.',
+      );
+  String get profileDescRecommended => _s(
+        'গবেষণা-ভিত্তিক: শব্দ সহায়তা, বেশি ফাঁক, ক্রিম পটভূমি।',
+        'Evidence-based: audio, spacing, cream background.',
+      );
+  String get profileDescCustom => _s(
+        'আপনার নিজের সাজানো, তুলনার জন্য সংরক্ষিত।',
+        'Your own configuration, saved for comparison.',
+      );
+
+  // ---- Therapist ----------------------------------------------------------
+
+  String get myReaders => _s('আমার পাঠকরা', 'My Readers');
+  String get therapistProfile => _s('থেরাপিস্ট প্রোফাইল', 'Therapist profile');
+  String get readers => _s('পাঠক', 'Readers');
+  String get sessionsThisWeek => _s('এই সপ্তাহের পড়া', 'Sessions this week');
+  String get susAverage => _s('SUS গড়', 'SUS average');
+  String get searchReaders => _s('পাঠক খুঁজুন', 'Search readers');
+  String get activeCaseload => _s('চলমান পাঠক', 'ACTIVE CASELOAD');
+  String get sortedByLastActive =>
+      _s('শেষ সক্রিয়তার ক্রমে', 'Sorted by last active');
+  String get noReadersYet => _s(
+        'এখনও কোনো পাঠক নেই। শুরু করতে একজন যোগ করুন।',
+        'No readers yet. Add one to get started.',
+      );
+  String get addReader => _s('পাঠক যোগ করুন', 'Add Reader');
+  String get addAReader => _s('একজন পাঠক যোগ করুন', 'Add a reader');
+  String get startSession => _s('সেশন শুরু করুন', 'Start session');
+  String get never => _s('কখনও নয়', 'Never');
+  String get active => _s('সক্রিয়', 'Active');
+  String get quietLately => _s('ইদানীং কম', 'Quiet lately');
+  String get inactive => _s('নিষ্ক্রিয়', 'Inactive');
+  String get readingRegularly => _s('নিয়মিত পড়ছে', 'Reading regularly');
+  String ageLabel(int age) => _s('বয়স $age', 'Age $age');
+
+  String get addNote => _s('নোট যোগ করুন', 'Add note');
+  String get notePrompt => _s(
+        'এই সেশনে কী লক্ষ করলেন?',
+        'What did you observe this session?',
+      );
+  String get export => _s('রপ্তানি', 'Export');
+  String get sessions => _s('পড়া', 'Sessions');
+  String get notes => _s('নোট', 'Notes');
+  String get readingSpeedHeading => _s('পড়ার গতি', 'READING SPEED');
+  String get accuracyHeading => _s('সঠিকতা', 'ACCURACY');
+  String get quizScorePerPassage => _s(
+        'প্রতিটি শেষ করা গল্পে কুইজের ফল',
+        'Quiz score on each completed passage',
+      );
+  String get totalWordsRead => _s('মোট পড়া শব্দ', 'Total words read');
+  String get totalReadingTime => _s('মোট পড়ার সময়', 'Total reading time');
+  String get comprehensionAverage => _s('বোঝাপড়ার গড়', 'Comprehension average');
+  String get readAloudUsage => _s('শব্দ সহায়তা ব্যবহার', 'Read-aloud usage');
+  String get assignPassages => _s('গল্প ঠিক করে দিন', 'Assign passages');
+  String get assignPassagesTitle => _s('গল্প ঠিক করুন', 'Assign Passages');
+  String get noSessionsLogged => _s('এখনও কোনো পড়া নেই।', 'No sessions logged yet.');
+  String get noNotesYet => _s('এখনও কোনো নোট নেই।', 'No notes yet.');
+  String get settingsActuallyUsed =>
+      _s('আসলে যে সেটিংস ব্যবহার হয়েছে', 'Settings actually used');
+  String get audioOnShort => _s('শব্দ চালু', 'Audio on');
+  String get audioOffShort => _s('শব্দ বন্ধ', 'Audio off');
+  String quizScoreShort(int score, int total) =>
+      _s('কুইজ $score / $total', 'Quiz $score / $total');
+
+  String get refresh => _s('নতুন করে আনুন', 'Refresh');
+  String get searchByNameIdSchool =>
+      _s('নাম, আইডি বা স্কুল দিয়ে খুঁজুন', 'Search by name, ID or school');
+  String get clearSearch => _s('খোঁজা মুছুন', 'Clear search');
+  String get couldNotLoadReaders =>
+      _s('পাঠকদের তালিকা আনা যায়নি', 'Could not load readers');
+  String get noMatch => _s('মিল পাওয়া যায়নি', 'No match');
+  String get everyoneAdded => _s('সবাই যোগ করা হয়ে গেছে', 'Everyone has been added');
+  String claimedFirst(String name) => _s(
+        '$name-কে আগেই অন্য একজন থেরাপিস্ট যোগ করে নিয়েছেন।',
+        'Another therapist added $name first.',
+      );
+
+  String get notSignedIn => _s('সাইন ইন করা নেই', 'Not signed in');
+  String get speechLanguageTherapist =>
+      _s('স্পিচ ও ল্যাঙ্গুয়েজ থেরাপিস্ট', 'Speech & Language Therapist');
+  String get readersManaged => _s('দেখাশোনা করা পাঠক', 'Readers managed');
+  String get exportAllCsv => _s('সব তথ্য CSV হিসেবে নিন', 'Export all data as CSV');
+  String get helpAndSupport => _s('সহায়তা', 'Help & support');
+  String get noPassagesMatch =>
+      _s('এই ফিল্টারে কোনো গল্প নেই।', 'No passages match these filters.');
+  String get allReaders => _s('সব পাঠক', 'All Readers');
+  String get searchByName => _s('নাম দিয়ে খুঁজুন', 'Search by name');
+  String get searchById => _s('আইডি দিয়ে খুঁজুন', 'Search by ID');
+  String get noReadersMatch =>
+      _s('আপনার খোঁজার সাথে কোনো পাঠক মিলছে না।', 'No readers match your search.');
+  String get dashboard => _s('ড্যাশবোর্ড', 'Dashboard');
+  String get incorrectPassword => _s('পাসওয়ার্ড ঠিক নয়।', 'Incorrect password.');
+
+  String get researcher => _s('গবেষক', 'Researcher');
+  String get readersRegistered => _s('নিবন্ধিত পাঠক', 'Readers registered');
+  String get clearAllData => _s('সব তথ্য মুছুন', 'Clear all data');
+  String get clearAllDataQuestion => _s('সব তথ্য মুছে ফেলবেন?', 'Clear all data?');
+  String get clearEverything => _s('সব মুছে ফেলুন', 'Clear everything');
+  String get allDataCleared => _s('সব সেশনের তথ্য মুছে গেছে।', 'All session data cleared.');
+
+  // ---- Remaining chrome ---------------------------------------------------
+
+  String get sessionSoundEffects => _s('সেশনের শব্দ', 'Session sound effects');
+  String get shareAnonymisedData =>
+      _s('নাম ছাড়া তথ্য শেয়ার করুন', 'Share anonymised data');
+  String get exportSessionData => _s('সেশনের তথ্য নিন', 'Export session data');
+  String get csvForAnalysis =>
+      _s('গবেষণার বিশ্লেষণের জন্য CSV', 'CSV for research analysis');
+  String get privacyAndConsent => _s('গোপনীয়তা ও সম্মতি', 'Privacy & consent');
+  String get noNotificationsBody => _s(
+        'কোনো থেরাপিস্ট আপনাকে যোগ করলে বা কোনো গল্প ঠিক করে দিলে সেই বার্তা '
+            'এখানে আসবে।',
+        'When a therapist adds you or assigns a passage, the message will '
+            'appear here.',
+      );
+  String get schoolExampleHint => _s('শিমুলতলী উচ্চ বিদ্যালয়', 'Shimultoli High');
+  String get start => _s('শুরু', 'Start');
+  String get exportFailed => _s('রপ্তানি করা যায়নি', 'Export failed');
+  String get signInCaptionNames => _s(
+        'ডিফল্ট — ঘরে একজনের ব্যবহারের ফোনের জন্য।',
+        'Default — for a single-user device at home.',
+      );
+  String get signInCaptionIds =>
+      _s('গবেষণার শেয়ার করা ফোনের জন্য।', 'For shared study devices.');
+  String get signInCaptionOff => _s(
+        'পাঠক বাছাই লুকিয়ে রাখে; প্রতিটি সেশন থেরাপিস্ট ড্যাশবোর্ড থেকে শুরু হয়।',
+        'Hides the reader picker; every session starts from the Therapist '
+            'Dashboard.',
+      );
+  String get readerSignInNames => _s('নাম', 'Names');
+  String get readerSignInIds => _s('শুধু আইডি', 'Participant IDs only');
+  String get readerSignInOff => _s(
+        'বন্ধ — থেরাপিস্টই সব সেশন শুরু করবেন',
+        'Off — therapist starts all sessions',
+      );
 }
 
 /// `context.t.startReading` at the call site.
 extension AppStringsX on BuildContext {
+  /// For use inside `build`. Watches the language, so switching it rebuilds
+  /// the widget rather than leaving it in the language it was born in.
   AppStrings get t => AppStrings.of(this);
+
+  /// For use outside `build` — button handlers, async callbacks, anywhere
+  /// reached after the frame. Reading a watched value there throws
+  /// ("Tried to listen to a value exposed with provider, from outside of the
+  /// widget tree"), and nothing is being built to rebuild anyway.
+  AppStrings get tOnce => AppStrings(read<LanguageState>().language);
 }

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../api/shohojpath_api.dart';
 import '../app/auth_state.dart';
 import '../app/participant_state.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/change_password_sheet.dart';
@@ -22,7 +23,7 @@ class ProfileScreen extends StatelessWidget {
     if ((auth.fullName ?? '').isNotEmpty) return auth.fullName!;
     final participant = context.watch<ParticipantState>();
     if (participant.displayName.isNotEmpty) return participant.displayName;
-    return 'Guest reader';
+    return context.t.guestReader;
   }
 
   static String _initials(BuildContext context) {
@@ -63,10 +64,9 @@ class ProfileScreen extends StatelessWidget {
     if (participant.isSupervisedByTherapist) {
       confirmed = await showTherapistPasswordDialog(
         context,
-        title: 'Log out',
-        description: "This session was started by a therapist. Enter the "
-            "therapist's password to log out.",
-        confirmLabel: 'Log out',
+        title: context.t.logOut,
+        description: context.tOnce.therapistPasswordToLogOut,
+        confirmLabel: context.tOnce.logOut,
       );
     } else {
       confirmed = await _confirmLogOut(context);
@@ -92,8 +92,8 @@ class ProfileScreen extends StatelessWidget {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          'Log out?',
+        title: Text(
+          context.tOnce.logOutQuestion,
           style: TextStyle(
             fontSize: 19,
             fontWeight: FontWeight.w800,
@@ -108,12 +108,12 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.tOnce.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            child: const Text('Log out'),
+            child: Text(context.tOnce.logOut),
           ),
         ],
       ),
@@ -228,7 +228,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 ListRowButton(
                   leading: const Icon(Icons.history_rounded, color: AppColors.navy, size: 24),
-                  title: 'Reading history',
+                  title: context.t.readingHistory,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const HistoryScreen()),
                   ),
@@ -236,7 +236,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 11),
                 ListRowButton(
                   leading: const Icon(Icons.analytics_rounded, color: AppColors.navy, size: 24),
-                  title: 'My statistics',
+                  title: context.t.myStatistics,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const StatisticsScreen()),
                   ),
@@ -244,7 +244,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 11),
                 ListRowButton(
                   leading: const Icon(Icons.settings_rounded, color: AppColors.navy, size: 24),
-                  title: 'App settings',
+                  title: context.t.appSettings,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const AppSettingsScreen()),
                   ),
@@ -254,7 +254,7 @@ class ProfileScreen extends StatelessWidget {
                   ListRowButton(
                     leading: const Icon(Icons.lock_outline_rounded,
                         color: AppColors.navy, size: 24),
-                    title: 'Change password',
+                    title: context.t.changePassword,
                     // Hidden for a guest: there is no account to change a
                     // password on, and offering it would be a dead end.
                     onTap: () => showChangePasswordSheet(context),
@@ -262,7 +262,7 @@ class ProfileScreen extends StatelessWidget {
                 ],
                 const SizedBox(height: 18),
                 SecondaryButton(
-                  label: 'Log out',
+                  label: context.t.logOut,
                   icon: Icons.logout_rounded,
                   color: AppColors.danger,
                   onPressed: () => _logOut(context),
@@ -292,18 +292,18 @@ class _PreferenceCard extends StatelessWidget {
     final therapist = profile['therapist_name'] as String?;
 
     final rows = <(String, String)>[
-      ('Participant ID', profile['participant_id'] as String? ?? '—'),
-      ('Email', profile['email'] as String? ?? 'No account'),
-      if (age != null) ('Age', '$age'),
+      (context.t.participantId, profile['participant_id'] as String? ?? '—'),
+      (context.t.email, profile['email'] as String? ?? context.t.noAccount),
+      if (age != null) (context.t.age, '$age'),
       if ((profile['class_grade'] as String? ?? '').isNotEmpty)
-        ('Class', profile['class_grade'] as String),
+        (context.t.classLabel, profile['class_grade'] as String),
       if ((profile['school'] as String? ?? '').isNotEmpty)
-        ('School', profile['school'] as String),
+        (context.t.school, profile['school'] as String),
       (
-        'Reading profile',
+        context.t.readingProfile,
         _profileLabel(profile['starting_profile'] as String? ?? ''),
       ),
-      ('Therapist', therapist ?? 'Not assigned yet'),
+      (context.t.therapist, therapist ?? context.t.notAssignedYet),
     ];
 
     return Container(

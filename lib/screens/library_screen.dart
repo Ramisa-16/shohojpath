@@ -7,6 +7,7 @@ import '../app/app_nav_state.dart';
 import '../models/passage.dart';
 import '../services/passage_repository.dart';
 import '../l10n/app_strings.dart';
+import '../l10n/label_extensions.dart';
 import '../theme/app_colors.dart';
 import '../widgets/api_data.dart';
 import '../widgets/app_header.dart';
@@ -342,7 +343,7 @@ class _PassageCardState extends State<_PassageCard> {
     if (full.pages.isEmpty) {
       messenger.showSnackBar(
         SnackBar(
-          content: Text(context.t.passageHasNoPagesAdmin),
+          content: Text(context.tOnce.passageHasNoPagesAdmin),
         ),
       );
       return;
@@ -404,7 +405,7 @@ class _PassageCardState extends State<_PassageCard> {
                     runSpacing: 6,
                     children: [
                       BadgeChip('${p.estimatedMinutes} min'),
-                      BadgeChip(p.difficulty.label),
+                      BadgeChip(p.difficulty.localisedLabel(context.t)),
                     ],
                   ),
                 ],

@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:shohojpath/api/api_client.dart';
 import 'package:shohojpath/api/shohojpath_api.dart';
 import 'package:shohojpath/api/token_store.dart';
+import 'package:shohojpath/l10n/app_language.dart';
 import 'package:shohojpath/models/reading_settings.dart';
 import 'package:shohojpath/screens/statistics_screen.dart';
 
@@ -98,6 +99,7 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider.value(value: ReadingSettings()),
+          ChangeNotifierProvider(create: (_) => LanguageState()),
           Provider<ApiClient>.value(value: client),
           Provider<ShohojpathApi>.value(value: ShohojpathApi(client)),
         ],
@@ -116,12 +118,12 @@ void main() {
     await pumpStatistics(tester);
 
     // The two Rows that threw: metric cards, then the small-stat pairs.
-    expect(find.text('Reading speed'), findsOneWidget);
-    expect(find.text('Comprehension'), findsOneWidget);
-    expect(find.text('Average session'), findsOneWidget);
-    expect(find.text('Sessions logged'), findsOneWidget);
-    expect(find.text('Passages read'), findsOneWidget);
-    expect(find.text('Words per minute'), findsOneWidget);
+    expect(find.text('পড়ার গতি'), findsOneWidget);
+    expect(find.text('বোঝাপড়া'), findsOneWidget);
+    expect(find.text('গড় সময়'), findsOneWidget);
+    expect(find.text('মোট পড়া'), findsOneWidget);
+    expect(find.text('পড়া গল্প'), findsOneWidget);
+    expect(find.text('মিনিটে শব্দ'), findsOneWidget);
   });
 
   testWidgets('renders the empty state without a crash', (tester) async {
@@ -130,7 +132,7 @@ void main() {
     await pumpStatistics(tester, stats: {'sessions_logged': 0});
 
     expect(tester.takeException(), isNull);
-    expect(find.text('No statistics yet'), findsOneWidget);
+    expect(find.text('এখনও পরিসংখ্যান নেই'), findsOneWidget);
   });
 
   testWidgets('survives a large font scale', (tester) async {
@@ -152,6 +154,7 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider.value(value: ReadingSettings()),
+          ChangeNotifierProvider(create: (_) => LanguageState()),
           Provider<ApiClient>.value(value: client),
           Provider<ShohojpathApi>.value(value: ShohojpathApi(client)),
         ],

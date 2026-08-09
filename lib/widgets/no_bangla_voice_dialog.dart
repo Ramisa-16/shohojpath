@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/tts_service.dart';
+import '../l10n/app_strings.dart';
 
 /// Ensures a Bangla voice is ready before speaking, surfacing the failure
 /// instead of letting a play button silently do nothing.
@@ -26,7 +27,7 @@ Future<void> showNoBanglaVoiceDialog(BuildContext context) {
   return showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('No Bangla voice found'),
+      title: Text(context.t.noBanglaVoiceShort),
       content: const Text(
         'This device has no Bengali text-to-speech voice installed, so read '
         'aloud cannot work.\n\n'

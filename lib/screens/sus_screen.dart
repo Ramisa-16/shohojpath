@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/study_session.dart';
 import '../services/session_logger.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/app_header.dart';
@@ -135,7 +136,7 @@ class _SusScreenState extends State<SusScreen> {
                     ),
                     const SizedBox(height: 14),
                     PrimaryButton(
-                      label: 'Continue to NASA-TLX',
+                      label: context.t.continueToTlx,
                       backgroundColor: AppColors.tealText,
                       onPressed: session.susComplete
                           ? () {

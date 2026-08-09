@@ -13,6 +13,7 @@ import '../../widgets/therapist_bottom_tab_bar.dart';
 import '../login_screen.dart';
 import '../help_screen.dart';
 import '../notifications_screen.dart';
+import '../../l10n/app_strings.dart';
 
 /// Screen `tprofile` of the v2 design — the therapist's own profile tab.
 /// The identity header shows the signed-in therapist, from [AuthState].
@@ -85,7 +86,7 @@ class _TherapistProfileScreenState extends State<TherapistProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Profile', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: Colors.white)),
+                  Text(context.t.profile, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: Colors.white)),
                   const SizedBox(height: 14),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,13 +113,13 @@ class _TherapistProfileScreenState extends State<TherapistProfileScreen> {
                               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
                             ),
                             Text(
-                              context.watch<AuthState>().email ?? 'Not signed in',
+                              context.watch<AuthState>().email ?? context.t.notSignedIn,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(fontSize: 15, color: AppColors.onNavyMuted),
                             ),
-                            const Text(
-                              'Speech & Language Therapist',
+                            Text(
+                              context.t.speechLanguageTherapist,
                               style: TextStyle(fontSize: 14, color: AppColors.onNavyMuted),
                             ),
                           ],
@@ -144,28 +145,28 @@ class _TherapistProfileScreenState extends State<TherapistProfileScreen> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Expanded(child: _StatTile(value: readers?.toString() ?? '—', label: 'Readers managed')),
+                              Expanded(child: _StatTile(value: readers?.toString() ?? '—', label: context.t.readersManaged)),
                               const SizedBox(width: 11),
-                              Expanded(child: _StatTile(value: sessions?.toString() ?? '—', label: 'Sessions logged')),
+                              Expanded(child: _StatTile(value: sessions?.toString() ?? '—', label: context.t.sessionsLogged)),
                             ],
                           ),
                         ),
                         const SizedBox(height: 14),
                         ListRowButton(
                           leading: const Icon(Icons.download_rounded, color: AppColors.navy, size: 24),
-                          title: 'Export all data as CSV',
+                          title: context.t.exportAllCsv,
                           onTap: () => exportAndShareCsv(context),
                         ),
                         const SizedBox(height: 11),
                         ListRowButton(
                           leading: const Icon(Icons.lock_outline_rounded, color: AppColors.navy, size: 24),
-                          title: 'Change password',
+                          title: context.t.changePassword,
                           onTap: () => showChangePasswordSheet(context),
                         ),
                         const SizedBox(height: 11),
                         ListRowButton(
                           leading: const Icon(Icons.notifications_none_rounded, color: AppColors.navy, size: 24),
-                          title: 'Notifications',
+                          title: context.t.notifications,
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => const NotificationsScreen(),
@@ -175,14 +176,14 @@ class _TherapistProfileScreenState extends State<TherapistProfileScreen> {
                         const SizedBox(height: 11),
                         ListRowButton(
                           leading: const Icon(Icons.help_outline_rounded, color: AppColors.navy, size: 24),
-                          title: 'Help & support',
+                          title: context.t.helpAndSupport,
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(builder: (_) => const HelpScreen()),
                           ),
                         ),
                         const SizedBox(height: 18),
                         SecondaryButton(
-                          label: 'Log out',
+                          label: context.t.logOut,
                           icon: Icons.logout_rounded,
                           color: AppColors.danger,
                           onPressed: () => _logOut(context),

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/reading_settings.dart';
 import '../services/tts_service.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../theme/reading_surface.dart';
 import '../utils/bangla_text.dart';
@@ -87,7 +88,7 @@ class ConjunctCard extends StatelessWidget {
             const SizedBox(width: 4),
             IconButton(
               onPressed: onClose,
-              tooltip: 'Close',
+              tooltip: context.t.close,
               iconSize: 22,
               constraints: const BoxConstraints.tightFor(width: 44, height: 44),
               icon: Icon(
@@ -118,7 +119,7 @@ class _SpeakerButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Hear this conjunct read aloud',
+      label: context.t.hearThisConjunct,
       child: Material(
         color: surface.accent,
         borderRadius: BorderRadius.circular(12),

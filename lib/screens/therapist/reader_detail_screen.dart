@@ -11,6 +11,7 @@ import '../../widgets/export_data_action.dart';
 import '../../widgets/settings_controls.dart';
 import '../../widgets/sparkline.dart';
 import 'assign_passage_screen.dart';
+import '../../l10n/app_strings.dart';
 
 enum _ReaderTab { progress, sessions, settings, notes }
 
@@ -72,15 +73,15 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
     final text = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add note'),
+        title: Text(context.t.addNote),
         content: TextField(
           controller: controller,
           maxLines: 4,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'What did you observe this session?'),
+          decoration: InputDecoration(hintText: context.t.notePrompt),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(context.tOnce.cancel)),
           TextButton(
             onPressed: () => Navigator.of(context).pop(controller.text.trim()),
             child: const Text('Save'),
@@ -151,7 +152,7 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
                       TextButton.icon(
                         onPressed: () => exportAndShareCsv(context),
                         icon: const Icon(Icons.download_rounded, color: Colors.white, size: 20),
-                        label: const Text('Export', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                        label: Text(context.t.export, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                       ),
                     ],
                   ),
@@ -219,12 +220,12 @@ class _ReaderTabBar extends StatelessWidget {
   final ValueChanged<_ReaderTab> onSelect;
 
   static const _minTabWidth = 90.0;
-  static const _labels = {
-    _ReaderTab.progress: 'Progress',
-    _ReaderTab.sessions: 'Sessions',
-    _ReaderTab.settings: 'Settings',
-    _ReaderTab.notes: 'Notes',
-  };
+  static String _label(AppStrings t, _ReaderTab tab) => switch (tab) {
+        _ReaderTab.progress => t.tabProgress,
+        _ReaderTab.sessions => t.sessions,
+        _ReaderTab.settings => t.settings,
+        _ReaderTab.notes => t.notes,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -232,7 +233,7 @@ class _ReaderTabBar extends StatelessWidget {
       builder: (context, constraints) {
         final tabs = [
           for (final tab in _ReaderTab.values)
-            _TabButton(label: _labels[tab]!, selected: tab == current, onTap: () => onSelect(tab)),
+            _TabButton(label: _label(context.t, tab), selected: tab == current, onTap: () => onSelect(tab)),
         ];
         if (constraints.maxWidth >= _minTabWidth * _ReaderTab.values.length) {
           return Row(children: [for (final t in tabs) Expanded(child: t)]);
@@ -329,8 +330,8 @@ class _ProgressTab extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Expanded(
-                    child: Text('READING SPEED', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body)),
+                  Expanded(
+                    child: Text(context.t.readingSpeedHeading, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body)),
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -354,8 +355,8 @@ class _ProgressTab extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Expanded(
-                    child: Text('ACCURACY', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body)),
+                  Expanded(
+                    child: Text(context.t.accuracyHeading, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body)),
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -367,7 +368,7 @@ class _ProgressTab extends StatelessWidget {
               const SizedBox(height: 8),
               Sparkline(values: accSeries, color: AppColors.teal),
               const SizedBox(height: 6),
-              const Text('Quiz score on each completed passage', style: TextStyle(fontSize: 14, color: AppColors.muted)),
+              Text(context.t.quizScorePerPassage, style: TextStyle(fontSize: 14, color: AppColors.muted)),
             ],
           ),
         ),
@@ -380,9 +381,9 @@ class _ProgressTab extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(child: _StatTile(value: '$totalWords', label: 'Total words read')),
+              Expanded(child: _StatTile(value: '$totalWords', label: context.t.totalWordsRead)),
               const SizedBox(width: 11),
-              Expanded(child: _StatTile(value: formatDurationLong(totalDuration), label: 'Total reading time')),
+              Expanded(child: _StatTile(value: formatDurationLong(totalDuration), label: context.t.totalReadingTime)),
             ],
           ),
         ),
@@ -394,14 +395,14 @@ class _ProgressTab extends StatelessWidget {
               Expanded(
                 child: _StatTile(
                   value: comprehensionAvg == null ? '—' : '${comprehensionAvg.round()}%',
-                  label: 'Comprehension average',
+                  label: context.t.comprehensionAverage,
                 ),
               ),
               const SizedBox(width: 11),
               Expanded(
                 child: _StatTile(
                   value: audioUsagePct == null ? '—' : '${audioUsagePct.round()}%',
-                  label: 'Read-aloud usage',
+                  label: context.t.readAloudUsage,
                 ),
               ),
             ],
@@ -409,7 +410,7 @@ class _ProgressTab extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         PrimaryButton(
-          label: 'Assign passages',
+          label: context.t.assignPassages,
           icon: Icons.playlist_add_rounded,
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => AssignPassageScreen(participantId: participantId)),
@@ -450,8 +451,8 @@ class _SessionsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.sessions.isEmpty) {
-      return const Center(
-        child: Text('No sessions logged yet.', style: TextStyle(fontSize: 15, color: AppColors.muted)),
+      return Center(
+        child: Text(context.t.noSessionsLogged, style: TextStyle(fontSize: 15, color: AppColors.muted)),
       );
     }
     return ListView.separated(
@@ -489,7 +490,7 @@ class _SessionsTab extends StatelessWidget {
                   if (quizScore != null && quizTotal != null) _Chip('Quiz $quizScore / $quizTotal', AppColors.navyTint, AppColors.navy),
                   if (audioKnown)
                     _Chip(
-                      audioOn ? 'Audio on' : 'Audio off',
+                      audioOn ? context.t.audioOnShort : context.t.audioOffShort,
                       audioOn ? AppColors.tealTint : AppColors.chipNeutral,
                       audioOn ? AppColors.tealDeep : AppColors.muted,
                     ),
@@ -548,7 +549,7 @@ class _SettingsTab extends StatelessWidget {
     final customPct = pctWhere((s) => s['profile'] == 'custom');
 
     final bars = <(String, double?)>[
-      ('Read aloud used', readAloudPct),
+      (context.t.readAloudUsed, readAloudPct),
       ('Recommended profile', recommendedPct),
       ('Default profile', defaultPct),
       ('Custom profile', customPct),
@@ -561,7 +562,7 @@ class _SettingsTab extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Settings actually used', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.navy)),
+              Text(context.t.settingsActuallyUsed, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.navy)),
               const SizedBox(height: 5),
               const Text(
                 "Share of this reader's sessions where each was active.",
@@ -569,7 +570,7 @@ class _SettingsTab extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               if (sessions.isEmpty)
-                const Text('No sessions yet.', style: TextStyle(fontSize: 15, color: AppColors.muted))
+                Text(context.t.noSessionsLogged, style: TextStyle(fontSize: 15, color: AppColors.muted))
               else
                 for (final (label, pct) in bars) ...[
                   Row(
@@ -626,12 +627,12 @@ class _NotesTab extends StatelessWidget {
           const SizedBox(height: 10),
         ],
         if (data.notes.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
-            child: Text('No notes yet.', style: TextStyle(fontSize: 15, color: AppColors.muted)),
+            child: Text(context.t.noNotesYet, style: TextStyle(fontSize: 15, color: AppColors.muted)),
           ),
         PrimaryButton(
-          label: 'Add note',
+          label: context.t.addNote,
           icon: Icons.edit_note_rounded,
           backgroundColor: AppColors.teal,
           onPressed: onAddNote,

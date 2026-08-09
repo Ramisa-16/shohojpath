@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../app/auth_state.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
 import 'home_shell.dart';
@@ -158,20 +159,20 @@ class _SplashScreenState extends State<SplashScreen> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      const Text(
-                        'Loading your preferences…',
+                      Text(
+                        context.t.loadingPreferences,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 14, color: AppColors.muted),
                       ),
                       const SizedBox(height: 18),
                       PrimaryButton(
-                        label: 'Get Started',
+                        label: context.t.getStarted,
                         onPressed: () => _continue(),
                         expand: false,
                       ),
                       const SizedBox(height: 28),
-                      const Text(
-                        'Version 1.0 · Research Prototype',
+                      Text(
+                        context.t.versionLine,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 14, color: AppColors.muted),
                       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../api/shohojpath_api.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../utils/duration_format.dart';
 import '../widgets/api_data.dart';
@@ -31,7 +32,7 @@ class StatisticsScreen extends StatelessWidget {
         child: Column(
           children: [
             AppHeader(
-              title: 'Reading Statistics',
+              title: context.t.readingStatistics,
               subtitle: readerName,
               onBack: () => Navigator.of(context).maybePop(),
             ),
@@ -66,11 +67,11 @@ class _Body extends StatelessWidget {
     final sessions = (data['sessions_logged'] as num?)?.toInt() ?? 0;
     if (sessions == 0) {
       return ListView(
-        children: const [
+        children: [
           SizedBox(height: 60),
           ApiMessage(
             icon: Icons.query_stats_outlined,
-            title: 'No statistics yet',
+            title: context.t.noStatisticsYet,
             body: 'Reading speed, comprehension and settings use are '
                 'calculated once the first session has been completed and '
                 'synced.',
@@ -103,8 +104,8 @@ class _Body extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'WORDS READ THIS WEEK',
+              Text(
+                context.t.wordsReadThisWeek,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -124,7 +125,7 @@ class _Body extends StatelessWidget {
               ),
               Text(
                 delta == 0
-                    ? 'Same as last week'
+                    ? context.t.sameAsLastWeek
                     : '${delta > 0 ? '▲' : '▼'} ${delta.abs()} words vs last week',
                 style: TextStyle(
                   fontSize: 15,
@@ -146,7 +147,7 @@ class _Body extends StatelessWidget {
             children: [
               Expanded(
                 child: _MetricCard(
-                  title: 'Reading speed',
+                  title: context.t.readingSpeed,
                   value: wpm == null ? '—' : wpm.toStringAsFixed(0),
                   unit: ' wpm',
                   note: 'Speed is read alongside accuracy.',
@@ -155,7 +156,7 @@ class _Body extends StatelessWidget {
               const SizedBox(width: 11),
               Expanded(
                 child: _MetricCard(
-                  title: 'Comprehension',
+                  title: context.t.comprehension,
                   value: comprehension == null
                       ? '—'
                       : comprehension.toStringAsFixed(0),
@@ -176,9 +177,9 @@ class _Body extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Read aloud used',
+                      context.t.readAloudUsed,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -225,7 +226,7 @@ class _Body extends StatelessWidget {
             children: [
               Expanded(
                 child: _SmallStat(
-                  label: 'Average session',
+                  label: context.t.averageSession,
                   value: formatDurationLong(
                     Duration(seconds: avgSeconds.round()),
                   ),
@@ -234,7 +235,7 @@ class _Body extends StatelessWidget {
               const SizedBox(width: 11),
               Expanded(
                 child: _SmallStat(
-                  label: 'Sessions logged',
+                  label: context.t.sessionsLogged,
                   value: '$sessions',
                 ),
               ),
@@ -248,14 +249,14 @@ class _Body extends StatelessWidget {
             children: [
               Expanded(
                 child: _SmallStat(
-                  label: 'Passages read',
+                  label: context.t.passagesRead,
                   value: '$finished',
                 ),
               ),
               const SizedBox(width: 11),
               Expanded(
                 child: _SmallStat(
-                  label: 'Words per minute',
+                  label: context.t.wordsPerMinute,
                   value: wpm == null ? '—' : wpm.toStringAsFixed(1),
                 ),
               ),
@@ -267,8 +268,8 @@ class _Body extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Settings changed most',
+              Text(
+                context.t.settingsChangedMost,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -287,8 +288,8 @@ class _Body extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               if (mostChanged.isEmpty)
-                const Text(
-                  'No settings have been changed yet.',
+                Text(
+                  context.t.noSettingsChanged,
                   style: TextStyle(fontSize: 15, color: AppColors.body),
                 )
               else

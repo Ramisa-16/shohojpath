@@ -8,6 +8,7 @@ import '../../api/shohojpath_api.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_buttons.dart';
 import '../../widgets/auth_form_field.dart';
+import '../../l10n/app_strings.dart';
 
 /// Screen `taddreader` — the directory of readers nobody has added yet.
 ///
@@ -143,11 +144,11 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
       child: Scaffold(
         backgroundColor: AppColors.canvas,
         appBar: AppBar(
-          title: const Text('Add a reader'),
+          title: Text(context.t.addAReader),
           actions: [
             IconButton(
               onPressed: _loading ? null : _load,
-              tooltip: 'Refresh',
+              tooltip: context.t.refresh,
               icon: const Icon(Icons.refresh_rounded),
             ),
           ],
@@ -161,14 +162,14 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
                 label: '',
                 controller: _search,
                 icon: Icons.search_rounded,
-                hint: 'Search by name, ID or school',
+                hint: context.t.searchByNameIdSchool,
                 onChanged: _onSearchChanged,
                 textInputAction: TextInputAction.search,
                 onSubmitted: (_) => _load(),
                 trailing: _search.text.isEmpty
                     ? null
                     : IconButton(
-                        tooltip: 'Clear search',
+                        tooltip: context.t.clearSearch,
                         icon: const Icon(Icons.close_rounded,
                             size: 20, color: AppColors.muted),
                         onPressed: () {
@@ -193,9 +194,9 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
     if (_error != null) {
       return _Message(
         icon: Icons.cloud_off_rounded,
-        title: 'Could not load readers',
+        title: context.t.couldNotLoadReaders,
         body: _error!,
-        action: PrimaryButton(label: 'Try again', onPressed: _load, expand: false),
+        action: PrimaryButton(label: context.t.tryAgain, onPressed: _load, expand: false),
       );
     }
 
@@ -203,7 +204,7 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
       final searching = _search.text.trim().isNotEmpty;
       return _Message(
         icon: searching ? Icons.search_off_rounded : Icons.groups_2_outlined,
-        title: searching ? 'No match' : 'Everyone has been added',
+        title: searching ? context.t.noMatch : context.t.everyoneAdded,
         body: searching
             ? 'No unassigned reader matches “${_search.text.trim()}”. They may '
                 'already be on another therapist\'s list.'

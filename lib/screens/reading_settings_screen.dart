@@ -11,6 +11,8 @@ import '../theme/reading_surface.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/settings_controls.dart';
 import '../widgets/therapist_password_dialog.dart';
+import '../l10n/app_strings.dart';
+import '../l10n/label_extensions.dart';
 
 /// Pushes the Reading Settings panel — screen 06 of the design — as a sheet
 /// sliding in from the right over a dimmed backdrop, exactly as drawn there
@@ -74,10 +76,10 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
   Future<void> _unlock(BuildContext context) async {
     final confirmed = await showTherapistPasswordDialog(
       context,
-      title: 'Unlock settings',
+      title: context.t.unlockSettings,
       description: "Enter the therapist's password to let this reader change "
           'settings for the rest of the session.',
-      confirmLabel: 'Unlock',
+      confirmLabel: context.t.unlock,
     );
     if (!confirmed || !context.mounted) return;
     context.read<ParticipantState>().unlockSettings();
@@ -112,9 +114,9 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                       padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
                       child: Row(
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              'Reading Settings',
+                              context.t.readingSettingsTitle,
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
@@ -124,7 +126,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                           ),
                           IconOnlyButton(
                             onPressed: () => Navigator.of(context).maybePop(),
-                            tooltip: 'Close reading settings',
+                            tooltip: context.t.closeReadingSettings,
                             icon: Icons.close_rounded,
                           ),
                         ],
@@ -151,18 +153,16 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                   const SizedBox(height: 18),
                                   _Section(
                                     number: 1,
-                                    title: 'Read Aloud',
-                                    titleBn: 'পড়ে শোনাও',
-                                    badge: 'Evidence-based',
+                                    title: context.t.readAloudSection,
+                                    badge: context.t.evidenceBased,
                                     caption:
-                                        'Dyslexia is a phonological difficulty. '
-                                        'Audio support addresses it directly.',
+                                        context.t.captionAudioSupport,
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
                                         ToggleRow(
-                                          label: 'Read aloud',
+                                          label: context.t.readAloudLabel,
                                           value: settings.readAloud,
                                           onChanged: (v) =>
                                               context
@@ -172,7 +172,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                         ),
                                         ToggleRow(
                                           label:
-                                              'Highlight each word as it is spoken',
+                                              context.t.highlightSpokenWord,
                                           value: settings.highlightSpokenWord,
                                           onChanged: (v) =>
                                               context
@@ -181,8 +181,8 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                   v,
                                         ),
                                         const SizedBox(height: 6),
-                                        const Text(
-                                          'Speed',
+                                        Text(
+                                          context.t.speed,
                                           style: TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w700,
@@ -214,8 +214,8 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            const Text(
-                                              'Voice',
+                                            Text(
+                                              context.t.voice,
                                               style: TextStyle(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w700,
@@ -225,7 +225,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                             const SizedBox(height: 4),
                                             Text(
                                               tts.locale ??
-                                                  'No Bangla voice found',
+                                                  context.t.noBanglaVoiceShort,
                                               style: TextStyle(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w700,
@@ -242,19 +242,16 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                   const SizedBox(height: 18),
                                   _Section(
                                     number: 2,
-                                    title: 'Bangla Reading Support',
-                                    titleBn: 'বাংলা পাঠ সহায়তা',
-                                    badge: 'Research feature',
+                                    title: context.t.banglaReadingSupport,
+                                    badge: context.t.researchFeature,
                                     caption:
-                                        'Bangla conjuncts hide the letters '
-                                        'inside them. These options make the '
-                                        'spelling visible.',
+                                        context.t.captionConjuncts,
                                     child: Column(
                                       children: [
                                         ToggleRow(
-                                          label: 'যুক্তাক্ষর হাইলাইট',
+                                          label: context.t.highlightConjuncts,
                                           labelIsBangla: true,
-                                          caption: 'Highlight conjuncts',
+                                          
                                           value: settings.highlightConjuncts,
                                           onChanged: (v) =>
                                               context
@@ -304,12 +301,10 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                   const SizedBox(height: 18),
                                   _Section(
                                     number: 3,
-                                    title: 'Typography',
-                                    badge: 'Personal preference',
+                                    title: context.t.typography,
+                                    badge: context.t.personalPreference,
                                     caption:
-                                        'Font choice is a comfort preference. '
-                                        'Research has not shown any single font '
-                                        'improves reading accuracy.',
+                                        context.t.captionFontChoice,
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -335,9 +330,9 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  const Expanded(
+                                                  Expanded(
                                                     child: Text(
-                                                      'Font size',
+                                                      context.t.fontSize,
                                                       style: TextStyle(
                                                         fontSize: 15,
                                                         fontWeight:
@@ -411,10 +406,8 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                 ],
                                               ),
                                               const SizedBox(height: 4),
-                                              const Text(
-                                                'Applies to the passage. Buttons and '
-                                                'labels grow with it up to a limit, so '
-                                                'the app stays usable.',
+                                              Text(
+                                                context.t.captionFontSizeApplies,
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   height: 1.5,
@@ -425,7 +418,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                           ),
                                         ),
                                         ToggleRow(
-                                          label: 'Bold text',
+                                          label: context.t.boldText,
                                           value: settings.boldText,
                                           onChanged: (v) =>
                                               context
@@ -439,12 +432,12 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                   const SizedBox(height: 18),
                                   _Section(
                                     number: 4,
-                                    title: 'Spacing',
-                                    badge: 'Evidence-based',
+                                    title: context.t.spacing,
+                                    badge: context.t.evidenceBased,
                                     child: Column(
                                       children: [
                                         SliderRow(
-                                          label: 'Letter spacing',
+                                          label: context.t.letterSpacing,
                                           value: settings.letterSpacingEm,
                                           min: ReadingSettings
                                               .minLetterSpacingEm,
@@ -475,7 +468,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                           ),
                                         ),
                                         SliderRow(
-                                          label: 'Word spacing',
+                                          label: context.t.wordSpacing,
                                           value: settings.wordSpacingEm,
                                           min: ReadingSettings.minWordSpacingEm,
                                           max: ReadingSettings.maxWordSpacingEm,
@@ -488,7 +481,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                   v,
                                         ),
                                         SliderRow(
-                                          label: 'Line spacing',
+                                          label: context.t.lineSpacing,
                                           value: settings.lineHeight,
                                           min: ReadingSettings.minLineHeight,
                                           max: ReadingSettings.maxLineHeight,
@@ -501,7 +494,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                   v,
                                         ),
                                         SliderRow(
-                                          label: 'Paragraph spacing',
+                                          label: context.t.paragraphSpacing,
                                           value: settings.paragraphSpacingEm,
                                           min: ReadingSettings
                                               .minParagraphSpacingEm,
@@ -521,22 +514,21 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                   const SizedBox(height: 18),
                                   _Section(
                                     number: 5,
-                                    title: 'Theme',
-                                    badge: 'Comfort',
+                                    title: context.t.theme,
+                                    badge: context.t.comfort,
                                     caption:
-                                        'Background colour affects comfort, '
-                                        'not decoding accuracy.',
+                                        context.t.captionThemeComfort,
                                     child: _ThemeRow(settings: settings),
                                   ),
                                   const SizedBox(height: 18),
                                   _Section(
                                     number: 6,
-                                    title: 'Reading focus',
-                                    badge: 'Evidence-based',
+                                    title: context.t.readingFocus,
+                                    badge: context.t.evidenceBased,
                                     child: Column(
                                       children: [
                                         ToggleRow(
-                                          label: 'Highlight current line',
+                                          label: context.t.highlightCurrentLine,
                                           value: settings.highlightCurrentLine,
                                           onChanged: (v) =>
                                               context
@@ -545,7 +537,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                   v,
                                         ),
                                         ToggleRow(
-                                          label: 'Reading ruler',
+                                          label: context.t.readingRuler,
                                           value: settings.readingRuler,
                                           onChanged: (v) =>
                                               context
@@ -554,7 +546,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                   v,
                                         ),
                                         ToggleRow(
-                                          label: 'Highlight current paragraph',
+                                          label: context.t.highlightCurrentParagraph,
                                           value: settings
                                               .highlightCurrentParagraph,
                                           onChanged: (v) =>
@@ -564,11 +556,9 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                   v,
                                         ),
                                         ToggleRow(
-                                          label: 'Hide decorative images',
+                                          label: context.t.hideImages,
                                           caption:
-                                              'Illustrations often help '
-                                              'comprehension. Hide only if they '
-                                              'distract.',
+                                              context.t.captionIllustrations,
                                           value: settings.hideDecorativeImages,
                                           onChanged: (v) =>
                                               context
@@ -577,7 +567,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                   v,
                                         ),
                                         ToggleRow(
-                                          label: 'Focus mode',
+                                          label: context.t.focusMode,
                                           value: settings.focusMode,
                                           onChanged: (v) =>
                                               context
@@ -591,7 +581,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                   const SizedBox(height: 18),
                                   _Section(
                                     number: 7,
-                                    title: 'Reading assistance',
+                                    title: context.t.readingAssistance,
                                     child: _AssistanceGrid(
                                       bookmarked: widget.bookmarked,
                                       onToggleBookmark: widget.onToggleBookmark,
@@ -606,7 +596,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                           // isn't a settings change, so it stays enabled
                           // (and re-labelled) even while locked.
                           PrimaryButton(
-                            label: locked ? 'Return to reading' : 'Apply & return',
+                            label: locked ? context.t.returnToReading : context.t.applyAndReturn,
                             onPressed: () => Navigator.of(context).maybePop(),
                           ),
                         ],
@@ -638,9 +628,9 @@ class _LockedStrip extends StatelessWidget {
         children: [
           const Icon(Icons.lock_rounded, size: 16, color: AppColors.muted),
           const SizedBox(width: 8),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Settings are locked for this session',
+              context.t.settingsLockedForSession,
               style: TextStyle(
                 fontSize: 14,
                 color: AppColors.muted,
@@ -653,8 +643,8 @@ class _LockedStrip extends StatelessWidget {
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 8),
             ),
-            child: const Text(
-              'Unlock (therapist)',
+            child: Text(
+              context.t.unlockTherapist,
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
             ),
           ),
@@ -669,12 +659,12 @@ class _ProfileBox extends StatelessWidget {
 
   final ReadingSettings settings;
 
-  static const Map<ReadingProfile, String> _descriptions = {
-    ReadingProfile.standard: 'Baseline — no reading aids, the study control.',
-    ReadingProfile.recommended:
-        'Evidence-based: audio, spacing, cream background.',
-    ReadingProfile.custom: 'Your own configuration, saved for comparison.',
-  };
+  static String _description(AppStrings t, ReadingProfile profile) =>
+      switch (profile) {
+        ReadingProfile.standard => t.profileDescDefault,
+        ReadingProfile.recommended => t.profileDescRecommended,
+        ReadingProfile.custom => t.profileDescCustom,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -688,8 +678,8 @@ class _ProfileBox extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'READING PROFILE',
+          Text(
+            context.t.readingProfileHeading,
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w800,
@@ -700,8 +690,8 @@ class _ProfileBox extends StatelessWidget {
           const SizedBox(height: 10),
           for (final profile in ReadingProfile.values) ...[
             ProfileOptionTile(
-              title: profile.label,
-              description: _descriptions[profile]!,
+              title: profile.localisedLabel(context.t),
+              description: _description(context.t, profile),
               selected: settings.profile == profile,
               onTap: () =>
                   context.read<ReadingSettings>().applyProfile(profile),
@@ -720,14 +710,12 @@ class _Section extends StatelessWidget {
     required this.number,
     required this.title,
     required this.child,
-    this.titleBn,
     this.badge,
     this.caption,
   });
 
   final int number;
   final String title;
-  final String? titleBn;
   final String? badge;
   final String? caption;
   final Widget child;
@@ -743,9 +731,9 @@ class _Section extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
-              titleBn == null
-                  ? '$number · $title'
-                  : '$number · $title / $titleBn',
+              // Was "1 · Read Aloud / পড়ে শোনাও" — a bilingual header that
+              // is redundant now the title itself is in the reader's language.
+              '$number · $title',
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
@@ -853,7 +841,7 @@ class _ThemeSwatch extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: '${surface.label} theme',
+      label: surface.localisedLabel(context.t),
       child: GestureDetector(
         onTap: () => context.read<ReadingSettings>().surface = surface,
         child: Container(
@@ -874,7 +862,7 @@ class _ThemeSwatch extends StatelessWidget {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              surface.label,
+              surface.localisedLabel(context.t),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -916,7 +904,7 @@ class _AssistanceGrid extends StatelessWidget {
           child: ValueListenableBuilder<bool>(
             valueListenable: bookmarked,
             builder: (context, saved, _) => ChoiceTile(
-              label: 'Bookmark',
+              label: context.t.bookmark,
               selected: saved,
               onTap: onToggleBookmark,
               child: Icon(
@@ -930,18 +918,18 @@ class _AssistanceGrid extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
           child: ChoiceTile(
-            label: 'Dictionary',
+            label: context.t.dictionary,
             selected: false,
-            onTap: () => _notImplemented(context, 'Dictionary'),
+            onTap: () => _notImplemented(context, context.t.dictionary),
             child: const Icon(Icons.menu_book_rounded, color: AppColors.navy, size: 20),
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: ChoiceTile(
-            label: 'Highlight',
+            label: context.t.highlight,
             selected: false,
-            onTap: () => _notImplemented(context, 'Highlight'),
+            onTap: () => _notImplemented(context, context.t.highlight),
             child: const Icon(Icons.border_color_rounded, color: AppColors.navy, size: 20),
           ),
         ),

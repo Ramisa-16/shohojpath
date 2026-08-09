@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:shohojpath/api/api_client.dart';
 import 'package:shohojpath/api/shohojpath_api.dart';
 import 'package:shohojpath/api/token_store.dart';
+import 'package:shohojpath/l10n/app_language.dart';
 import 'package:shohojpath/widgets/change_password_sheet.dart';
 
 /// Change password is a bottom sheet rather than a centred dialog: three
@@ -71,6 +72,7 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
+          ChangeNotifierProvider(create: (_) => LanguageState()),
           Provider<ApiClient>.value(value: client),
           Provider<ShohojpathApi>.value(value: ShohojpathApi(client)),
         ],
@@ -109,7 +111,7 @@ void main() {
 
     expect(find.byType(BottomSheet), findsOneWidget);
     expect(find.byType(AlertDialog), findsNothing);
-    expect(find.text('Change password'), findsWidgets);
+    expect(find.text('পাসওয়ার্ড বদলান'), findsWidgets);
     expect(find.byType(TextField), findsNWidgets(3));
   });
 
@@ -129,7 +131,7 @@ void main() {
     await openSheet(tester);
     await fill(tester);
 
-    await tester.tap(find.text('Change password').last);
+    await tester.tap(find.text('পাসওয়ার্ড বদলান').last);
     await tester.pumpAndSettle();
 
     expect(posts, hasLength(1));
@@ -138,20 +140,20 @@ void main() {
     expect(body['new_password'], 'newpassword1');
 
     expect(find.byType(BottomSheet), findsNothing, reason: 'it closes');
-    expect(find.text('Password changed.'), findsOneWidget);
+    expect(find.text('পাসওয়ার্ড বদলে গেছে।'), findsOneWidget);
   });
 
   testWidgets('a mismatch is caught before the request', (tester) async {
     await openSheet(tester);
     await fill(tester, confirm: 'differentpass1');
 
-    await tester.tap(find.text('Change password').last);
+    await tester.tap(find.text('পাসওয়ার্ড বদলান').last);
     await tester.pumpAndSettle();
 
     // Mistyping the new password would lock someone out of the account they
     // need in order to fix it, so this never reaches the server.
     expect(posts, isEmpty);
-    expect(find.text('The two new passwords do not match.'), findsOneWidget);
+    expect(find.text('দুটি নতুন পাসওয়ার্ড মিলছে না।'), findsOneWidget);
     expect(find.byType(BottomSheet), findsOneWidget);
   });
 
@@ -159,11 +161,11 @@ void main() {
     await openSheet(tester);
     await fill(tester, next: 'short', confirm: 'short');
 
-    await tester.tap(find.text('Change password').last);
+    await tester.tap(find.text('পাসওয়ার্ড বদলান').last);
     await tester.pumpAndSettle();
 
     expect(posts, isEmpty);
-    expect(find.text('Use at least 8 characters.'), findsOneWidget);
+    expect(find.text('অন্তত ৮টি অক্ষর ব্যবহার করুন।'), findsOneWidget);
   });
 
   testWidgets('a server rejection stays open and says why', (tester) async {
@@ -171,7 +173,7 @@ void main() {
     await openSheet(tester);
     await fill(tester);
 
-    await tester.tap(find.text('Change password').last);
+    await tester.tap(find.text('পাসওয়ার্ড বদলান').last);
     await tester.pumpAndSettle();
 
     expect(find.byType(BottomSheet), findsOneWidget);
@@ -180,7 +182,7 @@ void main() {
 
   testWidgets('Cancel closes it without saving', (tester) async {
     await openSheet(tester);
-    await tester.tap(find.text('Cancel'));
+    await tester.tap(find.text('বাতিল'));
     await tester.pumpAndSettle();
 
     expect(posts, isEmpty);

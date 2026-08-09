@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../app/participant_state.dart';
 import '../models/reading_settings.dart';
 import '../screens/therapist/therapist_dashboard_screen.dart';
+import '../l10n/app_strings.dart';
+import '../l10n/label_extensions.dart';
 import '../theme/app_colors.dart';
 import 'therapist_password_dialog.dart';
 
@@ -17,9 +19,9 @@ class TherapistSessionBanner extends StatelessWidget {
   Future<void> _endSession(BuildContext context) async {
     final confirmed = await showTherapistPasswordDialog(
       context,
-      title: 'End session',
+      title: context.tOnce.endSession,
       description: "Enter the therapist's password to return to the Dashboard.",
-      confirmLabel: 'End Session',
+      confirmLabel: context.t.endSession,
     );
     if (!confirmed || !context.mounted) return;
 
@@ -37,7 +39,8 @@ class TherapistSessionBanner extends StatelessWidget {
     // Live, not captured at session start: under Custom the reader can
     // change profile freely, and this should always show whatever's
     // actually active, not just the condition the session began under.
-    final condition = context.watch<ReadingSettings>().profile.label;
+    final condition =
+        context.watch<ReadingSettings>().profile.localisedLabel(context.t);
 
     return Container(
       width: double.infinity,

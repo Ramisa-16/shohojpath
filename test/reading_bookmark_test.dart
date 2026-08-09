@@ -12,6 +12,7 @@ import 'package:shohojpath/api/shohojpath_api.dart';
 import 'package:shohojpath/api/token_store.dart';
 import 'package:shohojpath/app/auth_state.dart';
 import 'package:shohojpath/app/participant_state.dart';
+import 'package:shohojpath/l10n/app_language.dart';
 import 'package:shohojpath/models/passage.dart';
 import 'package:shohojpath/models/reading_settings.dart';
 import 'package:shohojpath/screens/reading_screen.dart';
@@ -161,6 +162,7 @@ void main() {
         providers: [
           ChangeNotifierProvider.value(value: ReadingSettings()),
           ChangeNotifierProvider.value(value: participant),
+          ChangeNotifierProvider(create: (_) => LanguageState()),
           ChangeNotifierProvider(create: (_) => TtsService()),
           Provider<SessionLogger>.value(value: _NoDbLogger()),
           Provider<ApiClient>.value(value: client),
@@ -261,6 +263,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(requests.where((r) => r.method == 'POST'), isEmpty);
-    expect(find.text('Sign in to save bookmarks.'), findsOneWidget);
+    expect(find.text('বুকমার্ক রাখতে সাইন ইন করুন।'), findsOneWidget);
   });
 }

@@ -12,6 +12,7 @@ import 'package:shohojpath/api/shohojpath_api.dart';
 import 'package:shohojpath/api/token_store.dart';
 import 'package:shohojpath/app/auth_state.dart';
 import 'package:shohojpath/app/participant_state.dart';
+import 'package:shohojpath/l10n/app_language.dart';
 import 'package:shohojpath/models/reading_settings.dart';
 import 'package:shohojpath/screens/profile_screen.dart';
 
@@ -122,6 +123,7 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider.value(value: ReadingSettings()),
+          ChangeNotifierProvider(create: (_) => LanguageState()),
           ChangeNotifierProvider.value(value: participant),
           Provider<ApiClient>.value(value: client),
           Provider<ShohojpathApi>.value(value: ShohojpathApi(client)),
@@ -144,27 +146,27 @@ void main() {
     await pumpProfile(tester);
 
     // Participant ID and Email were the two the fixed-height box hid.
-    expect(find.text('Participant ID'), findsOneWidget);
+    expect(find.text('অংশগ্রহণকারী আইডি'), findsOneWidget);
     expect(find.text('P-7DFF'), findsWidgets);
-    expect(find.text('Email'), findsOneWidget);
+    expect(find.text('ইমেইল'), findsOneWidget);
     expect(find.text('mitu@example.com'), findsOneWidget);
-    expect(find.text('Age'), findsOneWidget);
-    expect(find.text('Reading profile'), findsOneWidget);
-    expect(find.text('Therapist'), findsOneWidget);
-    expect(find.text('Not assigned yet'), findsOneWidget);
+    expect(find.text('বয়স'), findsOneWidget);
+    expect(find.text('পড়ার ধরন'), findsOneWidget);
+    expect(find.text('থেরাপিস্ট'), findsOneWidget);
+    expect(find.text('এখনও দেওয়া হয়নি'), findsOneWidget);
   });
 
   testWidgets('offers Change password to a signed-in reader', (tester) async {
     await pumpProfile(tester);
-    expect(find.text('Change password'), findsOneWidget);
-    expect(find.text('Log out'), findsOneWidget);
+    expect(find.text('পাসওয়ার্ড বদলান'), findsOneWidget);
+    expect(find.text('লগ আউট'), findsOneWidget);
   });
 
   testWidgets('hides Change password from a guest', (tester) async {
     // A guest has no account, so the row would be a dead end.
     await pumpProfile(tester, signedIn: false, status: 404);
-    expect(find.text('Change password'), findsNothing);
-    expect(find.text('Log out'), findsOneWidget);
+    expect(find.text('পাসওয়ার্ড বদলান'), findsNothing);
+    expect(find.text('লগ আউট'), findsOneWidget);
   });
 
   testWidgets('a failed profile fetch does not break the screen',
@@ -174,9 +176,9 @@ void main() {
     await pumpProfile(tester, status: 404);
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Participant ID'), findsNothing);
+    expect(find.text('অংশগ্রহণকারী আইডি'), findsNothing);
     // The rest of the screen still works.
-    expect(find.text('Reading history'), findsOneWidget);
-    expect(find.text('Log out'), findsOneWidget);
+    expect(find.text('পড়ার ইতিহাস'), findsOneWidget);
+    expect(find.text('লগ আউট'), findsOneWidget);
   });
 }

@@ -14,6 +14,7 @@ import 'package:shohojpath/app/app_nav_state.dart';
 import 'package:shohojpath/app/auth_state.dart';
 import 'package:shohojpath/app/participant_state.dart';
 import 'package:shohojpath/app/route_observer.dart';
+import 'package:shohojpath/l10n/app_language.dart';
 import 'package:shohojpath/models/reading_settings.dart';
 import 'package:shohojpath/screens/home_screen.dart';
 import 'package:shohojpath/services/passage_repository.dart';
@@ -121,6 +122,7 @@ void main() {
           ChangeNotifierProvider.value(value: ReadingSettings()),
           ChangeNotifierProvider.value(value: participant),
           ChangeNotifierProvider(create: (_) => AppNavState()),
+          ChangeNotifierProvider(create: (_) => LanguageState()),
           Provider<ApiClient>.value(value: client),
           Provider<ShohojpathApi>.value(value: api),
           Provider<PassageRepository>(create: (_) => PassageRepository(api)),
@@ -154,16 +156,16 @@ void main() {
   testWidgets('the bookmark tile updates after returning from a route',
       (tester) async {
     await pumpHome(tester);
-    expect(find.text('0 saved'), findsOneWidget);
+    expect(find.text('0 টি রাখা আছে'), findsOneWidget);
 
     await pushAndPopARoute(tester);
 
     expect(
-      find.text('1 saved'),
+      find.text('1 টি রাখা আছে'),
       findsOneWidget,
       reason: 'Home must re-read its counts once it is uncovered',
     );
-    expect(find.text('0 saved'), findsNothing);
+    expect(find.text('0 টি রাখা আছে'), findsNothing);
   });
 
   testWidgets('it refetches rather than reusing the first result',
@@ -188,7 +190,7 @@ void main() {
       (tester) async {
     await pumpHome(tester);
 
-    final greeting = find.textContaining('Good ');
+    final greeting = find.textContaining('শুভ ');
     expect(greeting, findsOneWidget);
 
     // Inside the navy bar rather than the scrolling page below it.

@@ -66,6 +66,7 @@ class AppStrings {
   String get settings => _s('সেটিংস', 'Settings');
   String get help => _s('সহায়তা', 'Help');
   String get about => _s('অ্যাপ সম্পর্কে', 'About');
+  String minutesToday(int n) => _s('আজ $n মিনিট', '$n min today');
   String get underAMinute => _s('এক মিনিটের কম', 'Under a minute');
 
   String passageCount(int n) => _s('$n টি গল্প', '$n passages');
@@ -258,6 +259,45 @@ class AppStrings {
         'Showing saved data — could not reach the server.',
       );
   String get nothingHereYet => _s('এখানে এখনও কিছু নেই', 'Nothing here yet');
+
+  // ---- Home cards ---------------------------------------------------------
+
+  String get assignedByTherapistPlain =>
+      _s('আপনার থেরাপিস্ট দিয়েছেন', 'Assigned by your therapist');
+  String get startHere => _s('এখান থেকে শুরু করুন', 'START HERE');
+  String get lastRead => _s('শেষ যা পড়েছেন', 'LAST READ');
+  String get noReadingYetShort => _s('এখনও পড়া হয়নি', 'No reading yet');
+  String get pickAPassage => _s(
+        'শুরু করতে পাঠাগার থেকে একটি গল্প বেছে নিন। আপনার অগ্রগতি এখানে '
+            'দেখা যাবে।',
+        'Pick a passage from the Library to begin. Your progress will appear '
+            'here.',
+      );
+  String get passageRetired => _s(
+        'গল্পটি আর পাঠাগারে নেই',
+        'That passage is no longer in the library',
+      );
+  String get passageRetiredBody => _s(
+        'আপনার পড়া তবু সংরক্ষিত আছে। পাঠাগার থেকে নতুন কিছু বেছে নিন।',
+        'Your reading is still recorded. Pick something new from the Library.',
+      );
+  String get nothingToday => _s('আজ কিছু নেই', 'Nothing today');
+  String get passageHasNoPages =>
+      _s('এই গল্পে এখনও কোনো পৃষ্ঠা নেই।', 'That passage has no pages yet.');
+  String get passageHasNoPagesAdmin => _s(
+        'এই গল্পে এখনও কোনো পৃষ্ঠা নেই। অ্যাডমিন থেকে যোগ করুন।',
+        'That passage has no pages yet. Add them in the admin.',
+      );
+
+  // ---- Library extras -----------------------------------------------------
+
+  String get difficulty => _s('কঠিনতা', 'DIFFICULTY');
+
+  // ---- Bookmarks extras ---------------------------------------------------
+
+  String pageNumber(int page) => _s('পৃষ্ঠা $page', 'Page $page');
+  String get opening => _s('খুলছে…', 'Opening…');
+  String get continueLabel => _s('চালিয়ে যান', 'Continue');
 }
 
 /// `context.t.startReading` at the call site.

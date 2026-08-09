@@ -131,7 +131,7 @@ void main() {
     expect(nav.tab, AppTab.home);
     expect(librarySearchHasFocus(tester), isFalse);
 
-    await tester.tap(find.text('Search passages…'));
+    await tester.tap(find.text('গল্প খুঁজুন…'));
     await tester.pumpAndSettle();
 
     expect(nav.tab, AppTab.library);
@@ -157,7 +157,7 @@ void main() {
 
   testWidgets('the request is consumed, not repeated', (tester) async {
     await pumpShell(tester);
-    await tester.tap(find.text('Search passages…'));
+    await tester.tap(find.text('গল্প খুঁজুন…'));
     await tester.pumpAndSettle();
     expect(librarySearchHasFocus(tester), isTrue);
 

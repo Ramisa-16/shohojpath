@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../app/app_nav_state.dart';
 import '../models/passage.dart';
 import '../services/passage_repository.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/api_data.dart';
 import '../widgets/app_header.dart';
@@ -84,6 +85,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final repo = context.read<PassageRepository>();
 
     return Scaffold(
@@ -91,7 +93,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         child: Column(
           children: [
             AppHeader(
-              title: 'Reading Library',
+              title: t.readingLibrary,
               onBack:
                   widget.showBack ? () => Navigator.of(context).maybePop() : null,
               bottom: AuthFormField(
@@ -99,7 +101,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 controller: _search,
                 focusNode: _searchFocus,
                 icon: Icons.search_rounded,
-                hint: 'Search by title or topic',
+                hint: t.searchByTitle,
                 onChanged: _onSearchChanged,
                 textInputAction: TextInputAction.search,
                 onSubmitted: (_) => setState(() => _version++),
@@ -131,9 +133,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   ),
                   isEmpty: (rows) => rows.isEmpty,
                   emptyIcon: Icons.menu_book_outlined,
-                  emptyTitle: 'No passages found',
-                  emptyBody: 'Try a different search or filter. Passages are '
-                      'added by the research team in the admin.',
+                  emptyTitle: t.noPassagesFound,
+                  emptyBody: t.noPassagesBody,
                   builder: (context, passages, refresh) => RefreshIndicator(
                     onRefresh: refresh,
                     child: ListView.separated(
@@ -173,15 +174,14 @@ class _OfflineNotice extends StatelessWidget {
         border: Border.all(color: AppColors.border),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.cloud_off_rounded, size: 20, color: AppColors.muted),
-          SizedBox(width: 9),
+          const Icon(Icons.cloud_off_rounded, size: 20, color: AppColors.muted),
+          const SizedBox(width: 9),
           Expanded(
             child: Text(
-              'Offline — showing the passage bundled with the app. Connect to '
-              'see the full library.',
-              style: TextStyle(fontSize: 14, height: 1.5, color: AppColors.muted),
+              context.t.offlineLibraryNotice,
+              style: const TextStyle(fontSize: 14, height: 1.5, color: AppColors.muted),
             ),
           ),
         ],
@@ -341,8 +341,8 @@ class _PassageCardState extends State<_PassageCard> {
 
     if (full.pages.isEmpty) {
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('That passage has no pages yet. Add them in the admin.'),
+        SnackBar(
+          content: Text(context.t.passageHasNoPagesAdmin),
         ),
       );
       return;

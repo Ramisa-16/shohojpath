@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../api/api_exception.dart';
 import '../api/shohojpath_api.dart';
 import '../services/passage_repository.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/api_data.dart';
 import '../widgets/app_buttons.dart';
@@ -34,7 +35,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
         child: Column(
           children: [
             AppHeader(
-              title: 'Bookmarks',
+              title: context.t.bookmarks,
               onBack: () => Navigator.of(context).maybePop(),
             ),
             Expanded(
@@ -45,9 +46,8 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                   load: api.bookmarks,
                   isEmpty: (rows) => rows.isEmpty,
                   emptyIcon: Icons.bookmark_border_rounded,
-                  emptyTitle: 'No bookmarks yet',
-                  emptyBody: 'Tap the bookmark icon while reading to save your '
-                      'place. It will be here on any device you sign in to.',
+                  emptyTitle: context.t.noBookmarksYet,
+                  emptyBody: context.t.noBookmarksBody,
                   builder: (context, rows, refresh) => RefreshIndicator(
                     onRefresh: refresh,
                     child: ListView.separated(
@@ -97,7 +97,7 @@ class _BookmarkCardState extends State<_BookmarkCard> {
 
     if (passage.pages.isEmpty) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('That passage has no pages yet.')),
+        SnackBar(content: Text(context.t.passageHasNoPages)),
       );
       return;
     }
@@ -155,7 +155,7 @@ class _BookmarkCardState extends State<_BookmarkCard> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Page ${page + 1}',
+                  context.t.pageNumber(page + 1),
                   style: const TextStyle(fontSize: 14, color: AppColors.muted),
                 ),
                 if (excerpt.isNotEmpty) ...[
@@ -184,7 +184,7 @@ class _BookmarkCardState extends State<_BookmarkCard> {
                     const SizedBox(width: 8),
                     IconOnlyButton(
                       icon: Icons.delete_outline_rounded,
-                      tooltip: 'Delete bookmark',
+                      tooltip: context.t.deleteBookmark,
                       color: AppColors.danger,
                       onPressed: _busy ? null : _delete,
                     ),

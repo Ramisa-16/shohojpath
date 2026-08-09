@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../api/shohojpath_api.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../widgets/api_data.dart';
 import '../widgets/app_buttons.dart';
@@ -28,7 +29,7 @@ class ProgressScreen extends StatelessWidget {
         child: Column(
           children: [
             AppHeader(
-              title: 'My Progress',
+              title: context.t.myProgress,
               onBack: showBack ? () => Navigator.of(context).maybePop() : null,
             ),
             Expanded(
@@ -69,11 +70,10 @@ class _Body extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       children: [
         if (sessions == 0)
-          const ApiMessage(
+          ApiMessage(
             icon: Icons.auto_stories_outlined,
-            title: 'No reading recorded yet',
-            body: 'Finish a passage and your time, pages and progress will '
-                'appear here.',
+            title: context.t.noReadingYet,
+            body: context.t.noReadingYetBody,
           )
         else ...[
           Row(
@@ -85,7 +85,7 @@ class _Body extends StatelessWidget {
                       ? '${minutesToday.toInt()}'
                       : minutesToday.toStringAsFixed(1),
                   unit: ' min',
-                  label: 'Time today',
+                  label: context.t.timeToday,
                 ),
               ),
               const SizedBox(width: 11),
@@ -94,7 +94,7 @@ class _Body extends StatelessWidget {
                   icon: Icons.description_rounded,
                   value: '$pagesToday',
                   unit: pagesToday == 1 ? ' page' : ' pages',
-                  label: 'Pages read',
+                  label: context.t.pagesRead,
                 ),
               ),
             ],
@@ -108,7 +108,7 @@ class _Body extends StatelessWidget {
         ListRowButton(
           leading: const Icon(Icons.analytics_rounded,
               color: AppColors.navy, size: 24),
-          title: 'Detailed reading statistics',
+          title: context.t.detailedStatistics,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const StatisticsScreen()),
           ),
@@ -187,10 +187,10 @@ class _CurrentPassageCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Current passage',
-                  style: TextStyle(
+                  context.t.currentPassage,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: AppColors.ink,
@@ -230,14 +230,14 @@ class _CurrentPassageCard extends StatelessWidget {
           if (pageCount > 0) ...[
             const SizedBox(height: 3),
             Text(
-              'Page $pagesRead of $pageCount',
+              context.t.pageOf(pagesRead, pageCount),
               style: const TextStyle(fontSize: 14, color: AppColors.muted),
             ),
           ] else if (!available) ...[
             const SizedBox(height: 3),
-            const Text(
-              'No longer in the library — your reading is still recorded.',
-              style: TextStyle(fontSize: 14, height: 1.4, color: AppColors.muted),
+            Text(
+              context.t.passageNoLongerAvailable,
+              style: const TextStyle(fontSize: 14, height: 1.4, color: AppColors.muted),
             ),
           ],
         ],
@@ -268,9 +268,9 @@ class _WeekCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'This week',
-            style: TextStyle(
+          Text(
+            context.t.thisWeek,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: AppColors.ink,

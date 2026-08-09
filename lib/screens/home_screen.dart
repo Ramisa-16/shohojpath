@@ -11,6 +11,7 @@ import '../app/participant_state.dart';
 import '../app/route_observer.dart';
 import '../services/passage_repository.dart';
 import '../data/mock_content.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../utils/greeting.dart';
 import '../widgets/app_buttons.dart';
@@ -95,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen>
         for (final row in rows)
           LibraryEntry(
             title: row['passage_title'] as String? ?? '',
-            category: 'Assigned by your therapist',
+            category: '',
             time: '',
             level: '',
           ),
@@ -114,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen>
           leading: const _Greeting(),
           trailing: const [NotificationBell()],
           bottom: HeaderSearchField(
-            hint: 'Search passages…',
+            hint: context.t.searchPassages,
             // Not just select(library): this field is a search affordance, so
             // it hands over to Library's real one with the cursor already in
             // it. The other Home shortcuts only change tab.
@@ -148,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'ASSIGNED BY YOUR THERAPIST',
+                                    context.t.assignedByTherapist,
                                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.tealText),
                                   ),
                                 ),
@@ -179,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen>
                         _ContinueReadingCard(summary: summary),
                         const SizedBox(height: 12),
                         PrimaryButton(
-                          label: 'Start Reading',
+                          label: context.t.startReading,
                           icon: Icons.auto_stories_rounded,
                           backgroundColor: AppColors.teal,
                           onPressed: () =>
@@ -193,8 +194,8 @@ class _HomeScreenState extends State<HomeScreen>
                               Expanded(
                                 child: _QuickCard(
                                   icon: Icons.local_library_rounded,
-                                  label: 'Library',
-                                  caption: summary.passageCountLabel,
+                                  label: context.t.tabLibrary,
+                                  caption: summary.passageCountLabel(context.t),
                                   onTap: () => context
                                       .read<AppNavState>()
                                       .select(AppTab.library),
@@ -204,8 +205,8 @@ class _HomeScreenState extends State<HomeScreen>
                               Expanded(
                                 child: _QuickCard(
                                   icon: Icons.insights_rounded,
-                                  label: 'My Progress',
-                                  caption: summary.minutesTodayLabel,
+                                  label: context.t.myProgress,
+                                  caption: summary.minutesTodayLabel(context.t),
                                   onTap: () => context
                                       .read<AppNavState>()
                                       .select(AppTab.progress),
@@ -222,8 +223,8 @@ class _HomeScreenState extends State<HomeScreen>
                               Expanded(
                                 child: _QuickCard(
                                   icon: Icons.bookmarks_rounded,
-                                  label: 'Bookmarks',
-                                  caption: summary.bookmarkCountLabel,
+                                  label: context.t.bookmarksTile,
+                                  caption: summary.bookmarkCountLabel(context.t),
                                   onTap: () => Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (_) => const BookmarksScreen(),
@@ -235,8 +236,8 @@ class _HomeScreenState extends State<HomeScreen>
                               Expanded(
                                 child: _QuickCard(
                                   icon: Icons.history_rounded,
-                                  label: 'History',
-                                  caption: summary.sessionCountLabel,
+                                  label: context.t.historyTile,
+                                  caption: summary.sessionCountLabel(context.t),
                                   onTap: () => Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (_) => const HistoryScreen(),
@@ -257,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen>
                     Expanded(
                       child: _ChromeButton(
                         icon: Icons.settings_rounded,
-                        label: 'Settings',
+                        label: context.t.settings,
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const AppSettingsScreen(),
@@ -269,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen>
                     Expanded(
                       child: _ChromeButton(
                         icon: Icons.help_rounded,
-                        label: 'Help',
+                        label: context.t.help,
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const HelpScreen()),
                         ),
@@ -279,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen>
                     Expanded(
                       child: _ChromeButton(
                         icon: Icons.info_rounded,
-                        label: 'About',
+                        label: context.t.about,
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const AboutScreen(),
@@ -319,6 +320,16 @@ class _GreetingState extends State<_Greeting> {
   void dispose() {
     _tick?.cancel();
     super.dispose();
+  }
+
+  /// The greeting in whichever language the interface is in.
+  String _greeting(BuildContext context) {
+    final t = context.t;
+    return switch (greetingFor(DateTime.now())) {
+      'Good morning' => t.goodMorning,
+      'Good afternoon' => t.goodAfternoon,
+      _ => t.goodEvening,
+    };
   }
 
   /// Wakes exactly when the wording is due to change, rather than polling.
@@ -384,7 +395,7 @@ class _GreetingState extends State<_Greeting> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                greetingFor(DateTime.now()),
+                _greeting(context),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -502,24 +513,24 @@ class _HomeSummary {
 
   double? get minutesToday => (progress['minutes_today'] as num?)?.toDouble();
 
-  String get passageCountLabel =>
-      passageCount == null ? '—' : '$passageCount passages';
+  String passageCountLabel(AppStrings t) =>
+      passageCount == null ? '—' : t.passageCount(passageCount!);
 
-  String get bookmarkCountLabel =>
-      bookmarkCount == null ? '—' : '$bookmarkCount saved';
+  String bookmarkCountLabel(AppStrings t) =>
+      bookmarkCount == null ? '—' : t.savedCount(bookmarkCount!);
 
-  String get sessionCountLabel {
+  String sessionCountLabel(AppStrings t) {
     final n = sessionCount;
     if (n == null) return '—';
-    return '$n session${n == 1 ? '' : 's'}';
+    return t.sessionCount(n);
   }
 
-  String get minutesTodayLabel {
+  String minutesTodayLabel(AppStrings t) {
     final m = minutesToday;
     if (m == null) return '—';
-    if (m == 0) return 'Nothing today';
-    if (m < 1) return 'Under a minute';
-    return '${m.round()} min today';
+    if (m == 0) return t.nothingToday;
+    if (m < 1) return t.underAMinute;
+    return t.minutesToday(m.round());
   }
 }
 
@@ -547,7 +558,7 @@ class _ContinueReadingCardState extends State<_ContinueReadingCard> {
 
     if (passage.pages.isEmpty) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('That passage has no pages yet.')),
+        SnackBar(content: Text(context.t.passageHasNoPages)),
       );
       return;
     }
@@ -564,11 +575,11 @@ class _ContinueReadingCardState extends State<_ContinueReadingCard> {
     if (current == null) {
       return WhiteCard(
         onTap: () => context.read<AppNavState>().select(AppTab.library),
-        child: const Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'START HERE',
+              context.t.startHere,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
@@ -578,7 +589,7 @@ class _ContinueReadingCardState extends State<_ContinueReadingCard> {
             ),
             SizedBox(height: 8),
             Text(
-              'No reading yet',
+              context.t.noReadingYetShort,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -587,9 +598,8 @@ class _ContinueReadingCardState extends State<_ContinueReadingCard> {
             ),
             SizedBox(height: 4),
             Text(
-              'Pick a passage from the Library to begin. Your progress will '
-              'show up here.',
-              style: TextStyle(fontSize: 14, height: 1.5, color: AppColors.muted),
+              context.t.pickAPassage,
+              style: const TextStyle(fontSize: 14, height: 1.5, color: AppColors.muted),
             ),
           ],
         ),
@@ -609,11 +619,11 @@ class _ContinueReadingCardState extends State<_ContinueReadingCard> {
     if (!available) {
       return WhiteCard(
         onTap: () => context.read<AppNavState>().select(AppTab.library),
-        child: const Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'LAST READ',
+              context.t.lastRead,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
@@ -623,7 +633,7 @@ class _ContinueReadingCardState extends State<_ContinueReadingCard> {
             ),
             SizedBox(height: 8),
             Text(
-              'That passage is no longer in the library',
+              context.t.passageRetired,
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
@@ -632,9 +642,8 @@ class _ContinueReadingCardState extends State<_ContinueReadingCard> {
             ),
             SizedBox(height: 4),
             Text(
-              'Your reading is still recorded. Pick something new from the '
-              'Library.',
-              style: TextStyle(
+              context.t.passageRetiredBody,
+              style: const TextStyle(
                 fontSize: 14,
                 height: 1.5,
                 color: AppColors.muted,
@@ -653,10 +662,10 @@ class _ContinueReadingCardState extends State<_ContinueReadingCard> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'CONTINUE READING',
-                  style: TextStyle(
+                  context.t.continueReading,
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.6,
@@ -717,7 +726,7 @@ class _ContinueReadingCardState extends State<_ContinueReadingCard> {
           if (pageCount > 0) ...[
             const SizedBox(height: 6),
             Text(
-              'Page $pagesRead of $pageCount',
+              context.t.pageOf(pagesRead, pageCount),
               style: const TextStyle(fontSize: 14, color: AppColors.muted),
             ),
           ],

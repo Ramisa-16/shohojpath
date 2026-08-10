@@ -115,10 +115,17 @@ class AssignedLibraryTests(APITestCase):
         response = self.client.get(reverse("passages:list"))
         return [p["id"] for p in response.data["results"]]
 
-    def test_with_no_assignments_the_reader_sees_everything(self):
-        # An empty Library is a worse failure than an unrestricted one: it
-        # leaves a child with nothing to do and no way to tell that from a
-        # broken app.
+    def test_a_supervised_reader_with_nothing_assigned_gets_nothing(self):
+        # Keyed on having a therapist, not on having assignments: otherwise
+        # "the therapist has not chosen yet" silently becomes "the child read
+        # whatever they liked", and the exported data cannot tell them apart.
+        self.assertEqual(self._slugs(), [])
+
+    def test_an_unsupervised_reader_sees_everything(self):
+        # Nobody is choosing for them, so the whole library is theirs.
+        self.reader.therapist = None
+        self.reader.save()
+
         slugs = self._slugs()
         self.assertIn("alpha", slugs)
         self.assertIn("beta", slugs)
@@ -149,17 +156,21 @@ class AssignedLibraryTests(APITestCase):
         self.assertIn("alpha", slugs)
         self.assertIn("beta", slugs)
 
-    def test_another_readers_assignment_does_not_restrict_me(self):
+    def test_another_readers_assignment_does_not_decide_mine(self):
         other_user = User.objects.create_user(
             email="o@example.com", password="studypass123", role=User.Role.READER
         )
-        other = ReaderProfile.objects.create(user=other_user, display_name="O")
+        other = ReaderProfile.objects.create(
+            user=other_user, display_name="O", therapist=self.therapist
+        )
         Assignment.objects.create(
             reader=other, passage=self.a, assigned_by=self.therapist
         )
+        Assignment.objects.create(
+            reader=self.reader, passage=self.b, assigned_by=self.therapist
+        )
 
-        slugs = self._slugs()
-        self.assertIn("beta", slugs, "my library is decided by my assignments")
+        self.assertEqual(self._slugs(), ["beta"])
 
 
 class BookmarkTests(APITestCase):

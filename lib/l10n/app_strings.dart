@@ -84,6 +84,14 @@ class AppStrings {
   String get easy => _s('সহজ', 'Easy');
   String get medium => _s('মাঝারি', 'Medium');
   String get hard => _s('কঠিন', 'Hard');
+  String get therapistHasNotAssigned =>
+      _s('এখনও কোনো গল্প দেওয়া হয়নি', 'No stories yet');
+  String get therapistHasNotAssignedBody => _s(
+        'আপনার থেরাপিস্ট এখনও কোনো গল্প বেছে দেননি। তিনি দিলে সেগুলো এখানে '
+            'দেখা যাবে।',
+        'Your therapist has not chosen any stories for you yet. They will '
+            'appear here once they do.',
+      );
   String get noPassagesFound => _s('কোনো গল্প পাওয়া যায়নি', 'No passages found');
   String get noPassagesBody => _s(
         'অন্য কিছু খুঁজে দেখুন বা ফিল্টার বদলান।',

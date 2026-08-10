@@ -76,6 +76,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
     setState(() => _categories = categories);
   }
 
+  /// True when the reader has narrowed the list themselves, so an empty
+  /// result is their filter rather than an empty library.
+  bool get _isFiltered =>
+      _search.text.trim().isNotEmpty ||
+      _category != 'All' ||
+      _difficulty != null;
+
   void _onSearchChanged(String _) {
     _debounce?.cancel();
     _debounce = Timer(
@@ -134,8 +141,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   ),
                   isEmpty: (rows) => rows.isEmpty,
                   emptyIcon: Icons.menu_book_outlined,
-                  emptyTitle: t.noPassagesFound,
-                  emptyBody: t.noPassagesBody,
+                  // An unfiltered library can only be empty for one reason:
+                  // the reader has a therapist who has not chosen anything
+                  // yet. Saying "try a different search" to a child who has
+                  // not searched would send them looking for a mistake they
+                  // did not make.
+                  emptyTitle: _isFiltered
+                      ? t.noPassagesFound
+                      : t.therapistHasNotAssigned,
+                  emptyBody: _isFiltered
+                      ? t.noPassagesBody
+                      : t.therapistHasNotAssignedBody,
                   builder: (context, passages, refresh) => RefreshIndicator(
                     onRefresh: refresh,
                     child: ListView.separated(

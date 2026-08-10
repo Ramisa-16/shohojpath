@@ -28,15 +28,17 @@ def reader_profile_for(user):
 class PassageListView(generics.ListAPIView):
     """GET /api/passages/ — the Library.
 
-    A reader whose therapist has assigned them passages sees only those.
-    Assigning was previously advisory: the therapist picked five, the reader's
-    Library still offered all thirty, and the choice changed nothing. Either
-    it decides what the child reads or the screen should not exist.
+    A supervised reader sees exactly what their therapist assigned — nothing
+    more, and nothing if they assigned nothing.
 
-    A reader with no assignments — nobody's reader yet, or a therapist who has
-    not chosen — sees everything. An empty Library is a worse failure than an
-    unrestricted one: it leaves a child with nothing to do and no way to tell
-    that from a broken app.
+    Keyed on having a therapist rather than on having assignments. If it were
+    the latter, "the therapist has not chosen yet" would silently become "the
+    child read whatever they liked", and the exported data could not tell the
+    two apart afterwards. Under this rule an unassigned supervised reader is
+    visible on the first screen they open.
+
+    A reader with no therapist — signed up alone, or a guest — sees the whole
+    library, because there is nobody to choose for them.
 
     Therapists always see the full list; they have to, in order to assign
     from it.
@@ -70,14 +72,15 @@ class PassageListView(generics.ListAPIView):
             return qs
 
         reader = ReaderProfile.objects.filter(user=user).first()
-        if reader is None:
+        if reader is None or reader.therapist_id is None:
             return qs
 
         assigned = Assignment.objects.filter(reader=reader).values_list(
             "passage_id", flat=True
         )
-        if not assigned:
-            return qs
+        # Deliberately empty when nothing is assigned: the therapist decides,
+        # and "not decided yet" must look different from "free choice". The
+        # app says so in words rather than showing a bare empty list.
         return qs.filter(pk__in=list(assigned))
 
 

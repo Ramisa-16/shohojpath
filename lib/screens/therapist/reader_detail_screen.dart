@@ -415,7 +415,12 @@ class _ProgressTab extends StatelessWidget {
           label: context.t.assignPassages,
           icon: Icons.playlist_add_rounded,
           onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => AssignPassageScreen(participantId: participantId)),
+            MaterialPageRoute(
+              builder: (_) => AssignPassageScreen(
+                participantId: participantId,
+                readerName: data.reader?["name"] as String?,
+              ),
+            ),
           ),
         ),
       ],

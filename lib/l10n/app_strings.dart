@@ -1035,6 +1035,13 @@ class AppStrings {
   String profileNamed(String profile) => _s('$profile ধরন', '$profile profile');
   String get needsTwoSessions =>
       _s('অন্তত দুইবার পড়া দরকার', 'Needs at least two sessions');
+
+  // ---- Assign passages ----------------------------------------------------
+
+  String assignedCount(int n, String reader) => _s(
+        '$reader-কে $n টি গল্প দেওয়া হয়েছে',
+        n == 1 ? '1 passage assigned to $reader' : '$n passages assigned to $reader',
+      );
 }
 
 /// `context.t.startReading` at the call site.

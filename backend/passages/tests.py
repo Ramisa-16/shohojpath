@@ -89,6 +89,79 @@ class PassageApiTests(APITestCase):
         )
 
 
+class AssignedLibraryTests(APITestCase):
+    """Assigning decides what the reader can open.
+
+    It used to be advisory: a therapist picked five passages and the reader's
+    Library still offered all thirty, so the screen changed nothing.
+    """
+
+    def setUp(self):
+        self.therapist = User.objects.create_user(
+            email="doc@example.com", password="studypass123",
+            role=User.Role.THERAPIST,
+        )
+        self.user = User.objects.create_user(
+            email="r@example.com", password="studypass123", role=User.Role.READER
+        )
+        self.reader = ReaderProfile.objects.create(
+            user=self.user, display_name="Rafi", therapist=self.therapist
+        )
+        self.a = make_passage("alpha")
+        self.b = make_passage("beta")
+        self.client.force_authenticate(self.user)
+
+    def _slugs(self):
+        response = self.client.get(reverse("passages:list"))
+        return [p["id"] for p in response.data["results"]]
+
+    def test_with_no_assignments_the_reader_sees_everything(self):
+        # An empty Library is a worse failure than an unrestricted one: it
+        # leaves a child with nothing to do and no way to tell that from a
+        # broken app.
+        slugs = self._slugs()
+        self.assertIn("alpha", slugs)
+        self.assertIn("beta", slugs)
+
+    def test_an_assigned_reader_sees_only_what_was_assigned(self):
+        Assignment.objects.create(
+            reader=self.reader, passage=self.a, assigned_by=self.therapist
+        )
+        slugs = self._slugs()
+        self.assertEqual(slugs, ["alpha"])
+        self.assertNotIn("beta", slugs)
+
+    def test_the_restriction_holds_through_search_and_filters(self):
+        # Searching must not be a way around the therapist's choice.
+        Assignment.objects.create(
+            reader=self.reader, passage=self.a, assigned_by=self.therapist
+        )
+        response = self.client.get(reverse("passages:list"), {"search": "Beta"})
+        self.assertEqual([p["id"] for p in response.data["results"]], [])
+
+    def test_a_therapist_still_sees_the_whole_library(self):
+        # They have to, in order to assign from it.
+        Assignment.objects.create(
+            reader=self.reader, passage=self.a, assigned_by=self.therapist
+        )
+        self.client.force_authenticate(self.therapist)
+        slugs = self._slugs()
+        self.assertIn("alpha", slugs)
+        self.assertIn("beta", slugs)
+
+    def test_another_readers_assignment_does_not_restrict_me(self):
+        other_user = User.objects.create_user(
+            email="o@example.com", password="studypass123", role=User.Role.READER
+        )
+        other = ReaderProfile.objects.create(user=other_user, display_name="O")
+        Assignment.objects.create(
+            reader=other, passage=self.a, assigned_by=self.therapist
+        )
+
+        slugs = self._slugs()
+        self.assertIn("beta", slugs, "my library is decided by my assignments")
+
+
 class BookmarkTests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(

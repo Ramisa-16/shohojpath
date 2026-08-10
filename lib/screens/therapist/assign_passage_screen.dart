@@ -11,6 +11,7 @@ import '../../widgets/app_header.dart';
 import '../../widgets/settings_controls.dart';
 import '../../l10n/app_strings.dart';
 import '../../widgets/therapist_bottom_tab_bar.dart';
+import '../../l10n/label_extensions.dart';
 
 /// Screen `tassign` of the v2 design — a therapist picking which library
 /// passages a reader should see. Each toggle writes straight to
@@ -18,9 +19,17 @@ import '../../widgets/therapist_bottom_tab_bar.dart';
 /// "confirm" step to forget; the reader's Home screen reads
 /// [ReaderRepository.assignedPassageIds] to show what's been assigned to them.
 class AssignPassageScreen extends StatefulWidget {
-  const AssignPassageScreen({super.key, required this.participantId});
+  const AssignPassageScreen({
+    super.key,
+    required this.participantId,
+    this.readerName,
+  });
 
   final String participantId;
+
+  /// Shown instead of the participant id where there is one. The id is how
+  /// the study records a child; it is not what their therapist calls them.
+  final String? readerName;
 
   @override
   State<AssignPassageScreen> createState() => _AssignPassageScreenState();
@@ -28,11 +37,11 @@ class AssignPassageScreen extends StatefulWidget {
 
 class _AssignPassageScreenState extends State<AssignPassageScreen> {
   String _category = 'All';
-  String? _difficulty;
+  PassageDifficulty? _difficulty;
   Set<String> _assigned = {};
   List<Passage> _passages = const [];
   List<String> _categories = const ['All'];
-  static const List<String> _difficulties = ['Easy', 'Medium', 'Hard'];
+  static const List<PassageDifficulty> _difficulties = PassageDifficulty.values;
   bool _loading = true;
   String? _error;
 
@@ -101,7 +110,7 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
 
   bool _matchesDifficulty(Passage p) =>
       _difficulty == null ||
-      p.difficulty.label.toLowerCase() == _difficulty!.toLowerCase();
+      p.difficulty == _difficulty;
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +123,10 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
         child: Column(
           children: [
             AppHeader(title: context.t.assignPassagesTitle, onBack: () => Navigator.of(context).maybePop()),
+            // Hidden when there is only one category, because then "All" and
+            // that category select exactly the same passages — two chips that
+            // do the same thing teach the therapist nothing and cost a row.
+            if (_categories.length > 2)
             Container(
               color: Colors.white,
               padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
@@ -157,9 +170,10 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
                       separatorBuilder: (_, _) => const SizedBox(width: 6),
                       itemBuilder: (context, i) {
                         final d = _difficulties[i];
+                        final label = d.localisedLabel(context.t);
                         final selected = _difficulty == d;
                         return ChoiceTile(
-                          label: d,
+                          label: label,
                           selected: selected,
                           onTap: () => setState(() => _difficulty = selected ? null : d),
                         );
@@ -174,7 +188,10 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
               color: AppColors.tealTintSoft,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
               child: Text(
-                '${_assigned.length} passage${_assigned.length == 1 ? '' : 's'} assigned to ${widget.participantId}',
+                context.t.assignedCount(
+                  _assigned.length,
+                  widget.readerName ?? widget.participantId,
+                ),
                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.tealText),
               ),
             ),
@@ -239,7 +256,7 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
                                             spacing: 6,
                                             children: [
                                               _Tag('${entry.estimatedMinutes} min', AppColors.navyTint, AppColors.navy),
-                                              _Tag(entry.difficulty.label, AppColors.tealTint, AppColors.tealDeep),
+                                              _Tag(entry.difficulty.localisedLabel(context.t), AppColors.tealTint, AppColors.tealDeep),
                                             ],
                                           ),
                                         ],

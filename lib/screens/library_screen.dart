@@ -27,7 +27,7 @@ class LibraryScreen extends StatefulWidget {
 }
 
 class _LibraryScreenState extends State<LibraryScreen> {
-  static const _difficulties = ['Easy', 'Medium', 'Hard'];
+  static const _difficulties = PassageDifficulty.values;
 
   final _search = TextEditingController();
   final _searchFocus = FocusNode();
@@ -36,7 +36,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   late final AppNavState _nav;
 
   String _category = 'All';
-  String? _difficulty;
+  PassageDifficulty? _difficulty;
   int _version = 0;
 
   List<String> _categories = const ['All'];
@@ -130,7 +130,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   load: () => repo.library(
                     search: _search.text.trim(),
                     category: _category == 'All' ? null : _category,
-                    difficulty: _difficulty?.toLowerCase(),
+                    difficulty: _difficulty?.id,
                   ),
                   isEmpty: (rows) => rows.isEmpty,
                   emptyIcon: Icons.menu_book_outlined,
@@ -202,11 +202,11 @@ class _Filters extends StatelessWidget {
   });
 
   final List<String> categories;
-  final List<String> difficulties;
+  final List<PassageDifficulty> difficulties;
   final String category;
-  final String? difficulty;
+  final PassageDifficulty? difficulty;
   final ValueChanged<String> onCategory;
-  final ValueChanged<String> onDifficulty;
+  final ValueChanged<PassageDifficulty> onDifficulty;
 
   @override
   Widget build(BuildContext context) {
@@ -216,6 +216,10 @@ class _Filters extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Hidden when there is only one category: "All" and that category
+          // then select exactly the same passages, and two chips that do the
+          // same thing are a control with nothing behind it.
+          if (categories.length > 2)
           SizedBox(
             height: 60,
             child: ListView.separated(
@@ -248,7 +252,7 @@ class _Filters extends StatelessWidget {
                 ),
                 for (final d in difficulties)
                   _Chip(
-                    label: d,
+                    label: d.localisedLabel(context.t),
                     selected: d == difficulty,
                     teal: true,
                     onTap: () => onDifficulty(d),

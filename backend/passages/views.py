@@ -28,8 +28,18 @@ def reader_profile_for(user):
 class PassageListView(generics.ListAPIView):
     """GET /api/passages/ — the Library.
 
-    Open to any signed-in user: the passages are study material, not personal
-    data, and the therapist screens need the same list to assign from.
+    A reader whose therapist has assigned them passages sees only those.
+    Assigning was previously advisory: the therapist picked five, the reader's
+    Library still offered all thirty, and the choice changed nothing. Either
+    it decides what the child reads or the screen should not exist.
+
+    A reader with no assignments — nobody's reader yet, or a therapist who has
+    not chosen — sees everything. An empty Library is a worse failure than an
+    unrestricted one: it leaves a child with nothing to do and no way to tell
+    that from a broken app.
+
+    Therapists always see the full list; they have to, in order to assign
+    from it.
     """
 
     serializer_class = PassageSummarySerializer
@@ -37,6 +47,7 @@ class PassageListView(generics.ListAPIView):
 
     def get_queryset(self):
         qs = Passage.objects.filter(is_published=True).prefetch_related("pages")
+        qs = self._restrict_to_assignments(qs)
         params = self.request.query_params
 
         search = params.get("search", "").strip()
@@ -52,6 +63,22 @@ class PassageListView(generics.ListAPIView):
             qs = qs.filter(difficulty__iexact=difficulty)
 
         return qs
+
+    def _restrict_to_assignments(self, qs):
+        user = self.request.user
+        if getattr(user, "role", None) != "reader":
+            return qs
+
+        reader = ReaderProfile.objects.filter(user=user).first()
+        if reader is None:
+            return qs
+
+        assigned = Assignment.objects.filter(reader=reader).values_list(
+            "passage_id", flat=True
+        )
+        if not assigned:
+            return qs
+        return qs.filter(pk__in=list(assigned))
 
 
 class PassageDetailView(generics.RetrieveAPIView):

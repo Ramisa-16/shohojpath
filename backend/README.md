@@ -14,9 +14,9 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Admin: http://127.0.0.1:8000/admin/ · Health: `/api/health/`
+Admin: http://127.0.0.1:8002/admin/ · Health: `/api/health/`
 
-The Android emulator reaches the host at **`http://10.0.2.2:8000`**, not
+The Android emulator reaches the host at **`http://10.0.2.2:8002`**, not
 `localhost`. On a physical device use your machine's LAN IP and make sure both
 are on the same network.
 

@@ -116,7 +116,7 @@ flutter build apk --release \
   --dart-define=API_BASE_URL=https://USERNAME.pythonanywhere.com
 ```
 
-Without this it keeps talking to `10.0.2.2:8000`, the emulator's route to your
+Without this it keeps talking to `10.0.2.2:8002`, the emulator's route to your
 laptop.
 
 ---

@@ -7,9 +7,14 @@ import 'package:flutter/foundation.dart';
 /// Override at build time when neither default is right — a second server, or
 /// testing a release build against a laptop:
 ///
-///   flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8001
+///   flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8002
 abstract final class ApiConfig {
   static const String _override = String.fromEnvironment('API_BASE_URL');
+
+  /// The port the local backend runs on in development. 8000 is taken by
+  /// another project on this machine, so Shohojpath uses 8002 — start it with
+  /// `python manage.py runserver 0.0.0.0:8002`.
+  static const int devPort = 8002;
 
   /// The deployed study backend.
   static const String production = 'https://shohojpath.pythonanywhere.com';
@@ -29,9 +34,9 @@ abstract final class ApiConfig {
   static String get baseUrl {
     if (_override.isNotEmpty) return _override;
     if (kReleaseMode) return production;
-    if (kIsWeb) return 'http://127.0.0.1:8001';
-    if (Platform.isAndroid) return 'http://10.0.2.2:8001';
-    return 'http://127.0.0.1:8001';
+    if (kIsWeb) return 'http://127.0.0.1:8002';
+    if (Platform.isAndroid) return 'http://10.0.2.2:8002';
+    return 'http://127.0.0.1:8002';
   }
 
   static Uri url(String path, [Map<String, dynamic>? query]) {

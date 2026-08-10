@@ -9,6 +9,7 @@ import '../../theme/app_colors.dart';
 import '../../widgets/app_buttons.dart';
 import '../../widgets/auth_form_field.dart';
 import '../../l10n/app_strings.dart';
+import '../../widgets/therapist_bottom_tab_bar.dart';
 
 /// Screen `taddreader` — the directory of readers nobody has added yet.
 ///
@@ -118,10 +119,7 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
               .where((r) => r['participant_id'] != participantId)
               .toList();
         });
-        _toast(
-          'Another therapist added $name first.',
-          AppColors.danger,
-        );
+        _toast(t.claimedFirst(name), AppColors.danger);
       } else {
         _toast(e.messageFor(t), AppColors.danger);
       }
@@ -189,6 +187,8 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
             Expanded(child: _body()),
           ],
         ),
+        bottomNavigationBar:
+            const TherapistBottomTabBar(current: TherapistTab.dashboard),
       ),
     );
   }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../api/shohojpath_api.dart';
-import '../../data/passages.dart';
 import '../../services/session_logger.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/duration_format.dart';
@@ -12,6 +11,7 @@ import '../../widgets/settings_controls.dart';
 import '../../widgets/sparkline.dart';
 import 'assign_passage_screen.dart';
 import '../../l10n/app_strings.dart';
+import '../../widgets/therapist_bottom_tab_bar.dart';
 
 enum _ReaderTab { progress, sessions, settings, notes }
 
@@ -180,6 +180,8 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
           },
         ),
       ),
+          bottomNavigationBar:
+          const TherapistBottomTabBar(current: TherapistTab.dashboard),
     );
   }
 
@@ -461,7 +463,8 @@ class _SessionsTab extends StatelessWidget {
       separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, i) {
         final s = data.sessions[i];
-        final title = Passages.titleFor(s['passage_id'] as String);
+        final title = s['passage_title'] as String? ??
+            s['passage_id'] as String;
         final startedAt = DateTime.tryParse(s['started_at'] as String? ?? '');
         final seconds = (s['total_reading_seconds'] as num?)?.toDouble();
         final quizScore = s['quiz_score'];

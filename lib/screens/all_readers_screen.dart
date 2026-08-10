@@ -5,6 +5,7 @@ import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
 import '../widgets/reader_tile.dart';
 import '../l10n/app_strings.dart';
+import '../widgets/therapist_bottom_tab_bar.dart';
 
 /// The overflow screen from Login's "Show all readers (N)" — a search field
 /// plus every reader grouped alphabetically, using the exact same
@@ -114,6 +115,11 @@ class _AllReadersScreenState extends State<AllReadersScreen> {
           ],
         ),
       ),
+    
+      bottomNavigationBar:
+
+          const TherapistBottomTabBar(current: TherapistTab.dashboard),
+
     );
   }
 }

@@ -111,6 +111,10 @@ class _SessionCardState extends State<_SessionCard> {
   Widget build(BuildContext context) {
     final s = widget.session;
     final passageId = s['passage_id'] as String? ?? '';
+    // The server resolves the slug to the story's name. Falling back to the
+    // slug is deliberate: a passage retired from the library still has
+    // sessions recorded against it, and "aesop_21104" is at least honest.
+    final title = s['passage_title'] as String? ?? passageId;
     final seconds = (s['total_reading_seconds'] as num?)?.toDouble() ?? 0;
     final quizScore = (s['quiz_score'] as num?)?.toInt();
     final quizTotal = (s['quiz_total'] as num?)?.toInt();
@@ -127,7 +131,7 @@ class _SessionCardState extends State<_SessionCard> {
             children: [
               Expanded(
                 child: Text(
-                  passageId,
+                  title,
                   style: const TextStyle(
                     fontFamily: 'NotoSansBengali',
                     fontSize: 17,

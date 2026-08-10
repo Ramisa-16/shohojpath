@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -104,6 +106,28 @@ void main() {
     check('answerRevealed', bn.answerRevealed, en.answerRevealed);
 
     expect(untranslated, isEmpty);
+  });
+
+  test('one feature has one name in Bangla', () {
+    // Read-aloud was called three different things: শব্দ সহায়তা on the quiz
+    // strip, পড়ে শোনানো in settings, and শব্দ বন্ধ on the session list —
+    // which reads as "word stopped" as much as "audio off". A reader cannot
+    // tell three names for one feature from three features.
+    final strings = File('lib/l10n/app_strings.dart').readAsStringSync();
+
+    expect(
+      strings.contains('শব্দ সহায়তা'),
+      isFalse,
+      reason: 'read-aloud is called পড়ে শোনানো everywhere',
+    );
+    expect(strings.contains('শব্দ বন্ধ'), isFalse);
+    expect(strings.contains('শব্দ চালু'), isFalse);
+
+    const bn = AppStrings(AppLanguage.bangla);
+    for (final s in [bn.readAloudLabel, bn.audioOnShort, bn.audioOffShort,
+                     bn.readAloudUsed, bn.readAloudSection]) {
+      expect(s, contains('পড়ে শোনানো'), reason: '"$s" uses another name');
+    }
   });
 
   testWidgets('the whole screen re-reads when the language changes',

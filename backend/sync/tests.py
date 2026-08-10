@@ -245,6 +245,28 @@ class DerivedDataTests(APITestCase):
         self.assertEqual(stats.data["words_this_week"], 0)
         self.assertIsNone(stats.data["words_per_minute"])
 
+    def test_history_names_the_story_rather_than_its_slug(self):
+        # The list showed "aesop_21104" where the story's name belongs: the
+        # app was resolving titles against the bundled sample passages, which
+        # no longer contain the Aesop set, so every row fell back to the slug.
+        from passages.models import Passage
+
+        Passage.objects.filter(slug="story").update(title="অদৃষ্টের পরিহাস")
+        response = self.client.get(reverse("sync:my-sessions"))
+        row = response.data["results"][0]
+
+        self.assertEqual(row["passage_id"], "story")
+        self.assertEqual(row["passage_title"], "অদৃষ্টের পরিহাস")
+
+    def test_a_retired_passage_falls_back_to_its_slug(self):
+        # A session outlives the passage it names. A blank title would leave
+        # a nameless row; the slug at least says which one it was.
+        from passages.models import Passage
+
+        Passage.objects.filter(slug="story").delete()
+        response = self.client.get(reverse("sync:my-sessions"))
+        self.assertEqual(response.data["results"][0]["passage_title"], "story")
+
     def test_history_lists_the_readers_own_sessions_only(self):
         other = User.objects.create_user(
             email="o@example.com", password="studypass123", role=User.Role.READER

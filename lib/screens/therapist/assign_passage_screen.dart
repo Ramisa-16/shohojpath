@@ -10,6 +10,7 @@ import '../../widgets/app_buttons.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/settings_controls.dart';
 import '../../l10n/app_strings.dart';
+import '../../widgets/therapist_bottom_tab_bar.dart';
 
 /// Screen `tassign` of the v2 design — a therapist picking which library
 /// passages a reader should see. Each toggle writes straight to
@@ -259,6 +260,11 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
           ],
         ),
       ),
+    
+      bottomNavigationBar:
+
+          const TherapistBottomTabBar(current: TherapistTab.dashboard),
+
     );
   }
 }

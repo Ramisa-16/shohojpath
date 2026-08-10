@@ -59,12 +59,19 @@ class StudySessionSerializer(serializers.ModelSerializer):
     words_per_minute = serializers.FloatField(read_only=True)
     comprehension_percent = serializers.FloatField(read_only=True)
 
+    # Sessions reference a passage by slug rather than a foreign key, so that
+    # a recorded session outlives the study material it names. The slug is not
+    # something to show anyone though — the History screen was listing
+    # "aesop_21104" where the story's name belongs.
+    passage_title = serializers.SerializerMethodField()
+
     class Meta:
         model = StudySession
         fields = (
             "session_id",
             "participant_id",
             "passage_id",
+            "passage_title",
             "started_at",
             "ended_at",
             "profile",
@@ -87,6 +94,18 @@ class StudySessionSerializer(serializers.ModelSerializer):
             "sus_responses",
             "tlx_responses",
         )
+
+    def get_passage_title(self, obj):
+        # One query per request for all 30 titles, rather than one per row:
+        # a therapist opening a reader with fifty sessions would otherwise
+        # make fifty lookups to render one list.
+        if not hasattr(self, "_titles"):
+            from passages.models import Passage
+
+            self._titles = dict(Passage.objects.values_list("slug", "title"))
+        # Falls back to the slug for a passage that has since been deleted —
+        # ugly, but truthful, and better than an empty row.
+        return self._titles.get(obj.passage_id) or obj.passage_id
 
     CHILD_FIELDS = {
         "settings_changes": SettingsChange,

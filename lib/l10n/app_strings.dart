@@ -122,9 +122,9 @@ class AppStrings {
       _s('পড়ার সময় নেওয়া হয়েছে', 'Reading time recorded');
   String get readingCondition => _s('পড়ার অবস্থা', 'Reading condition');
   String get audioOn =>
-      _s('শব্দ সহায়তা: এই গল্পে চালু ছিল', 'Audio support: ON during this passage');
+      _s('এই গল্পে পড়ে শোনানো চালু ছিল', 'Audio support: ON during this passage');
   String get audioOff =>
-      _s('শব্দ সহায়তা: এই গল্পে বন্ধ ছিল', 'Audio support: OFF during this passage');
+      _s('এই গল্পে পড়ে শোনানো বন্ধ ছিল', 'Audio support: OFF during this passage');
 
   /// Read by a child at the moment they find out they were wrong, so it says
   /// what to look at rather than scolding — and never names a colour, which
@@ -156,7 +156,7 @@ class AppStrings {
   String get readingStatistics => _s('পড়ার পরিসংখ্যান', 'Reading Statistics');
   String get readingSpeed => _s('পড়ার গতি', 'Reading speed');
   String get comprehensionPercent => _s('বোঝাপড়া', 'Comprehension');
-  String get readAloudUsed => _s('শব্দ সহায়তা ব্যবহার', 'Read aloud used');
+  String get readAloudUsed => _s('পড়ে শোনানো ব্যবহার', 'Read aloud used');
   String get averageSession => _s('গড় সময়', 'Average session');
   String get sessionsLogged => _s('মোট পড়া', 'Sessions logged');
   String get passagesRead => _s('পড়া গল্প', 'Passages read');
@@ -373,8 +373,8 @@ class AppStrings {
         'এই পাঠক এখনও কোনো পড়া শেষ করেননি।',
         'This reader has not completed a session yet.',
       );
-  String get readAloudLabel => _s('শব্দ সহায়তা', 'Read aloud');
-  String get noAudio => _s('শব্দ ছাড়া', 'No audio');
+  String get readAloudLabel => _s('পড়ে শোনানো', 'Read aloud');
+  String get noAudio => _s('পড়ে শোনানো হয়নি', 'No audio');
   String get readAgain => _s('আবার পড়ুন', 'Read again');
   String get today => _s('আজ', 'Today');
   String get yesterday => _s('গতকাল', 'Yesterday');
@@ -390,7 +390,7 @@ class AppStrings {
       _s('কুইজ ফল: $score / $total', 'Quiz score: $score / $total');
   String get wasReadingEasy => _s('পড়তে কি সহজ লেগেছে?', 'Was the reading easy?');
   String get didReadAloudHelp =>
-      _s('শব্দ সহায়তা কি কাজে লেগেছে?', 'Did read aloud help?');
+      _s('পড়ে শোনানো কি কাজে লেগেছে?', 'Did read aloud help?');
   String get whichSettingsHelped =>
       _s('কোন সেটিংস সবচেয়ে বেশি কাজে লেগেছে?', 'Which settings helped most?');
   String get anySuggestions => _s('কিছু বলার আছে?', 'Any suggestions?');
@@ -589,7 +589,7 @@ class AppStrings {
   // ---- Reading settings captions -----------------------------------------
 
   String get captionAudioSupport => _s(
-        'ডিসলেক্সিয়া মূলত ধ্বনি চেনার অসুবিধা। শব্দ সহায়তা সরাসরি সেখানেই '
+        'ডিসলেক্সিয়া মূলত ধ্বনি চেনার অসুবিধা। পড়ে শোনানো সরাসরি সেখানেই '
             'কাজ করে।',
         'Dyslexia is a phonological difficulty. Audio support addresses it '
             'directly.',
@@ -625,7 +625,7 @@ class AppStrings {
         'Baseline — no reading aids, the study control.',
       );
   String get profileDescRecommended => _s(
-        'গবেষণা-ভিত্তিক: শব্দ সহায়তা, বেশি ফাঁক, ক্রিম পটভূমি।',
+        'গবেষণা-ভিত্তিক: পড়ে শোনানো, বেশি ফাঁক, ক্রিম পটভূমি।',
         'Evidence-based: audio, spacing, cream background.',
       );
   String get profileDescCustom => _s(
@@ -675,15 +675,15 @@ class AppStrings {
   String get totalWordsRead => _s('মোট পড়া শব্দ', 'Total words read');
   String get totalReadingTime => _s('মোট পড়ার সময়', 'Total reading time');
   String get comprehensionAverage => _s('বোঝাপড়ার গড়', 'Comprehension average');
-  String get readAloudUsage => _s('শব্দ সহায়তা ব্যবহার', 'Read-aloud usage');
+  String get readAloudUsage => _s('পড়ে শোনানো ব্যবহার', 'Read-aloud usage');
   String get assignPassages => _s('গল্প ঠিক করে দিন', 'Assign passages');
   String get assignPassagesTitle => _s('গল্প ঠিক করুন', 'Assign Passages');
   String get noSessionsLogged => _s('এখনও কোনো পড়া নেই।', 'No sessions logged yet.');
   String get noNotesYet => _s('এখনও কোনো নোট নেই।', 'No notes yet.');
   String get settingsActuallyUsed =>
       _s('আসলে যে সেটিংস ব্যবহার হয়েছে', 'Settings actually used');
-  String get audioOnShort => _s('শব্দ চালু', 'Audio on');
-  String get audioOffShort => _s('শব্দ বন্ধ', 'Audio off');
+  String get audioOnShort => _s('পড়ে শোনানো চালু', 'Audio on');
+  String get audioOffShort => _s('পড়ে শোনানো বন্ধ', 'Audio off');
   String quizScoreShort(int score, int total) =>
       _s('কুইজ $score / $total', 'Quiz $score / $total');
 
@@ -954,7 +954,7 @@ class AppStrings {
             'the study.',
       );
   String get profileDescRecommendedLong => _s(
-        'গবেষণা-ভিত্তিক সেটিংস: শব্দ সহায়তা, বেশি লাইন-ফাঁক, ক্রিম পটভূমি, আর '
+        'গবেষণা-ভিত্তিক সেটিংস: পড়ে শোনানো, বেশি লাইন-ফাঁক, ক্রিম পটভূমি, আর '
             'অক্ষর-ফাঁক নেই যাতে মাত্রা অটুট থাকে।',
         'Evidence-based settings: audio support, wide line spacing, cream '
             'background, and no letter spacing so the মাত্রা stays intact.',
@@ -994,7 +994,7 @@ class AppStrings {
   String get acrossAllQuizzes =>
       _s('সব কুইজ মিলিয়ে।', 'Across all quizzes taken.');
   String get readAloudPercentNote => _s(
-        'যত শতাংশ পড়ায় শব্দ সহায়তা চালু ছিল।',
+        'যত শতাংশ পড়ায় পড়ে শোনানো চালু ছিল।',
         'Percentage of sessions where audio support was switched on.',
       );
   String get settingsChangedNote => _s(

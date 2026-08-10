@@ -68,15 +68,18 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // The background is the Scaffold's own colour rather than a gradient in a
+    // Container. On one physical device the splash painted only about
+    // three-quarters of the width, leaving a pale band down the right-hand
+    // side; the same build was correct on the emulator and every other screen
+    // in the app was correct on that phone, so the gradient — the one thing
+    // unique to this screen — was the only real suspect.
+    //
+    // A flat colour also cannot band: whatever it fails to cover is the same
+    // colour as what it does.
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.white, Color(0xFFEAF1F7)],
-          ),
-        ),
+      backgroundColor: AppColors.canvas,
+      body: SizedBox.expand(
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {

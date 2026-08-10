@@ -86,7 +86,7 @@ class _ApiDataState<T> extends State<ApiData<T>>
       setState(() {
         _loading = false;
         if (_data == null) {
-          _error = e.message;
+          _error = e.messageFor(context.tOnce);
         } else {
           _staleWarning = true;
         }

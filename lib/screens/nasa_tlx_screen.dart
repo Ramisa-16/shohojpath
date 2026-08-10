@@ -24,14 +24,15 @@ class NasaTlxScreen extends StatefulWidget {
 }
 
 class _NasaTlxScreenState extends State<NasaTlxScreen> {
-  static const _subscales = [
-    ('Mental demand', 'How much thinking was required?'),
-    ('Physical demand', 'How physically demanding was the task?'),
-    ('Temporal demand', 'How hurried was the pace?'),
-    ('Performance', 'How successful were you?'),
-    ('Effort', 'How hard did you have to work?'),
-    ('Frustration', 'How irritated or stressed did you feel?'),
-  ];
+  /// The six subscales. Order is fixed: the exported data keys on it.
+  static List<(String, String)> _subscales(AppStrings t) => [
+        (t.tlxMentalDemand, t.tlxMentalDemandQ),
+        (t.tlxPhysicalDemand, t.tlxPhysicalDemandQ),
+        (t.tlxTemporalDemand, t.tlxTemporalDemandQ),
+        (t.tlxPerformance, t.tlxPerformanceQ),
+        (t.tlxEffort, t.tlxEffortQ),
+        (t.tlxFrustration, t.tlxFrustrationQ),
+      ];
 
   int _valueFor(String name) => widget.session.tlx[name] ?? 50;
 
@@ -55,7 +56,7 @@ class _NasaTlxScreenState extends State<NasaTlxScreen> {
                 child: ListView(
                   padding: const EdgeInsets.all(14),
                   children: [
-                    for (final (name, desc) in _subscales) ...[
+                    for (final (name, desc) in _subscales(context.t)) ...[
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(15),

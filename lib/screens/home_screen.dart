@@ -326,9 +326,9 @@ class _GreetingState extends State<_Greeting> {
   String _greeting(BuildContext context) {
     final t = context.t;
     return switch (greetingFor(DateTime.now())) {
-      'Good morning' => t.goodMorning,
-      'Good afternoon' => t.goodAfternoon,
-      _ => t.goodEvening,
+      Greeting.morning => t.goodMorning,
+      Greeting.afternoon => t.goodAfternoon,
+      Greeting.evening => t.goodEvening,
     };
   }
 
@@ -360,7 +360,7 @@ class _GreetingState extends State<_Greeting> {
         ? auth.fullName!
         : (participant.displayName.isNotEmpty
             ? participant.displayName
-            : 'Reader');
+            : context.t.reader);
 
     // Sits on the navy header alongside the notification bell, so the
     // colours here are the on-navy pair rather than the page's ink/muted.

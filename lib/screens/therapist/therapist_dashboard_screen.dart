@@ -103,12 +103,12 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
     final minutesTotal = (reader['minutes_total'] as num?)?.toDouble() ?? 0;
     final lastReadAt = DateTime.tryParse(reader['last_read_at'] as String? ?? '');
 
-    var lastActiveLabel = 'Never';
+    var lastActiveLabel = context.t.never;
     var statusLabel = context.t.noSessionsYet;
     var statusColor = AppColors.muted;
 
     if (lastReadAt != null) {
-      lastActiveLabel = _relativeDate(lastReadAt.toLocal());
+      lastActiveLabel = _relativeDate(context.t, lastReadAt.toLocal());
       final daysSince = DateTime.now().difference(lastReadAt.toLocal()).inDays;
       if (daysSince <= 7) {
         statusLabel = sessionsWeek > 1 ? context.t.readingRegularly : context.t.active;
@@ -147,15 +147,15 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
 
   /// "3 days ago" rather than a date: a therapist scanning a roster is
   /// judging recency, not looking anything up by calendar day.
-  static String _relativeDate(DateTime when) {
+  static String _relativeDate(AppStrings t, DateTime when) {
     final now = DateTime.now();
     final days = DateTime(now.year, now.month, now.day)
         .difference(DateTime(when.year, when.month, when.day))
         .inDays;
-    if (days <= 0) return 'Today';
-    if (days == 1) return 'Yesterday';
-    if (days < 7) return '$days days ago';
-    if (days < 30) return '${(days / 7).floor()} week(s) ago';
+    if (days <= 0) return t.today;
+    if (days == 1) return t.yesterday;
+    if (days < 7) return t.daysAgo(days);
+    if (days < 30) return t.daysAgo(days);
     return '${when.day}/${when.month}/${when.year}';
   }
 
@@ -344,9 +344,8 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
                               .then((_) => _load()),
                         ),
                         const SizedBox(height: 10),
-                        const Text(
-                          'Amber and grey markers flag readers whose accuracy is falling or '
-                          'who have not read in over a week.',
+                        Text(
+                          context.t.dashboardMarkerNote,
                           style: TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5),
                         ),
                       ],

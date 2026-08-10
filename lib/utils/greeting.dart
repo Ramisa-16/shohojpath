@@ -8,10 +8,17 @@ library;
 /// by rolling over to the next day.
 const List<int> greetingBoundaries = [12, 17];
 
-String greetingFor(DateTime now) {
-  if (now.hour < 12) return 'Good morning';
-  if (now.hour < 17) return 'Good afternoon';
-  return 'Good evening';
+/// Which greeting applies, as a value rather than a sentence.
+///
+/// This used to return the English text and the screen matched on it with a
+/// switch — so translating the English would silently have fallen through to
+/// the default and greeted every child "good evening" all day.
+enum Greeting { morning, afternoon, evening }
+
+Greeting greetingFor(DateTime now) {
+  if (now.hour < 12) return Greeting.morning;
+  if (now.hour < 17) return Greeting.afternoon;
+  return Greeting.evening;
 }
 
 /// How long until [greetingFor] would return something different.

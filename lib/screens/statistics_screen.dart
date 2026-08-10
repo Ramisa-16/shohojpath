@@ -72,9 +72,7 @@ class _Body extends StatelessWidget {
           ApiMessage(
             icon: Icons.query_stats_outlined,
             title: context.t.noStatisticsYet,
-            body: 'Reading speed, comprehension and settings use are '
-                'calculated once the first session has been completed and '
-                'synced.',
+            body: context.t.noStatisticsBody,
           ),
         ],
       );
@@ -150,7 +148,7 @@ class _Body extends StatelessWidget {
                   title: context.t.readingSpeed,
                   value: wpm == null ? '—' : wpm.toStringAsFixed(0),
                   unit: ' wpm',
-                  note: 'Speed is read alongside accuracy.',
+                  note: context.t.speedWithAccuracy,
                 ),
               ),
               const SizedBox(width: 11),
@@ -162,8 +160,8 @@ class _Body extends StatelessWidget {
                       : comprehension.toStringAsFixed(0),
                   unit: '%',
                   note: comprehension == null
-                      ? 'No quiz completed yet.'
-                      : 'Across all quizzes taken.',
+                      ? context.t.noQuizYet
+                      : context.t.acrossAllQuizzes,
                 ),
               ),
             ],
@@ -208,8 +206,8 @@ class _Body extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 9),
-              const Text(
-                'Percentage of sessions where audio support was switched on.',
+              Text(
+                context.t.readAloudPercentNote,
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.5,
@@ -277,9 +275,8 @@ class _Body extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Which controls this reader actually reaches for, straight '
-                'from the settings-change log.',
+              Text(
+                context.t.settingsChangedNote,
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.5,

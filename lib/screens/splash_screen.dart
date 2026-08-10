@@ -137,8 +137,8 @@ class _SplashScreenState extends State<SplashScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'A dyslexia-friendly Bangla reading interface',
+                      Text(
+                        context.t.appTagline,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 15,

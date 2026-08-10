@@ -237,9 +237,9 @@ class _Filters extends StatelessWidget {
               runSpacing: 7,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                const Text(
-                  'DIFFICULTY',
-                  style: TextStyle(
+                Text(
+                  context.t.difficulty,
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.7,

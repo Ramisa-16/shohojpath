@@ -28,16 +28,13 @@ Future<void> showNoBanglaVoiceDialog(BuildContext context) {
     context: context,
     builder: (context) => AlertDialog(
       title: Text(context.t.noBanglaVoiceShort),
-      content: const Text(
-        'This device has no Bengali text-to-speech voice installed, so read '
-        'aloud cannot work.\n\n'
-        'Install one from Android Settings > Language & input > '
-        'Text-to-speech, then come back to this passage.',
+      content: Text(
+        '${context.t.noBanglaVoiceBody}\n\n${context.t.noBanglaVoiceHow}',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('OK'),
+          child: Text(context.t.done),
         ),
       ],
     ),

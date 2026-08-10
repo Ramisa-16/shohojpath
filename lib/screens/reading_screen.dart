@@ -182,7 +182,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
       // The icon never flipped, so it still tells the truth — but say why,
       // rather than letting a tap look like it did nothing.
       if (!mounted) return;
-      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      messenger.showSnackBar(SnackBar(content: Text(e.messageFor(t))));
     } finally {
       if (mounted) setState(() => _bookmarkBusy = false);
     }
@@ -588,17 +588,11 @@ class _ModeNote extends StatelessWidget {
   final ReadingSettings settings;
   final ReadingSurface surface;
 
-  static const Map<ReadingProfile, String> _notes = {
-    ReadingProfile.standard:
-        'Default — the baseline interface used as the control condition in '
-            'the study.',
-    ReadingProfile.recommended:
-        'Evidence-based settings: audio support, wide line spacing, cream '
-            'background, and no letter spacing so the মাত্রা stays intact.',
-    ReadingProfile.custom:
-        'Custom — the reader’s own configuration, logged for comparison '
-            'against Default and Recommended.',
-  };
+  static String _note(AppStrings t, ReadingProfile profile) => switch (profile) {
+        ReadingProfile.standard => t.profileDescDefaultLong,
+        ReadingProfile.recommended => t.profileDescRecommendedLong,
+        ReadingProfile.custom => t.profileDescCustomLong,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -623,7 +617,7 @@ class _ModeNote extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            _notes[settings.profile]!,
+            _note(context.t, settings.profile),
             style: TextStyle(
               fontSize: 14,
               height: 1.6,

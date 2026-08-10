@@ -61,10 +61,9 @@ class AboutScreen extends StatelessWidget {
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
-                            'Design and Evaluation of a Dyslexia-Friendly Bangla Reading '
-                            'Interface Using Human-Centered Design Principles',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.55, color: AppColors.ink),
+                          Text(
+                            context.t.researchTitleText,
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.55, color: AppColors.ink),
                           ),
                           for (final a in context.watch<AppContent>().about)
                             Padding(
@@ -146,10 +145,8 @@ class AboutScreen extends StatelessWidget {
                           Text(context.t.disclaimer, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.focusText)),
                           SizedBox(height: 8),
                           Text(
-                            'This application is a reading support tool. It is not a diagnostic '
-                            'or therapeutic instrument and does not replace assessment or '
-                            'instruction by qualified professionals.',
-                            style: TextStyle(fontSize: 14, color: AppColors.ink, height: 1.6),
+                            context.t.disclaimerBody,
+                            style: const TextStyle(fontSize: 14, color: AppColors.ink, height: 1.6),
                           ),
                         ],
                       ),

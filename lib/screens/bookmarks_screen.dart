@@ -123,7 +123,7 @@ class _BookmarkCardState extends State<_BookmarkCard> {
       if (!mounted) return;
       setState(() => _busy = false);
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message)));
+          .showSnackBar(SnackBar(content: Text(e.messageFor(context.tOnce))));
     }
   }
 
@@ -177,7 +177,7 @@ class _BookmarkCardState extends State<_BookmarkCard> {
                   children: [
                     Expanded(
                       child: PrimaryButton(
-                        label: _busy ? 'Opening…' : 'Continue',
+                        label: _busy ? context.t.opening : context.t.continueLabel,
                         onPressed: _busy ? null : _open,
                       ),
                     ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import 'app_buttons.dart';
+import '../l10n/app_strings.dart';
 
 /// The navy header repeated at the top of nearly every screen in the design:
 /// an optional back button, a title (with optional subtitle), optional
@@ -61,7 +62,7 @@ class AppHeader extends StatelessWidget {
               if (canGoBack)
                 IconOnlyButton(
                   onPressed: onBack,
-                  tooltip: 'Back',
+                  tooltip: context.t.back,
                   icon: Icons.arrow_back_rounded,
                   color: Colors.white,
                 )

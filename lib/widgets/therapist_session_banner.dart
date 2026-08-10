@@ -58,8 +58,8 @@ class TherapistSessionBanner extends StatelessWidget {
           ),
           GestureDetector(
             onTap: () => _endSession(context),
-            child: const Text(
-              'End session',
+            child: Text(
+              context.t.endSession,
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.muted),
             ),
           ),

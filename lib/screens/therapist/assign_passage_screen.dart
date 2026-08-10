@@ -63,7 +63,7 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = e.message;
+        _error = e.messageFor(context.tOnce);
       });
     }
   }
@@ -90,7 +90,7 @@ class _AssignPassageScreenState extends State<AssignPassageScreen> {
       if (!mounted) return;
       setState(() => wasAssigned ? _assigned.add(id) : _assigned.remove(id));
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message)));
+          .showSnackBar(SnackBar(content: Text(e.messageFor(context.tOnce))));
     }
   }
 

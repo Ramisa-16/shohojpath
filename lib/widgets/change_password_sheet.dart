@@ -94,7 +94,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.message;
+        _error = e.messageFor(context.tOnce);
         _saving = false;
       });
     }
@@ -127,8 +127,8 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Change password',
+              Text(
+                t.changePassword,
                 style: TextStyle(
                   fontSize: 19,
                   fontWeight: FontWeight.w800,

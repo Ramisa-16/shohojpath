@@ -84,7 +84,7 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
           TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(context.tOnce.cancel)),
           TextButton(
             onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: const Text('Save'),
+            child: Text(context.tOnce.save),
           ),
         ],
       ),
@@ -122,7 +122,7 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
                     children: [
                       IconOnlyButton(
                         onPressed: () => Navigator.of(context).maybePop(),
-                        tooltip: 'Back',
+                        tooltip: context.t.back,
                         icon: Icons.arrow_back_rounded,
                         color: Colors.white,
                       ),
@@ -550,9 +550,9 @@ class _SettingsTab extends StatelessWidget {
 
     final bars = <(String, double?)>[
       (context.t.readAloudUsed, readAloudPct),
-      ('Recommended profile', recommendedPct),
-      ('Default profile', defaultPct),
-      ('Custom profile', customPct),
+      (context.t.profileNamed(context.t.profileRecommended), recommendedPct),
+      (context.t.profileNamed(context.t.profileDefault), defaultPct),
+      (context.t.profileNamed(context.t.profileCustom), customPct),
     ];
 
     return ListView(

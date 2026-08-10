@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import '../api/api_exception.dart';
 import '../api/shohojpath_api.dart';
 import 'participant_state.dart';
+import '../l10n/app_strings.dart';
+import '../l10n/app_language.dart';
 
 /// Who is signed in, backed by the server.
 ///
@@ -16,12 +18,23 @@ class AuthState extends ChangeNotifier {
   AuthState({
     required ShohojpathApi api,
     required ParticipantState participant,
+    LanguageState? language,
   })  : _api = api,
-        _participant = participant {
+        _participant = participant,
+        _language = language {
     _api.client.onSessionExpired = _handleSessionExpired;
   }
 
   final ShohojpathApi _api;
+
+  /// This class has no BuildContext, but the one message it writes itself is
+  /// read by whoever was signed in — so it has to follow their language
+  /// rather than assume one. Optional so tests can build an AuthState
+  /// without the whole provider tree; Bangla is the default either way.
+  final LanguageState? _language;
+
+  AppStrings get _strings =>
+      AppStrings(_language?.language ?? AppLanguage.bangla);
   final ParticipantState _participant;
 
   bool _restoring = true;
@@ -163,7 +176,7 @@ class AuthState extends ChangeNotifier {
   /// opposed to merely being offline, which never lands here.
   void _handleSessionExpired() {
     if (!isSignedIn) return;
-    _setError('Your session expired. Please sign in again.');
+    _setError(_strings.sessionExpired);
     signOut();
   }
 

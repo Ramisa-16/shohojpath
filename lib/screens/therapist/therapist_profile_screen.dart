@@ -107,7 +107,7 @@ class _TherapistProfileScreenState extends State<TherapistProfileScreen> {
                             Text(
                               context.watch<AuthState>().fullName?.isNotEmpty == true
                                   ? context.watch<AuthState>().fullName!
-                                  : 'Therapist',
+                                  : context.t.therapistRole,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),

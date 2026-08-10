@@ -71,8 +71,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _continueAsGuest() async {
     final navigator = Navigator.of(context);
     final participant = context.read<ParticipantState>();
+    // Read before the await: the context may be gone by the time the guest
+    // row comes back.
+    final guestLabel = context.tOnce.guest;
     final id = await context.read<ReaderRepository>().createGuestReader();
-    participant.signInAsReader(id, displayName: 'Guest');
+    participant.signInAsReader(id, displayName: guestLabel);
     if (!mounted) return;
     navigator.pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const HomeShell()),
@@ -123,9 +126,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(height: 5),
-            const Text(
-              'Sign in to save your reading settings and progress across '
-              'sessions.',
+            Text(
+              context.t.signInBlurbSessions,
               style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.body),
             ),
             const SizedBox(height: 20),
@@ -136,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
               label: context.t.email,
               controller: _email,
               icon: Icons.mail_outline_rounded,
-              hint: 'you@example.com',
+              hint: context.t.emailHint,
               errorText: _emailError,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.next,
@@ -171,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 20),
             PrimaryButton(
-              label: auth.isBusy ? 'Signing in…' : 'Log in',
+              label: auth.isBusy ? context.t.signingIn : context.t.logIn,
               onPressed: auth.isBusy ? null : _logIn,
             ),
             const SizedBox(height: 16),
@@ -182,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
-                    'OR',
+                    context.t.or,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -200,11 +202,10 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: auth.isBusy ? null : _continueAsGuest,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Guest reading stays on this device only — nothing is uploaded '
-              'and a therapist cannot see it.',
+            Text(
+              context.t.guestBlurbFull,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, height: 1.5, color: AppColors.muted),
+              style: const TextStyle(fontSize: 14, height: 1.5, color: AppColors.muted),
             ),
 
             const SizedBox(height: 22),
@@ -213,8 +214,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 alignment: WrapAlignment.center,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  const Text(
-                    'New here? ',
+                  Text(
+                    context.t.newHere,
                     style: TextStyle(fontSize: 15, color: AppColors.body),
                   ),
                   TextButton(

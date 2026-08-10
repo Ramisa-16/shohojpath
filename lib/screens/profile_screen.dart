@@ -41,7 +41,7 @@ class ProfileScreen extends StatelessWidget {
     final auth = context.watch<AuthState>();
     final participant = context.watch<ParticipantState>();
     final id = auth.participantId ?? participant.participantId;
-    final role = auth.isSignedIn ? 'Reader' : 'Guest';
+    final role = auth.isSignedIn ? context.t.reader : context.t.guest;
     return id.isEmpty ? role : '$role · $id';
   }
 
@@ -100,10 +100,9 @@ class ProfileScreen extends StatelessWidget {
             color: AppColors.navy,
           ),
         ),
-        content: const Text(
-          'Your reading settings and progress stay saved on this device. '
-          'You will need to sign in again to continue reading.',
-          style: TextStyle(fontSize: 15, height: 1.55, color: AppColors.body),
+        content: Text(
+          context.tOnce.logOutBody,
+          style: const TextStyle(fontSize: 15, height: 1.55, color: AppColors.body),
         ),
         actions: [
           TextButton(
@@ -134,9 +133,9 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Profile',
-                  style: TextStyle(
+                Text(
+                  context.t.profile,
+                  style: const TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,

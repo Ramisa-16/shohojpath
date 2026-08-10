@@ -44,11 +44,12 @@ class StartSessionSheet extends StatefulWidget {
 class _StartSessionSheetState extends State<StartSessionSheet> {
   ReadingProfile _condition = ReadingProfile.recommended;
 
-  static const _descriptions = {
-    ReadingProfile.standard: 'Standard formatting. Settings locked.',
-    ReadingProfile.recommended: 'Evidence-based settings. Settings locked.',
-    ReadingProfile.custom: 'Reader chooses their own settings.',
-  };
+  static String _description(AppStrings t, ReadingProfile profile) =>
+      switch (profile) {
+        ReadingProfile.standard => t.conditionStandardNote,
+        ReadingProfile.recommended => t.conditionRecommendedNote,
+        ReadingProfile.custom => t.conditionCustomNote,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -77,15 +78,15 @@ class _StartSessionSheetState extends State<StartSessionSheet> {
                 style: const TextStyle(fontSize: 15, color: AppColors.muted),
               ),
               const SizedBox(height: 18),
-              const Text(
-                'READING CONDITION',
+              Text(
+                context.t.readingConditionHeading,
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body),
               ),
               const SizedBox(height: 8),
               for (final profile in ReadingProfile.values) ...[
                 ProfileOptionTile(
                   title: profile.localisedLabel(context.t),
-                  description: _descriptions[profile]!,
+                  description: _description(context.t, profile),
                   selected: _condition == profile,
                   onTap: () => setState(() => _condition = profile),
                 ),

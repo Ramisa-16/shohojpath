@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_strings.dart';
 
 /// A minimal line chart over a fixed-height band — the therapist Progress
 /// tab's reading-speed and accuracy trends. Real [values] in, straight line
@@ -24,7 +25,7 @@ class Sparkline extends StatelessWidget {
         height: height,
         child: Center(
           child: Text(
-            values.isEmpty ? 'No sessions yet' : 'Needs at least two sessions',
+            values.isEmpty ? context.t.noSessionsYet : context.t.needsTwoSessions,
             style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
         ),

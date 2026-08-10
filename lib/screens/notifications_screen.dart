@@ -33,7 +33,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message)));
+          .showSnackBar(SnackBar(content: Text(e.messageFor(context.tOnce))));
     }
   }
 
@@ -378,7 +378,9 @@ class _SupervisionActionsState extends State<_SupervisionActions> {
       setState(() => _busy = false);
       messenger.showSnackBar(
         SnackBar(
-          content: Text(e.isConflict ? t.requestAlreadyAnswered : e.message),
+          content: Text(
+            e.isConflict ? t.requestAlreadyAnswered : e.messageFor(t),
+          ),
         ),
       );
       // Reload either way: a conflict means the truth on screen is stale.

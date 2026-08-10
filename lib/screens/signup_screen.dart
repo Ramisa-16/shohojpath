@@ -102,8 +102,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
         backgroundColor: Colors.white,
         foregroundColor: AppColors.navy,
         elevation: 0,
-        title: const Text(
-          'Create an account',
+        title: Text(
+          context.t.createAnAccount,
           style: TextStyle(
             fontSize: 19,
             fontWeight: FontWeight.w800,
@@ -117,8 +117,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           children: [
             if (auth.error != null) AuthErrorBanner(message: auth.error!),
 
-            const Text(
-              'I am a…',
+            Text(
+              context.t.iAmA,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
@@ -152,7 +152,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               label: context.t.fullName,
               controller: _name,
               icon: Icons.person_outline_rounded,
-              hint: isReader ? 'e.g. Mitu Rahman' : 'e.g. Dr A. Karim',
+              hint: isReader ? context.t.nameHintReader : context.t.nameHintTherapist,
               errorText: _nameError,
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.name],
@@ -165,7 +165,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               label: context.t.email,
               controller: _email,
               icon: Icons.mail_outline_rounded,
-              hint: 'you@example.com',
+              hint: context.t.emailHint,
               errorText: _emailError,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.next,
@@ -207,7 +207,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   SizedBox(
                     width: 110,
                     child: AuthFormField(
-                      label: 'Age',
+                      label: context.t.age,
                       controller: _age,
                       hint: '11',
                       keyboardType: TextInputType.number,
@@ -229,9 +229,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ],
               ),
               const SizedBox(height: 10),
-              const Text(
-                'Your name and school help your therapist find you when they '
-                'add you as their reader.',
+              Text(
+                context.t.signupHelpNote,
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.5,
@@ -242,7 +241,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             const SizedBox(height: 22),
             PrimaryButton(
-              label: auth.isBusy ? 'Creating account…' : 'Create account',
+              label: auth.isBusy ? context.t.creatingAccount : context.t.signUp,
               onPressed: auth.isBusy ? null : _submit,
             ),
             const SizedBox(height: 14),
@@ -254,8 +253,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         context.read<AuthState>().clearError();
                         Navigator.of(context).maybePop();
                       },
-                child: const Text(
-                  'I already have an account',
+                child: Text(
+                  context.t.alreadyHaveAccount,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,

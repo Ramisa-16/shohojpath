@@ -47,8 +47,8 @@ class HistoryScreen extends StatelessWidget {
                   emptyIcon: Icons.history_rounded,
                   emptyTitle: context.t.noSessionsYet,
                   emptyBody: id == null
-                      ? 'Finished readings appear here once they have synced.'
-                      : 'This reader has not completed a session yet.',
+                      ? context.t.noSessionsBody
+                      : context.t.readerNoSessions,
                   builder: (context, rows, refresh) => RefreshIndicator(
                     onRefresh: refresh,
                     child: ListView.separated(
@@ -137,7 +137,7 @@ class _SessionCardState extends State<_SessionCard> {
                 ),
               ),
               Text(
-                started == null ? '' : _relativeDay(started),
+                started == null ? '' : _relativeDay(context.t, started),
                 style: const TextStyle(fontSize: 14, color: AppColors.muted),
               ),
             ],
@@ -167,7 +167,7 @@ class _SessionCardState extends State<_SessionCard> {
           ),
           if (profile.isNotEmpty) ...[
             const SizedBox(height: 9),
-            BadgeChip(_profileLabel(profile)),
+            BadgeChip(_profileLabel(context.t, profile)),
           ],
           if (widget.canContinue) ...[
             const SizedBox(height: 9),
@@ -181,24 +181,24 @@ class _SessionCardState extends State<_SessionCard> {
     );
   }
 
-  static String _profileLabel(String id) => switch (id) {
-        'default' => 'Default condition',
-        'recommended' => 'Recommended condition',
-        'custom' => 'Custom condition',
+  static String _profileLabel(AppStrings t, String id) => switch (id) {
+        'default' => t.conditionLabel(t.profileDefault),
+        'recommended' => t.conditionLabel(t.profileRecommended),
+        'custom' => t.conditionLabel(t.profileCustom),
         _ => id,
       };
 
   /// "Today"/"Yesterday" rather than a date, because that is how a reader
   /// thinks about their own last few sessions.
-  static String _relativeDay(DateTime when) {
+  static String _relativeDay(AppStrings t, DateTime when) {
     final now = DateTime.now();
     final local = when.toLocal();
     final days = DateTime(now.year, now.month, now.day)
         .difference(DateTime(local.year, local.month, local.day))
         .inDays;
-    if (days == 0) return 'Today';
-    if (days == 1) return 'Yesterday';
-    if (days < 7) return '$days days ago';
+    if (days == 0) return t.today;
+    if (days == 1) return t.yesterday;
+    if (days < 7) return t.daysAgo(days);
     return '${local.day}/${local.month}/${local.year}';
   }
 }

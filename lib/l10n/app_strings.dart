@@ -378,6 +378,7 @@ class AppStrings {
   String get readAgain => _s('আবার পড়ুন', 'Read again');
   String get today => _s('আজ', 'Today');
   String get yesterday => _s('গতকাল', 'Yesterday');
+  String daysAgo(int n) => _s('$n দিন আগে', '$n days ago');
   String get justNow => _s('এইমাত্র', 'Just now');
   String conditionLabel(String profile) =>
       _s('$profile অবস্থা', '$profile condition');
@@ -838,6 +839,202 @@ class AppStrings {
         'এই অনুরোধের উত্তর আগেই দেওয়া হয়েছে।',
         'This request has already been answered.',
       );
+
+  // ---- Auth screen leftovers ---------------------------------------------
+
+  String get emailHint => _s('you@example.com', 'you@example.com');
+  String get nameHintReader => _s('যেমন: মিতু রহমান', 'e.g. Mitu Rahman');
+  String get nameHintTherapist => _s('যেমন: ডাঃ এ. করিম', 'e.g. Dr A. Karim');
+  String get or => _s('অথবা', 'OR');
+  String get alreadyHaveAccount =>
+      _s('আমার অ্যাকাউন্ট আছে', 'I already have an account');
+  String get signInBlurbSessions => _s(
+        'সাইন ইন করলে আপনার পড়ার সেটিংস আর অগ্রগতি প্রতিবার জমা থাকবে।',
+        'Sign in to save your reading settings and progress across sessions.',
+      );
+  String get guestBlurbFull => _s(
+        'অতিথি হিসেবে পড়লে সব কিছু শুধু এই ফোনেই থাকে — কিছুই পাঠানো হয় না '
+            'এবং কোনো থেরাপিস্ট তা দেখতে পান না।',
+        'Guest reading stays on this device only — nothing is uploaded and a '
+            'therapist cannot see it.',
+      );
+
+  // ---- Final sweep --------------------------------------------------------
+
+  String get sessionExpired => _s(
+        'আপনার সেশন শেষ হয়ে গেছে। আবার সাইন ইন করুন।',
+        'Your session expired. Please sign in again.',
+      );
+  String get researchTitleText => _s(
+        'মানব-কেন্দ্রিক ডিজাইন নীতিতে ডিসলেক্সিয়া-বান্ধব বাংলা পড়ার ইন্টারফেস '
+            'তৈরি ও মূল্যায়ন',
+        'Design and Evaluation of a Dyslexia-Friendly Bangla Reading Interface '
+            'Using Human-Centered Design Principles',
+      );
+  String get disclaimerBody => _s(
+        'এই অ্যাপটি পড়ায় সহায়তা করার একটি সরঞ্জাম। এটি রোগ নির্ণয় বা '
+            'চিকিৎসার যন্ত্র নয়, এবং যোগ্য পেশাদারের মূল্যায়ন বা শিক্ষার '
+            'বিকল্প নয়।',
+        'This application is a reading support tool. It is not a diagnostic or '
+            'therapeutic instrument and does not replace assessment or '
+            'instruction by qualified professionals.',
+      );
+  String get readerSignInHeading =>
+      _s('পাঠক সাইন-ইন দেখানো', 'READER SIGN-IN DISPLAY');
+  String get resetAllSettingsAction => _s('সব সেটিংস রিসেট করুন', 'Reset all settings');
+  String get howToUseBody => _s(
+        'পাঠাগার থেকে একটি গল্প বেছে নিন, তারপর পড়ার সময় সেটিংস বোতামে চাপ '
+            'দিন। প্রথমে পড়ে শোনানো চালু করে দেখুন — এটিই সবচেয়ে বেশি কাজে '
+            'লাগে। এরপর ফাঁক আর রং এমনভাবে ঠিক করুন যাতে পড়তে আরাম লাগে। '
+            'আপনার পছন্দ জমা থাকবে।',
+        'Pick a passage from the Library, then tap the settings button while '
+            'reading. Start with Read Aloud — it helps most. Adjust spacing '
+            'and theme until the text feels comfortable. Your choices are '
+            'saved.',
+      );
+  String get contactPlaceholder => _s(
+        'research-team@example.edu (অস্থায়ী ঠিকানা)',
+        'research-team@example.edu (placeholder contact address)',
+      );
+
+  // Feedback screen: which settings helped. These name controls the reader
+  // has just used, so they must match the settings panel word for word.
+  String get settingReadAloud => _s('পড়ে শোনানো', 'Read aloud');
+  String get settingConjunctHighlight =>
+      _s('যুক্তাক্ষর চিহ্নিত করা', 'Conjunct highlight');
+  String get settingLineSpacing => _s('লাইনের ফাঁক', 'Line spacing');
+  String get settingCreamTheme => _s('ক্রিম রং', 'Cream theme');
+  String get settingReadingRuler => _s('পড়ার রুলার', 'Reading ruler');
+
+  // ---- NASA-TLX -----------------------------------------------------------
+
+  /// The six TLX subscales. Like the SUS, the English is the published
+  /// wording and the Bangla is a working translation the research team has
+  /// not validated — report it as such.
+  String get tlxMentalDemand => _s('মানসিক পরিশ্রম', 'Mental demand');
+  String get tlxMentalDemandQ =>
+      _s('কতটা ভাবতে হয়েছে?', 'How much thinking was required?');
+  String get tlxPhysicalDemand => _s('শারীরিক পরিশ্রম', 'Physical demand');
+  String get tlxPhysicalDemandQ => _s(
+        'কাজটি শরীরের দিক থেকে কতটা কষ্টকর ছিল?',
+        'How physically demanding was the task?',
+      );
+  String get tlxTemporalDemand => _s('সময়ের চাপ', 'Temporal demand');
+  String get tlxTemporalDemandQ =>
+      _s('কতটা তাড়াহুড়ো লেগেছে?', 'How hurried was the pace?');
+  String get tlxPerformance => _s('সাফল্য', 'Performance');
+  String get tlxPerformanceQ =>
+      _s('আপনি কতটা ভালো পেরেছেন?', 'How successful were you?');
+  String get tlxEffort => _s('চেষ্টা', 'Effort');
+  String get tlxEffortQ =>
+      _s('কতটা খাটতে হয়েছে?', 'How hard did you have to work?');
+  String get tlxFrustration => _s('বিরক্তি', 'Frustration');
+  String get tlxFrustrationQ => _s(
+        'কতটা বিরক্ত বা চাপে ছিলেন?',
+        'How irritated or stressed did you feel?',
+      );
+
+  // ---- Final leftovers ----------------------------------------------------
+
+  String get therapistPasswordToUnlock => _s(
+        'এই সেশনের বাকি সময় পাঠক যেন সেটিংস বদলাতে পারে, তার জন্য থেরাপিস্টের '
+            'পাসওয়ার্ড দিন।',
+        "Enter the therapist's password to let this reader change settings for "
+            'the rest of the session.',
+      );
+  String get letterSpacingWarning => _s(
+        'বাংলায় বেশি অক্ষর-ফাঁক মাত্রা ভেঙে দেয় — সাবধানে ব্যবহার করুন। '
+            'বাংলার জন্য শব্দের ফাঁক নিরাপদ।',
+        'Too much letter spacing breaks the মাত্রা in Bangla — use it '
+            'carefully. Word spacing is safer for Bangla.',
+      );
+  String get profileDescDefaultLong => _s(
+        'ডিফল্ট — কোনো সহায়তা ছাড়া মূল ইন্টারফেস, গবেষণার নিয়ন্ত্রণ শর্ত।',
+        'Default — the baseline interface used as the control condition in '
+            'the study.',
+      );
+  String get profileDescRecommendedLong => _s(
+        'গবেষণা-ভিত্তিক সেটিংস: শব্দ সহায়তা, বেশি লাইন-ফাঁক, ক্রিম পটভূমি, আর '
+            'অক্ষর-ফাঁক নেই যাতে মাত্রা অটুট থাকে।',
+        'Evidence-based settings: audio support, wide line spacing, cream '
+            'background, and no letter spacing so the মাত্রা stays intact.',
+      );
+  String get profileDescCustomLong => _s(
+        'নিজের মতো — পাঠকের নিজের সাজানো, ডিফল্ট ও সুপারিশকৃতর সাথে তুলনার '
+            'জন্য সংরক্ষিত।',
+        'Custom — the reader\u2019s own configuration, logged for comparison '
+            'against Default and Recommended.',
+      );
+  String get clearAllDataBody => _s(
+        'প্রতিটি অংশগ্রহণকারীর সব সেশন, সেটিংস বদলের হিসাব, কুইজের উত্তর, SUS '
+            'ও NASA-TLX সব মুছে যাবে। এটি ফেরানো যাবে না — দরকার হলে আগে '
+            'রপ্তানি করে নিন।',
+        'Deletes every session, settings-change log, quiz answer, SUS response '
+            'and NASA-TLX rating for every participant. This cannot be undone '
+            '— export first if you need a copy.',
+      );
+  String get clearAllDataNote => _s(
+        'দুই অংশগ্রহণকারীর মাঝে ব্যবহারের জন্য। তথ্য এখনও ফোন থেকে নেওয়া না '
+            'হলে আগে রপ্তানি করুন।',
+        'For use between participants. Export before clearing if the data has '
+            'not been pulled off the device yet.',
+      );
+
+  // ---- Remaining screens --------------------------------------------------
+
+  String get appTagline => _s(
+        'ডিসলেক্সিয়া-বান্ধব বাংলা পড়ার অ্যাপ',
+        'A dyslexia-friendly Bangla reading interface',
+      );
+  String get speedWithAccuracy => _s(
+        'গতি সঠিকতার সাথে মিলিয়ে দেখতে হয়।',
+        'Speed is read alongside accuracy.',
+      );
+  String get noQuizYet => _s('এখনও কোনো কুইজ হয়নি।', 'No quiz completed yet.');
+  String get acrossAllQuizzes =>
+      _s('সব কুইজ মিলিয়ে।', 'Across all quizzes taken.');
+  String get readAloudPercentNote => _s(
+        'যত শতাংশ পড়ায় শব্দ সহায়তা চালু ছিল।',
+        'Percentage of sessions where audio support was switched on.',
+      );
+  String get settingsChangedNote => _s(
+        'এই পাঠক আসলে কোন সুবিধাগুলো ব্যবহার করেন — সেটিংস বদলের হিসাব থেকে।',
+        'Which controls this reader actually reaches for, straight from the '
+            'settings-change log.',
+      );
+  String noMatchBody(String query) => _s(
+        '“$query” নামে যুক্ত হননি এমন কোনো পাঠক পাওয়া যায়নি। তিনি হয়তো '
+            'ইতিমধ্যে অন্য কোনো থেরাপিস্টের তালিকায় আছেন।',
+        'No unassigned reader matches “$query”. They may already be on '
+            "another therapist's list.",
+      );
+  String get everyoneAddedBody => _s(
+        'যারা সাইন আপ করেছেন সবাই ইতিমধ্যে কোনো থেরাপিস্টের সাথে আছেন। নতুন '
+            'কেউ সাইন আপ করলে এখানে দেখা যাবে।',
+        'Every reader who has signed up is already working with a therapist. '
+            'New sign-ups will appear here.',
+      );
+  String get readingConditionHeading =>
+      _s('পড়ার অবস্থা', 'READING CONDITION');
+  String get conditionStandardNote =>
+      _s('সাধারণ গঠন। সেটিংস বন্ধ।', 'Standard formatting. Settings locked.');
+  String get conditionRecommendedNote => _s(
+        'গবেষণা-ভিত্তিক সেটিংস। সেটিংস বন্ধ।',
+        'Evidence-based settings. Settings locked.',
+      );
+  String get conditionCustomNote => _s(
+        'পাঠক নিজের সেটিংস বেছে নেবেন।',
+        'Reader chooses their own settings.',
+      );
+  String get dashboardMarkerNote => _s(
+        'হলুদ আর ধূসর চিহ্ন সেই পাঠকদের বোঝায় যাদের সঠিকতা কমছে বা যারা এক '
+            'সপ্তাহের বেশি পড়েননি।',
+        'Amber and grey markers flag readers whose accuracy is falling or who '
+            'have not read in over a week.',
+      );
+  String profileNamed(String profile) => _s('$profile ধরন', '$profile profile');
+  String get needsTwoSessions =>
+      _s('অন্তত দুইবার পড়া দরকার', 'Needs at least two sessions');
 }
 
 /// `context.t.startReading` at the call site.

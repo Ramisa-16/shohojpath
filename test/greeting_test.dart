@@ -11,21 +11,21 @@ void main() {
 
   group('wording', () {
     test('morning up to noon', () {
-      expect(greetingFor(at(0)), 'Good morning');
-      expect(greetingFor(at(6, 30)), 'Good morning');
-      expect(greetingFor(at(11, 59)), 'Good morning');
+      expect(greetingFor(at(0)), Greeting.morning);
+      expect(greetingFor(at(6, 30)), Greeting.morning);
+      expect(greetingFor(at(11, 59)), Greeting.morning);
     });
 
     test('afternoon from noon to five', () {
       // The reported case: 12:17 is afternoon, not morning.
-      expect(greetingFor(at(12)), 'Good afternoon');
-      expect(greetingFor(at(12, 17)), 'Good afternoon');
-      expect(greetingFor(at(16, 59)), 'Good afternoon');
+      expect(greetingFor(at(12)), Greeting.afternoon);
+      expect(greetingFor(at(12, 17)), Greeting.afternoon);
+      expect(greetingFor(at(16, 59)), Greeting.afternoon);
     });
 
     test('evening from five', () {
-      expect(greetingFor(at(17)), 'Good evening');
-      expect(greetingFor(at(23, 59)), 'Good evening');
+      expect(greetingFor(at(17)), Greeting.evening);
+      expect(greetingFor(at(23, 59)), Greeting.evening);
     });
   });
 

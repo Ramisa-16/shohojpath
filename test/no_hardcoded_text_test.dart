@@ -9,10 +9,17 @@ import 'package:flutter_test/flutter_test.dart';
 /// single English word on an otherwise Bangla screen is exactly the mixture
 /// this work removed. This walks the source and fails if one comes back.
 void main() {
-  /// Text that reaches a reader's eyes, as opposed to code identifiers.
-  final userFacing = RegExp(
-    r"""(?:Text\(|label:\s*|title:\s*|subtitle:\s*|hint:\s*|hintText:\s*|tooltip:\s*|emptyTitle:\s*|emptyBody:\s*|caption:\s*|badge:\s*|description:\s*|confirmLabel:\s*)'([A-Z][A-Za-z][^']{3,})'""",
-  );
+  /// Any string literal in a screen or widget file.
+  ///
+  /// The first version of this only looked at literals directly after `Text(`
+  /// or `label:`, and skipped anything short. It passed while the sign-up
+  /// screen still showed "Age", "Create account", "I already have an account"
+  /// and two placeholder hints in English — every one of them written in a
+  /// form the pattern was not watching, like
+  /// `label: busy ? 'Creating account…' : 'Create account'`. Matching every
+  /// literal and excluding what is legitimately not prose is the way round
+  /// that actually holds.
+  final anyLiteral = RegExp(r"'([A-Za-z][^'\\$]{2,})'");
 
   /// Names, not prose: font families, proper nouns and validated instrument
   /// titles that would stop being findable if translated.
@@ -25,16 +32,50 @@ void main() {
     'White', 'Cream', 'Yellow', 'Dark', 'Contrast',
     'Easy', 'Medium', 'Hard',
     'Names', 'Participant IDs only', 'Off — therapist starts all sessions',
-    'English',
+    'English', 'SHOHOJPATH', 'bn-BD', 'bn-IN',
   };
 
-  /// Files that legitimately hold English: fallback copy the server replaces,
-  /// the throwaway font probe, and the string table itself.
+  /// Files that legitimately hold English.
   const skipFiles = {
+    // The string table itself, and the bundled copy the server replaces.
     'lib/l10n/app_strings.dart',
     'lib/data/mock_content.dart',
+    'lib/data/passages.dart',
     'lib/screens/font_test_screen.dart',
+    // HTTP verbs and header names are protocol, not prose.
+    'lib/api/api_client.dart',
+    // Carries an English `message` on purpose — for logs and the exported
+    // study data, where wording that shifts with a UI setting would be worse
+    // than useless. Screens call messageFor(t) instead, and a test below
+    // holds that line.
+    'lib/api/api_exception.dart',
+    // Sample rows seeded into the local database for development, and the
+    // English label a guest row is created with before any UI sees it.
+    'lib/services/app_database.dart',
+    'lib/services/reader_repository.dart',
+    // The share sheet's subject line for the researcher's CSV export.
+    'lib/widgets/export_data_action.dart',
   };
+
+  /// Distinguishes a string the code uses from a sentence a reader sees.
+  ///
+  /// Deliberately conservative: a false alarm costs one line in `allowed`,
+  /// while a miss puts an English word on a Bangla screen in front of a child.
+  bool isCodeNotProse(String text) {
+    // JSON keys, database columns, enum ids: snake_case with no spaces.
+    if (!text.contains(' ') && text.contains('_')) return true;
+    // Paths, URLs, MIME types, channel names, file names.
+    if (text.contains('/') || text.contains('.') && !text.contains(' ')) {
+      return true;
+    }
+    // SQL: where-clauses and order-by fragments passed to sqflite.
+    if (RegExp(r'= \?|IS N(OT )?NULL| (ASC|DESC)$').hasMatch(text)) return true;
+    // A single lowercase word is an identifier ('pending', 'reader', 'bn').
+    if (!text.contains(' ') && text == text.toLowerCase()) return true;
+    // Single short capitalised token: mostly enum labels and format letters.
+    if (!text.contains(' ') && text.length <= 3) return true;
+    return false;
+  }
 
   test('no user-facing English literals outside the string table', () {
     final offenders = <String>[];
@@ -48,12 +89,14 @@ void main() {
       for (var i = 0; i < lines.length; i++) {
         final line = lines[i];
         if (line.trimLeft().startsWith('//')) continue;
+        if (line.trimLeft().startsWith('///')) continue;
+        // import 'x.dart', JSON keys, asset paths, channel names.
+        if (line.contains('import ') || line.contains('part ')) continue;
 
-        for (final match in userFacing.allMatches(line)) {
+        for (final match in anyLiteral.allMatches(line)) {
           final text = match.group(1)!;
           if (allowed.contains(text)) continue;
-          // A string carrying only a proper noun or a unit is not prose.
-          if (!text.contains(' ') && text.length < 6) continue;
+          if (isCodeNotProse(text)) continue;
           offenders.add('$path:${i + 1}  "$text"');
         }
       }

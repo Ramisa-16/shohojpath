@@ -56,9 +56,8 @@ class ThankYouScreen extends StatelessWidget {
                         style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.navy),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'Your session has been recorded. Your responses help us design '
-                        'better Bangla reading tools.',
+                      Text(
+                        context.t.thankYouBody,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 15, color: AppColors.body, height: 1.7),
                       ),

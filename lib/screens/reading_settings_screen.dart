@@ -77,8 +77,7 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
     final confirmed = await showTherapistPasswordDialog(
       context,
       title: context.t.unlockSettings,
-      description: "Enter the therapist's password to let this reader change "
-          'settings for the rest of the session.',
+      description: context.t.therapistPasswordToUnlock,
       confirmLabel: context.t.unlock,
     );
     if (!confirmed || !context.mounted) return;
@@ -260,10 +259,8 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                   v,
                                         ),
                                         ToggleRow(
-                                          label: 'যুক্তাক্ষর ভেঙে দেখাও',
+                                          label: context.t.splitConjuncts,
                                           labelIsBangla: true,
-                                          caption:
-                                              'Split conjuncts: ক্ষ shows as ক্‌ + ষ',
                                           value: settings.splitConjuncts,
                                           onChanged: (v) =>
                                               context
@@ -272,10 +269,8 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                   v,
                                         ),
                                         ToggleRow(
-                                          label: 'মাত্রা জোর করো',
+                                          label: context.t.emphasiseMatra,
                                           labelIsBangla: true,
-                                          caption:
-                                              'Emphasise the matra headline',
                                           value: settings.emphasiseMatra,
                                           onChanged: (v) =>
                                               context
@@ -284,10 +279,8 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                   v,
                                         ),
                                         ToggleRow(
-                                          label: 'কঠিন শব্দ ভাগ করো',
+                                          label: context.t.syllableBreaks,
                                           labelIsBangla: true,
-                                          caption:
-                                              'Syllable breaks in long words',
                                           value: settings.syllableBreaks,
                                           onChanged: (v) =>
                                               context
@@ -451,15 +444,13 @@ class _ReadingSettingsScreenState extends State<ReadingSettingsScreen> {
                                                       .letterSpacingEm =
                                                   v,
                                         ),
-                                        const Padding(
+                                        Padding(
                                           padding: EdgeInsets.only(bottom: 10),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
                                             child: Text(
-                                              'বাংলায় বেশি letter spacing মাত্রা ভেঙে '
-                                              'দেয় — সাবধানে ব্যবহার করুন। Word '
-                                              'spacing is safer for Bangla.',
-                                              style: TextStyle(
+                                              context.t.letterSpacingWarning,
+                                              style: const TextStyle(
                                                 fontSize: 14,
                                                 height: 1.5,
                                                 color: AppColors.muted,

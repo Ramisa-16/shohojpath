@@ -22,13 +22,16 @@ class FeedbackScreen extends StatefulWidget {
 }
 
 class _FeedbackScreenState extends State<FeedbackScreen> {
-  static const _candidateSettings = [
-    'Read aloud',
-    'Conjunct highlight',
-    'Line spacing',
-    'Cream theme',
-    'Reading ruler',
-  ];
+  /// Names the controls the reader has just been using, so the wording must
+  /// match the settings panel exactly — a different phrase here would read as
+  /// a different feature.
+  static List<String> _candidateSettings(AppStrings t) => [
+        t.settingReadAloud,
+        t.settingConjunctHighlight,
+        t.settingLineSpacing,
+        t.settingCreamTheme,
+        t.settingReadingRuler,
+      ];
 
   final _suggestion = TextEditingController();
 
@@ -114,7 +117,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          for (final label in _candidateSettings)
+                          for (final label in _candidateSettings(context.t))
                             ChoiceTile(
                               label: label,
                               selected: session.helpfulSettings.contains(label),

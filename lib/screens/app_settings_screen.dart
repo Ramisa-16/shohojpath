@@ -148,8 +148,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'READER SIGN-IN DISPLAY',
+                    Text(
+                      t.readerSignInHeading,
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.body),
                     ),
                     const SizedBox(height: 9),
@@ -184,7 +184,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                     ListRowButton(
                       leading: const Icon(Icons.shield_rounded, color: AppColors.navy, size: 24),
                       title: t.privacyAndConsent,
-                      onTap: () => _notImplemented('Privacy & consent'),
+                      onTap: () => _notImplemented(t.privacyAndConsent),
                     ),
                     const SizedBox(height: 11),
                     Material(
@@ -201,11 +201,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                             border: Border.all(color: AppColors.dangerBorder, width: 1.5),
                           ),
                           child: Row(
-                            children: const [
+                            children: [
                               Icon(Icons.restart_alt_rounded, color: AppColors.danger, size: 24),
                               SizedBox(width: 12),
                               Text(
-                                'Reset all settings',
+                                t.resetAllSettingsAction,
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.danger),
                               ),
                             ],

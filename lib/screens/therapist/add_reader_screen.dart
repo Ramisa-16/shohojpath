@@ -75,7 +75,7 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.message;
+        _error = e.messageFor(context.tOnce);
         _loading = false;
       });
     }
@@ -123,7 +123,7 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
           AppColors.danger,
         );
       } else {
-        _toast(e.message, AppColors.danger);
+        _toast(e.messageFor(t), AppColors.danger);
       }
     }
   }
@@ -213,10 +213,8 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
         icon: searching ? Icons.search_off_rounded : Icons.groups_2_outlined,
         title: searching ? context.t.noMatch : context.t.everyoneAdded,
         body: searching
-            ? 'No unassigned reader matches “${_search.text.trim()}”. They may '
-                'already be on another therapist\'s list.'
-            : 'Every reader who has signed up is already working with a '
-                'therapist. New sign-ups will appear here.',
+            ? context.t.noMatchBody(_search.text.trim())
+            : context.t.everyoneAddedBody,
       );
     }
 

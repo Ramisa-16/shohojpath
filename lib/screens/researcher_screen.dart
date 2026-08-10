@@ -48,10 +48,8 @@ class _ResearcherScreenState extends State<ResearcherScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(context.tOnce.clearAllDataQuestion),
-        content: const Text(
-          'Deletes every session, settings-change log, quiz answer, SUS '
-          'response and NASA-TLX rating for every participant. This cannot '
-          'be undone — export first if you need a copy.',
+        content: Text(
+          context.tOnce.clearAllDataBody,
         ),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(context.tOnce.cancel)),
@@ -160,10 +158,9 @@ class _ResearcherScreenState extends State<ResearcherScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'For use between participants. Export before clearing if the data '
-                      'hasn\'t been pulled off the device yet.',
-                      style: TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5),
+                    Text(
+                      context.t.clearAllDataNote,
+                      style: const TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5),
                     ),
                   ],
                 ),

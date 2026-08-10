@@ -45,11 +45,8 @@ class HelpScreen extends StatelessWidget {
                           Text(context.t.howToUse, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.navy)),
                           SizedBox(height: 8),
                           Text(
-                            'Pick a passage from the Library, then tap the settings button while '
-                            'reading. Start with Read Aloud — it helps most. Adjust spacing and '
-                            'theme until the text feels comfortable. Your choices are saved '
-                            'automatically.',
-                            style: TextStyle(fontSize: 15, color: AppColors.ink, height: 1.6),
+                            context.t.howToUseBody,
+                            style: const TextStyle(fontSize: 15, color: AppColors.ink, height: 1.6),
                           ),
                         ],
                       ),
@@ -116,7 +113,7 @@ class HelpScreen extends StatelessWidget {
                         context: context,
                         builder: (context) => AlertDialog(
                           title: Text(context.t.contactResearchTeam),
-                          content: const Text('research-team@example.edu (placeholder contact address).'),
+                          content: Text(context.t.contactPlaceholder),
                           actions: [
                             TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK')),
                           ],

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+
+import 'package:shohojpath/l10n/app_language.dart';
 
 import 'package:shohojpath/widgets/app_header.dart';
 
@@ -8,7 +11,13 @@ import 'package:shohojpath/widgets/app_header.dart';
 /// HomeShell's IndexedStack with no route beneath them, so they were showing
 /// exactly that.
 void main() {
-  Widget wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+  /// AppHeader reads its Back tooltip from the string table, so every pump
+  /// needs the language provider above it.
+  Widget withLanguage(Widget child) =>
+      ChangeNotifierProvider(create: (_) => LanguageState(), child: child);
+
+  Widget wrap(Widget child) =>
+      withLanguage(MaterialApp(home: Scaffold(body: child)));
 
   Finder backArrow() => find.byIcon(Icons.arrow_back_rounded);
 
@@ -25,18 +34,20 @@ void main() {
 
   testWidgets('shows the arrow on a pushed route', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => ElevatedButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => Scaffold(
-                    body: AppHeader(title: 'History', onBack: () {}),
+      withLanguage(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => Scaffold(
+                      body: AppHeader(title: 'History', onBack: () {}),
+                    ),
                   ),
                 ),
+                child: const Text('open'),
               ),
-              child: const Text('open'),
             ),
           ),
         ),
@@ -52,21 +63,23 @@ void main() {
   testWidgets('tapping it runs the callback', (tester) async {
     var popped = false;
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => ElevatedButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => Scaffold(
-                    body: AppHeader(
-                      title: 'History',
-                      onBack: () => popped = true,
+      withLanguage(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => Scaffold(
+                      body: AppHeader(
+                        title: 'History',
+                        onBack: () => popped = true,
+                      ),
                     ),
                   ),
                 ),
+                child: const Text('open'),
               ),
-              child: const Text('open'),
             ),
           ),
         ),
@@ -86,8 +99,9 @@ void main() {
     expect(backArrow(), findsNothing);
   });
 
-  testWidgets('alwaysShowBack forces it on for a non-pop action',
-      (tester) async {
+  testWidgets('alwaysShowBack forces it on for a non-pop action', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       wrap(AppHeader(title: 'Custom', onBack: () {}, alwaysShowBack: true)),
     );

@@ -147,6 +147,7 @@ class ShohojpathApp extends StatelessWidget {
           create: (context) => AuthState(
             api: ShohojpathApi(context.read<ApiClient>()),
             participant: participant,
+            language: context.read<LanguageState>(),
           )..restore(),
           update: (context, api, existing) => existing!,
         ),

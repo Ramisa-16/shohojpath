@@ -35,9 +35,15 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
   /// cannot be double-tapped into two claim requests.
   final Set<String> _claiming = {};
 
+  /// Readers this therapist has asked in this sitting. The server also
+  /// refuses a duplicate, but the button should stop offering it.
+  final Set<String> _requested = {};
+
   /// How many readers this visit added, shown on the way back so the
   /// dashboard's roster count is not the only feedback.
-  int _addedCount = 0;
+  /// Requests sent in this sitting. Returned on pop purely so the
+  /// dashboard knows something happened — nobody has been added yet.
+  int _requestsSent = 0;
 
   @override
   void initState() {
@@ -85,19 +91,20 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
   Future<void> _add(Map<String, dynamic> reader) async {
     final participantId = reader['participant_id'] as String;
     final name = reader['display_name'] as String? ?? participantId;
+    final t = context.tOnce;
     setState(() => _claiming.add(participantId));
 
     try {
-      await context.read<ShohojpathApi>().claimReader(participantId);
+      await context.read<ShohojpathApi>().requestSupervision(participantId);
       if (!mounted) return;
+      // The row stays. Asking is not adding — the reader may still decline,
+      // and removing them here would claim an outcome that has not happened.
       setState(() {
-        _readers = _readers
-            .where((r) => r['participant_id'] != participantId)
-            .toList();
         _claiming.remove(participantId);
-        _addedCount++;
+        _requested.add(participantId);
+        _requestsSent++;
       });
-      _toast('$name added. You can now see their progress.', AppColors.tealDeep);
+      _toast(t.requestSentTo(name), AppColors.tealDeep);
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _claiming.remove(participantId));
@@ -139,7 +146,7 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Navigator.of(context).pop(_addedCount);
+        if (!didPop) Navigator.of(context).pop(_requestsSent);
       },
       child: Scaffold(
         backgroundColor: AppColors.canvas,
@@ -240,6 +247,7 @@ class _AddReaderScreenState extends State<AddReaderScreen> {
           return _AvailableReaderRow(
             reader: reader,
             busy: _claiming.contains(id),
+            requested: _requested.contains(id),
             onAdd: () => _add(reader),
           );
         },
@@ -253,11 +261,13 @@ class _AvailableReaderRow extends StatelessWidget {
     required this.reader,
     required this.busy,
     required this.onAdd,
+    this.requested = false,
   });
 
   final Map<String, dynamic> reader;
   final bool busy;
   final VoidCallback onAdd;
+  final bool requested;
 
   @override
   Widget build(BuildContext context) {
@@ -350,11 +360,17 @@ class _AvailableReaderRow extends StatelessWidget {
                     ),
                   )
                 : FilledButton.icon(
-                    onPressed: onAdd,
-                    icon: const Icon(Icons.add_rounded, size: 20),
-                    label: const Text('Add'),
+                    onPressed: requested ? null : onAdd,
+                    icon: Icon(
+                      requested ? Icons.schedule_rounded : Icons.add_rounded,
+                      size: 20,
+                    ),
+                    label: Text(
+                      requested ? context.t.requestSent : context.t.askToAdd,
+                    ),
                     style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.navy,
+                      backgroundColor:
+                          requested ? AppColors.borderStrong : AppColors.navy,
                       padding: EdgeInsets.zero,
                       minimumSize: const Size(92, 44),
                       shape: RoundedRectangleBorder(

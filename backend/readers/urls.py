@@ -5,7 +5,9 @@ from .views import (
     MyProfileView,
     MySettingsView,
     ReaderSettingsView,
-    ClaimReaderView,
+    MySupervisionRequestsView,
+    RequestSupervisionView,
+    RespondToSupervisionView,
     MarkAllNotificationsReadView,
     MarkNotificationReadView,
     MyReadersView,
@@ -23,7 +25,21 @@ urlpatterns = [
     path("readers/available/", AvailableReadersView.as_view(), name="available"),
     path("readers/mine/", MyReadersView.as_view(), name="mine"),
     path("readers/<str:participant_id>/", ReaderDetailView.as_view(), name="detail"),
-    path("readers/<str:participant_id>/claim/", ClaimReaderView.as_view(), name="claim"),
+    path(
+        "readers/<str:participant_id>/request/",
+        RequestSupervisionView.as_view(),
+        name="request-supervision",
+    ),
+    path(
+        "me/supervision-requests/",
+        MySupervisionRequestsView.as_view(),
+        name="my-supervision-requests",
+    ),
+    path(
+        "supervision-requests/<int:pk>/respond/",
+        RespondToSupervisionView.as_view(),
+        name="respond-supervision",
+    ),
     path(
         "readers/<str:participant_id>/release/",
         ReleaseReaderView.as_view(),

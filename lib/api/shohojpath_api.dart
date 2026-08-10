@@ -88,10 +88,26 @@ class ShohojpathApi {
     return Map<String, dynamic>.from(data as Map);
   }
 
-  /// Adds a reader to my roster. Throws with [ApiException.isConflict] if
-  /// another therapist got there first.
-  Future<Map<String, dynamic>> claimReader(String participantId) async {
-    final data = await client.post('/api/readers/$participantId/claim/');
+  /// Asks a reader for permission to supervise them. Nothing changes until
+  /// they accept — [ApiException.isConflict] means they already have a
+  /// therapist, or have no account to answer with.
+  Future<Map<String, dynamic>> requestSupervision(String participantId) async {
+    final data = await client.post('/api/readers/$participantId/request/');
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  /// Supervision requests waiting on the signed-in reader.
+  Future<List<Map<String, dynamic>>> mySupervisionRequests() =>
+      _list('/api/me/supervision-requests/');
+
+  /// Answers one. [ApiException.isConflict] means it was already answered,
+  /// or someone else was accepted first.
+  Future<Map<String, dynamic>> respondToSupervision(int id,
+      {required bool accept}) async {
+    final data = await client.post(
+      '/api/supervision-requests/$id/respond/',
+      body: {'accept': accept},
+    );
     return Map<String, dynamic>.from(data as Map);
   }
 

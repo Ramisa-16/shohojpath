@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 
 from accounts.models import User
 
-from .models import Notification, ReaderProfile
+from .models import Notification, ReaderProfile, SupervisionRequest
 
 
 def make_reader(email, name="Reader"):
@@ -143,83 +143,231 @@ class AvailableReaderTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class ClaimTests(APITestCase):
+class SupervisionRequestTests(APITestCase):
+    """Being supervised has to be agreed to, not taken.
+
+    The therapist can see every session, quiz score and setting the reader
+    touches. The old endpoint granted that on a tap; now the reader answers.
+    """
+
     def setUp(self):
         self.therapist = make_therapist("doc@example.com", "Dr Karim")
         self.rival = make_therapist("rival@example.com", "Dr Rival")
         self.reader = make_reader("rafi@example.com", "Rafi Ahmed")
 
-    def _claim_url(self):
-        return reverse("readers:claim", args=[self.reader.participant_id])
+    def _request_url(self, reader=None):
+        reader = reader or self.reader
+        return reverse("readers:request-supervision", args=[reader.participant_id])
 
-    def test_claiming_assigns_and_notifies_the_reader(self):
+    def _respond_url(self, supervision):
+        return reverse("readers:respond-supervision", args=[supervision.pk])
+
+    def _ask(self, therapist=None):
+        self.client.force_authenticate(therapist or self.therapist)
+        response = self.client.post(self._request_url())
+        self.client.force_authenticate(None)
+        return response
+
+    # ---- asking ---------------------------------------------------------
+
+    def test_asking_does_not_add_the_reader(self):
+        response = self._ask()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.reader.refresh_from_db()
+        self.assertIsNone(
+            self.reader.therapist,
+            "a request must not supervise anyone until it is accepted",
+        )
+
+    def test_asking_notifies_the_reader_with_something_to_answer(self):
+        self._ask()
+
+        note = Notification.objects.get(recipient=self.reader.user)
+        self.assertEqual(note.kind, Notification.Kind.SUPERVISION_REQUESTED)
+        self.assertIn("Dr Karim", note.body)
+        self.assertIsNotNone(
+            note.supervision_request_id,
+            "the app draws Accept/Decline from this id",
+        )
+
+    def test_asking_twice_does_not_send_a_second_notification(self):
+        self._ask()
+        second = self._ask()
+
+        self.assertEqual(second.status_code, status.HTTP_200_OK)
+        self.assertEqual(SupervisionRequest.objects.count(), 1)
+        self.assertEqual(Notification.objects.count(), 1)
+
+    def test_cannot_ask_for_a_reader_who_already_has_a_therapist(self):
+        self.reader.therapist = self.rival
+        self.reader.save()
+
+        response = self._ask()
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertEqual(SupervisionRequest.objects.count(), 0)
+
+    def test_a_reader_with_no_account_cannot_be_asked(self):
+        # Nobody to answer, so adding them anyway would be the old behaviour
+        # wearing a new name.
+        offline = ReaderProfile.objects.create(display_name="No Account")
         self.client.force_authenticate(self.therapist)
-        response = self.client.post(self._claim_url())
+        response = self.client.post(self._request_url(offline))
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        offline.refresh_from_db()
+        self.assertIsNone(offline.therapist)
+
+    def test_a_reader_cannot_ask_for_anyone(self):
+        self.client.force_authenticate(self.reader.user)
+        response = self.client.post(self._request_url())
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # ---- answering ------------------------------------------------------
+
+    def test_the_reader_sees_what_is_waiting_on_them(self):
+        self._ask()
+        self.client.force_authenticate(self.reader.user)
+
+        response = self.client.get(reverse("readers:my-supervision-requests"))
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["therapist_name"], "Dr Karim")
+
+    def test_accepting_adds_the_reader_and_tells_the_therapist(self):
+        self._ask()
+        supervision = SupervisionRequest.objects.get()
+
+        self.client.force_authenticate(self.reader.user)
+        response = self.client.post(
+            self._respond_url(supervision), {"accept": True}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.reader.refresh_from_db()
         self.assertEqual(self.reader.therapist, self.therapist)
         self.assertIsNotNone(self.reader.claimed_at)
 
-        note = Notification.objects.get(recipient=self.reader.user)
-        self.assertEqual(note.kind, Notification.Kind.THERAPIST_ADDED)
-        self.assertIn("Dr Karim", note.body)
-        self.assertIsNone(note.read_at)
+        supervision.refresh_from_db()
+        self.assertEqual(supervision.status, SupervisionRequest.Status.ACCEPTED)
+        self.assertIsNotNone(supervision.responded_at)
 
-    def test_a_second_therapist_gets_a_conflict_not_a_silent_takeover(self):
-        self.client.force_authenticate(self.therapist)
-        self.client.post(self._claim_url())
+        note = Notification.objects.get(recipient=self.therapist)
+        self.assertEqual(note.kind, Notification.Kind.SUPERVISION_ACCEPTED)
+        self.assertIn("Rafi", note.body)
 
-        self.client.force_authenticate(self.rival)
-        response = self.client.post(self._claim_url())
+    def test_declining_leaves_the_reader_alone_and_tells_the_therapist(self):
+        self._ask()
+        supervision = SupervisionRequest.objects.get()
 
-        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.client.force_authenticate(self.reader.user)
+        self.client.post(
+            self._respond_url(supervision), {"accept": False}, format="json"
+        )
+
         self.reader.refresh_from_db()
-        self.assertEqual(
-            self.reader.therapist, self.therapist, "the first claim must stand"
+        self.assertIsNone(self.reader.therapist)
+
+        supervision.refresh_from_db()
+        self.assertEqual(supervision.status, SupervisionRequest.Status.DECLINED)
+
+        note = Notification.objects.get(recipient=self.therapist)
+        self.assertEqual(note.kind, Notification.Kind.SUPERVISION_DECLINED)
+
+    def test_answering_twice_is_refused(self):
+        self._ask()
+        supervision = SupervisionRequest.objects.get()
+
+        self.client.force_authenticate(self.reader.user)
+        self.client.post(
+            self._respond_url(supervision), {"accept": False}, format="json"
         )
-        self.assertEqual(Notification.objects.count(), 1)
-
-    def test_reclaiming_my_own_reader_is_harmless(self):
-        self.client.force_authenticate(self.therapist)
-        self.client.post(self._claim_url())
-        response = self.client.post(self._claim_url())
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            Notification.objects.count(), 1, "must not notify the reader twice"
+        again = self.client.post(
+            self._respond_url(supervision), {"accept": True}, format="json"
         )
 
-    def test_claimed_reader_appears_on_my_roster(self):
-        self.client.force_authenticate(self.therapist)
-        self.client.post(self._claim_url())
-        response = self.client.get(reverse("readers:mine"))
-        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(again.status_code, status.HTTP_409_CONFLICT)
+        self.reader.refresh_from_db()
+        self.assertIsNone(
+            self.reader.therapist, "a declined request must not be reversible by replay"
+        )
 
-    def test_releasing_returns_the_reader_to_the_directory(self):
-        self.client.force_authenticate(self.therapist)
-        self.client.post(self._claim_url())
-        self.client.post(reverse("readers:release", args=[self.reader.participant_id]))
+    def test_nobody_else_can_answer_for_the_reader(self):
+        self._ask()
+        supervision = SupervisionRequest.objects.get()
+        other = make_reader("other@example.com", "Other")
 
-        available = self.client.get(reverse("readers:available"))
-        names = [r["display_name"] for r in available.data["results"]]
-        self.assertIn("Rafi Ahmed", names)
+        self.client.force_authenticate(other.user)
+        response = self.client.post(
+            self._respond_url(supervision), {"accept": True}, format="json"
+        )
 
-    def test_therapist_registered_reader_is_claimed_immediately(self):
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.reader.refresh_from_db()
+        self.assertIsNone(self.reader.therapist)
+
+    def test_the_therapist_cannot_accept_on_the_readers_behalf(self):
+        self._ask()
+        supervision = SupervisionRequest.objects.get()
+
         self.client.force_authenticate(self.therapist)
         response = self.client.post(
-            reverse("readers:mine"),
-            {"display_name": "Offline Child", "age": 9},
-            format="json",
+            self._respond_url(supervision), {"accept": True}, format="json"
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        created = ReaderProfile.objects.get(display_name="Offline Child")
-        self.assertEqual(created.therapist, self.therapist)
 
-        # And is therefore not offered to anyone else.
-        self.client.force_authenticate(self.rival)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.reader.refresh_from_db()
+        self.assertIsNone(self.reader.therapist)
+
+    # ---- two therapists asking at once ----------------------------------
+
+    def test_accepting_one_closes_the_other_and_says_so(self):
+        self._ask(self.therapist)
+        self._ask(self.rival)
+        self.assertEqual(SupervisionRequest.objects.count(), 2)
+
+        mine = SupervisionRequest.objects.get(therapist=self.therapist)
+        self.client.force_authenticate(self.reader.user)
+        self.client.post(self._respond_url(mine), {"accept": True}, format="json")
+
+        theirs = SupervisionRequest.objects.get(therapist=self.rival)
+        self.assertEqual(theirs.status, SupervisionRequest.Status.SUPERSEDED)
+
+        # The losing therapist is told, rather than left watching a request
+        # that will never be answered.
+        note = Notification.objects.filter(recipient=self.rival).first()
+        self.assertIsNotNone(note)
+        self.assertEqual(note.kind, Notification.Kind.SUPERVISION_DECLINED)
+
+    def test_an_accepted_reader_leaves_the_directory(self):
+        self._ask()
+        supervision = SupervisionRequest.objects.get()
+
+        self.client.force_authenticate(self.reader.user)
+        self.client.post(
+            self._respond_url(supervision), {"accept": True}, format="json"
+        )
+
+        self.client.force_authenticate(self.therapist)
         available = self.client.get(reverse("readers:available"))
-        names = [r["display_name"] for r in available.data["results"]]
-        self.assertNotIn("Offline Child", names)
+        ids = [r["participant_id"] for r in available.data["results"]]
+        self.assertNotIn(self.reader.participant_id, ids)
+
+        mine = self.client.get(reverse("readers:mine"))
+        self.assertEqual(len(mine.data["results"]), 1)
+
+    def test_a_declined_reader_stays_in_the_directory(self):
+        self._ask()
+        supervision = SupervisionRequest.objects.get()
+
+        self.client.force_authenticate(self.reader.user)
+        self.client.post(
+            self._respond_url(supervision), {"accept": False}, format="json"
+        )
+
+        self.client.force_authenticate(self.therapist)
+        available = self.client.get(reverse("readers:available"))
+        ids = [r["participant_id"] for r in available.data["results"]]
+        self.assertIn(self.reader.participant_id, ids)
 
 
 class NotificationTests(APITestCase):
@@ -227,7 +375,9 @@ class NotificationTests(APITestCase):
         self.therapist = make_therapist("doc@example.com", "Dr Karim")
         self.reader = make_reader("rafi@example.com", "Rafi")
         self.client.force_authenticate(self.therapist)
-        self.client.post(reverse("readers:claim", args=[self.reader.participant_id]))
+        self.client.post(
+            reverse("readers:request-supervision", args=[self.reader.participant_id])
+        )
         self.client.force_authenticate(self.reader.user)
 
     def test_reader_sees_their_own_notification(self):

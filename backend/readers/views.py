@@ -5,7 +5,13 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Notification, ReaderNote, ReaderProfile, ReaderSettings
+from .models import (
+    Notification,
+    ReaderNote,
+    ReaderProfile,
+    ReaderSettings,
+    SupervisionRequest,
+)
 from .permissions import IsTherapist
 from .serializers import (
     MyProfileSerializer,
@@ -14,6 +20,7 @@ from .serializers import (
     ReaderNoteSerializer,
     ReaderProfileSerializer,
     ReaderSettingsSerializer,
+    SupervisionRequestSerializer,
 )
 
 
@@ -60,59 +67,6 @@ class MyReadersView(generics.ListCreateAPIView):
         return Response(
             ReaderProfileSerializer(reader).data, status=status.HTTP_201_CREATED
         )
-
-
-class ClaimReaderView(APIView):
-    """POST /api/readers/<participant_id>/claim/ — add a reader to my roster."""
-
-    permission_classes = [permissions.IsAuthenticated, IsTherapist]
-
-    @transaction.atomic
-    def post(self, request, participant_id):
-        try:
-            reader = ReaderProfile.objects.get(participant_id=participant_id)
-        except ReaderProfile.DoesNotExist:
-            return Response(
-                {"detail": "Reader not found."}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        if reader.therapist_id == request.user.id:
-            return Response(
-                ReaderProfileSerializer(reader).data, status=status.HTTP_200_OK
-            )
-
-        # A conditional UPDATE, not a read-then-save: two therapists tapping the
-        # same reader at the same moment must not both succeed. Whoever loses
-        # the race updates zero rows and gets a 409 instead of silently
-        # overwriting the winner.
-        claimed = ReaderProfile.objects.filter(
-            pk=reader.pk, therapist__isnull=True
-        ).update(therapist=request.user, claimed_at=timezone.now())
-
-        if not claimed:
-            return Response(
-                {"detail": "This reader has already been added by another therapist."},
-                status=status.HTTP_409_CONFLICT,
-            )
-
-        reader.refresh_from_db()
-
-        # The reader learns they were added. Only possible if they have an
-        # account — a therapist-registered child with no login has nowhere to
-        # receive it, and that is fine.
-        if reader.user_id:
-            therapist_name = request.user.full_name or request.user.email
-            Notification.objects.create(
-                recipient_id=reader.user_id,
-                kind=Notification.Kind.THERAPIST_ADDED,
-                title="A therapist added you",
-                body=(
-                    f"{therapist_name} has added you as their reader. They can now "
-                    f"assign you passages and see your reading progress."
-                ),
-            )
-
-        return Response(ReaderProfileSerializer(reader).data, status=status.HTTP_200_OK)
 
 
 class ReleaseReaderView(APIView):
@@ -250,3 +204,197 @@ class ReaderSettingsView(APIView):
         if row is None:
             return Response({"values": {}, "updated_at": None})
         return Response(ReaderSettingsSerializer(row).data)
+
+
+def _therapist_name(user):
+    return user.full_name or user.email
+
+
+class RequestSupervisionView(APIView):
+    """POST /api/readers/<participant_id>/request/ — ask to supervise a reader.
+
+    Replaces the old claim endpoint, which added the reader immediately. A
+    therapist who can see every session, quiz score and setting a child
+    touches should have been told yes first.
+    """
+
+    permission_classes = [permissions.IsAuthenticated, IsTherapist]
+
+    @transaction.atomic
+    def post(self, request, participant_id):
+        try:
+            reader = ReaderProfile.objects.select_for_update().get(
+                participant_id=participant_id
+            )
+        except ReaderProfile.DoesNotExist:
+            return Response(
+                {"detail": "Reader not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if reader.therapist_id == request.user.id:
+            return Response(
+                {"detail": "This reader is already yours."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        if reader.therapist_id is not None:
+            return Response(
+                {"detail": "This reader is already working with a therapist."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        # A reader with no account has nowhere to answer, so there is nobody to
+        # ask. Refusing is better than silently adding them, which would be the
+        # old behaviour wearing a new name.
+        if reader.user_id is None:
+            return Response(
+                {
+                    "detail": (
+                        "This reader has no account yet, so they cannot be asked. "
+                        "They need to sign up before a therapist can add them."
+                    )
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        existing = SupervisionRequest.objects.filter(
+            reader=reader, therapist=request.user, status=SupervisionRequest.Status.PENDING
+        ).first()
+        if existing:
+            return Response(
+                SupervisionRequestSerializer(existing).data, status=status.HTTP_200_OK
+            )
+
+        supervision = SupervisionRequest.objects.create(
+            reader=reader, therapist=request.user
+        )
+
+        Notification.objects.create(
+            recipient_id=reader.user_id,
+            kind=Notification.Kind.SUPERVISION_REQUESTED,
+            title="A therapist wants to add you",
+            body=(
+                f"{_therapist_name(request.user)} would like to add you as their "
+                f"reader. They would be able to assign you passages and see your "
+                f"reading progress. You can accept or decline."
+            ),
+            supervision_request=supervision,
+        )
+
+        return Response(
+            SupervisionRequestSerializer(supervision).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class MySupervisionRequestsView(generics.ListAPIView):
+    """GET /api/me/supervision-requests/ — requests waiting on me."""
+
+    serializer_class = SupervisionRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return SupervisionRequest.objects.filter(
+            reader__user=self.request.user,
+            status=SupervisionRequest.Status.PENDING,
+        ).select_related("therapist", "reader")
+
+
+class RespondToSupervisionView(APIView):
+    """POST /api/supervision-requests/<pk>/respond/ — {"accept": true|false}."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request, pk):
+        try:
+            supervision = SupervisionRequest.objects.select_for_update().get(
+                pk=pk, reader__user=request.user
+            )
+        except SupervisionRequest.DoesNotExist:
+            return Response(
+                {"detail": "Request not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if not supervision.is_pending:
+            return Response(
+                {"detail": "This request has already been answered."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        accept = bool(request.data.get("accept"))
+        reader = supervision.reader
+        therapist = supervision.therapist
+        now = timezone.now()
+
+        if not accept:
+            supervision.status = SupervisionRequest.Status.DECLINED
+            supervision.responded_at = now
+            supervision.save(update_fields=["status", "responded_at"])
+
+            Notification.objects.create(
+                recipient=therapist,
+                kind=Notification.Kind.SUPERVISION_DECLINED,
+                title="Request declined",
+                body=(
+                    f"{reader.display_name or reader.participant_id} declined your "
+                    f"request to add them as a reader."
+                ),
+            )
+            return Response(
+                SupervisionRequestSerializer(supervision).data,
+                status=status.HTTP_200_OK,
+            )
+
+        # Same conditional UPDATE as before: the reader may have accepted
+        # someone else a moment ago, and two therapists must not both end up
+        # supervising them.
+        claimed = ReaderProfile.objects.filter(
+            pk=reader.pk, therapist__isnull=True
+        ).update(therapist=therapist, claimed_at=now)
+
+        if not claimed:
+            supervision.status = SupervisionRequest.Status.SUPERSEDED
+            supervision.responded_at = now
+            supervision.save(update_fields=["status", "responded_at"])
+            return Response(
+                {"detail": "You are already working with a therapist."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        supervision.status = SupervisionRequest.Status.ACCEPTED
+        supervision.responded_at = now
+        supervision.save(update_fields=["status", "responded_at"])
+
+        Notification.objects.create(
+            recipient=therapist,
+            kind=Notification.Kind.SUPERVISION_ACCEPTED,
+            title="Request accepted",
+            body=(
+                f"{reader.display_name or reader.participant_id} accepted your "
+                f"request. They are now on your reader list."
+            ),
+        )
+
+        # Anyone else still waiting is now asking for something that cannot
+        # happen. Closing those out and saying so beats leaving a therapist
+        # watching a request that will never be answered.
+        others = SupervisionRequest.objects.filter(
+            reader=reader, status=SupervisionRequest.Status.PENDING
+        ).exclude(pk=supervision.pk).select_related("therapist")
+
+        for other in others:
+            Notification.objects.create(
+                recipient=other.therapist,
+                kind=Notification.Kind.SUPERVISION_DECLINED,
+                title="Request closed",
+                body=(
+                    f"{reader.display_name or reader.participant_id} is now working "
+                    f"with another therapist."
+                ),
+            )
+        others.update(status=SupervisionRequest.Status.SUPERSEDED, responded_at=now)
+
+        return Response(
+            SupervisionRequestSerializer(supervision).data, status=status.HTTP_200_OK
+        )

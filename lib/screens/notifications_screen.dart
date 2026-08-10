@@ -99,11 +99,18 @@ class _NotificationCard extends StatelessWidget {
   const _NotificationCard({required this.notification, required this.onRead});
 
   final Map<String, dynamic> notification;
+
+  /// Called after marking read, and after answering a supervision request —
+  /// the list has to reload either way, because accepting changes what the
+  /// rest of the app is allowed to show.
   final VoidCallback onRead;
 
   static const _icons = {
     'therapist_added': Icons.person_add_alt_1_rounded,
     'passage_assigned': Icons.menu_book_rounded,
+    'supervision_requested': Icons.how_to_reg_rounded,
+    'supervision_accepted': Icons.check_circle_rounded,
+    'supervision_declined': Icons.cancel_rounded,
     'general': Icons.info_outline_rounded,
   };
 
@@ -116,6 +123,13 @@ class _NotificationCard extends StatelessWidget {
     final created = DateTime.tryParse(
       notification['created_at'] as String? ?? '',
     );
+
+    // Only offer the buttons while the request is genuinely open. Answered on
+    // another device, or superseded because they accepted someone else, and
+    // the buttons would only produce a 409.
+    final requestId = (notification['supervision_request'] as num?)?.toInt();
+    final awaitingAnswer = requestId != null &&
+        notification['supervision_status'] == 'pending';
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -198,6 +212,13 @@ class _NotificationCard extends StatelessWidget {
                         height: 1.55,
                         color: AppColors.body,
                       ),
+                    ),
+                  ],
+                  if (awaitingAnswer) ...[
+                    const SizedBox(height: 11),
+                    _SupervisionActions(
+                      requestId: requestId,
+                      onAnswered: onRead,
                     ),
                   ],
                   if (created != null) ...[
@@ -309,6 +330,107 @@ class _NotificationBellState extends State<NotificationBell> {
               ),
             ),
           ),
+      ],
+    );
+  }
+}
+
+
+/// Accept / Decline for a supervision request, drawn on the notification
+/// itself so the reader answers where they are told, rather than being sent
+/// somewhere else to find the decision.
+class _SupervisionActions extends StatefulWidget {
+  const _SupervisionActions({required this.requestId, required this.onAnswered});
+
+  final int requestId;
+  final VoidCallback onAnswered;
+
+  @override
+  State<_SupervisionActions> createState() => _SupervisionActionsState();
+}
+
+class _SupervisionActionsState extends State<_SupervisionActions> {
+  bool _busy = false;
+
+  Future<void> _respond(bool accept) async {
+    if (_busy) return;
+    final t = context.tOnce;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+
+    try {
+      final result = await context
+          .read<ShohojpathApi>()
+          .respondToSupervision(widget.requestId, accept: accept);
+
+      if (!mounted) return;
+      final therapist = result['therapist_name'] as String? ?? '';
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            accept ? t.acceptedTherapist(therapist) : t.declinedRequest,
+          ),
+        ),
+      );
+      widget.onAnswered();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(e.isConflict ? t.requestAlreadyAnswered : e.message),
+        ),
+      );
+      // Reload either way: a conflict means the truth on screen is stale.
+      if (e.isConflict) widget.onAnswered();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+
+    if (_busy) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 6),
+        child: SizedBox(
+          width: 22,
+          height: 22,
+          child: CircularProgressIndicator(strokeWidth: 2.5),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        Expanded(
+          child: FilledButton(
+            onPressed: () => _respond(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.teal,
+              minimumSize: const Size(0, 44),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(11),
+              ),
+            ),
+            child: Text(t.accept),
+          ),
+        ),
+        const SizedBox(width: 9),
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () => _respond(false),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.danger,
+              minimumSize: const Size(0, 44),
+              side: const BorderSide(color: AppColors.dangerBorder, width: 1.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(11),
+              ),
+            ),
+            child: Text(t.decline),
+          ),
+        ),
       ],
     );
   }

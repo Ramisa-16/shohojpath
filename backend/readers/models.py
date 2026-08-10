@@ -84,6 +84,9 @@ class Notification(models.Model):
     class Kind(models.TextChoices):
         THERAPIST_ADDED = "therapist_added", "Therapist added you"
         PASSAGE_ASSIGNED = "passage_assigned", "Passage assigned"
+        SUPERVISION_REQUESTED = "supervision_requested", "Therapist asked to add you"
+        SUPERVISION_ACCEPTED = "supervision_accepted", "Reader accepted"
+        SUPERVISION_DECLINED = "supervision_declined", "Reader declined"
         GENERAL = "general", "General"
 
     recipient = models.ForeignKey(
@@ -96,6 +99,17 @@ class Notification(models.Model):
     body = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True, blank=True)
+
+    # Set on the "a therapist wants to add you" message, so the app can draw
+    # Accept and Decline on the notification itself rather than sending the
+    # reader somewhere else to find the decision.
+    supervision_request = models.ForeignKey(
+        "SupervisionRequest",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="notifications",
+    )
 
     class Meta:
         ordering = ("-created_at",)
@@ -152,3 +166,59 @@ class ReaderSettings(models.Model):
 
     def __str__(self):
         return f"Settings for {self.reader.participant_id}"
+
+
+class SupervisionRequest(models.Model):
+    """A therapist asking a reader for permission to supervise them.
+
+    Being supervised is not a neutral act: the therapist can then see every
+    session, every quiz score and every setting the reader touches. Taking
+    that by a tap on a list — which is what the old claim endpoint did — gives
+    the person being watched no say in it. The reader now has to agree, and
+    the therapist finds out either way.
+
+    Kept as its own row rather than a flag on ReaderProfile so a declined
+    request stays on the record: "asked and was refused" and "never asked"
+    are different facts, and only one of them should let the therapist ask
+    again without thinking about it.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Waiting for the reader"
+        ACCEPTED = "accepted", "Accepted"
+        DECLINED = "declined", "Declined"
+        SUPERSEDED = "superseded", "Reader accepted someone else"
+
+    reader = models.ForeignKey(
+        ReaderProfile, on_delete=models.CASCADE, related_name="supervision_requests"
+    )
+    therapist = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="supervision_requests",
+    )
+    status = models.CharField(
+        max_length=16, choices=Status.choices, default=Status.PENDING
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        constraints = [
+            # One open request per pair. Without this a therapist could tap
+            # Add repeatedly and bury the reader in identical notifications.
+            models.UniqueConstraint(
+                fields=["reader", "therapist"],
+                condition=models.Q(status="pending"),
+                name="one_pending_supervision_request_per_pair",
+            )
+        ]
+        indexes = [models.Index(fields=["reader", "status"])]
+
+    def __str__(self):
+        return f"{self.therapist_id} -> {self.reader.participant_id} ({self.status})"
+
+    @property
+    def is_pending(self):
+        return self.status == self.Status.PENDING

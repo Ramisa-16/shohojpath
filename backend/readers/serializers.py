@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from .models import Notification, ReaderNote, ReaderProfile, ReaderSettings
+from .models import (
+    Notification,
+    ReaderNote,
+    ReaderProfile,
+    ReaderSettings,
+    SupervisionRequest,
+)
 
 
 class ReaderProfileSerializer(serializers.ModelSerializer):
@@ -47,10 +53,26 @@ class ReaderCreateSerializer(serializers.ModelSerializer):
 
 class NotificationSerializer(serializers.ModelSerializer):
     is_read = serializers.SerializerMethodField()
+    # Carried alongside the id so the app knows whether to still draw
+    # Accept and Decline: a request answered on another device must not
+    # keep offering buttons that will 409.
+    supervision_status = serializers.CharField(
+        source="supervision_request.status", read_only=True, default=None
+    )
 
     class Meta:
         model = Notification
-        fields = ("id", "kind", "title", "body", "created_at", "read_at", "is_read")
+        fields = (
+            "id",
+            "kind",
+            "title",
+            "body",
+            "created_at",
+            "read_at",
+            "is_read",
+            "supervision_request",
+            "supervision_status",
+        )
         read_only_fields = fields
 
     def get_is_read(self, obj):
@@ -101,3 +123,27 @@ class ReaderSettingsSerializer(serializers.ModelSerializer):
         model = ReaderSettings
         fields = ("values", "updated_at")
         read_only_fields = ("updated_at",)
+
+
+class SupervisionRequestSerializer(serializers.ModelSerializer):
+    therapist_name = serializers.SerializerMethodField()
+    reader_name = serializers.CharField(source="reader.display_name", read_only=True)
+    participant_id = serializers.CharField(
+        source="reader.participant_id", read_only=True
+    )
+
+    class Meta:
+        model = SupervisionRequest
+        fields = (
+            "id",
+            "status",
+            "therapist_name",
+            "reader_name",
+            "participant_id",
+            "created_at",
+            "responded_at",
+        )
+        read_only_fields = fields
+
+    def get_therapist_name(self, obj):
+        return obj.therapist.full_name or obj.therapist.email

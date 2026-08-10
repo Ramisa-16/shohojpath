@@ -813,6 +813,31 @@ class AppStrings {
       _s('৬৮-এর বেঞ্চমার্কের নিচে', 'Below the 68 benchmark');
   String get susAnswerAll =>
       _s('স্কোর দেখতে ১০টিরই উত্তর দিন', 'Answer all 10 to see the score');
+
+  // ---- Supervision requests ----------------------------------------------
+
+  String get askToAdd => _s('অনুরোধ পাঠান', 'Ask');
+  String get requestSent => _s('অনুরোধ পাঠানো হয়েছে', 'Request sent');
+  String requestSentTo(String name) => _s(
+        '$name-কে অনুরোধ পাঠানো হয়েছে। তিনি রাজি হলে আপনার তালিকায় যুক্ত হবেন।',
+        'Request sent to $name. They will join your list if they accept.',
+      );
+  String get supervisionRequestTitle =>
+      _s('একজন থেরাপিস্ট আপনাকে যুক্ত করতে চান', 'A therapist wants to add you');
+  String get accept => _s('রাজি', 'Accept');
+  String get decline => _s('না', 'Decline');
+  String acceptedTherapist(String name) => _s(
+        'আপনি $name-এর সাথে যুক্ত হয়েছেন।',
+        'You are now working with $name.',
+      );
+  String get declinedRequest => _s(
+        'অনুরোধটি ফিরিয়ে দেওয়া হয়েছে।',
+        'Request declined.',
+      );
+  String get requestAlreadyAnswered => _s(
+        'এই অনুরোধের উত্তর আগেই দেওয়া হয়েছে।',
+        'This request has already been answered.',
+      );
 }
 
 /// `context.t.startReading` at the call site.

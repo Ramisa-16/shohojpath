@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shohojpath — সহজপাঠ · Dyslexia-Friendly Bengali Reading</title>
+  <meta name="description" content="Shohojpath is a research-backed, dyslexia-friendly Bengali reading app with text-to-speech, word highlighting, conjunct splitting, and customisable reading aids.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" type="image/png" sizes="1024x1024" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Bengali:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & Variables ───────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --clr-primary: #1a6fb5;
+      --clr-primary-dark: #124d80;
+      --clr-primary-light: #60a5fa;
+      --clr-accent: #f59e0b;
+      --clr-accent-hover: #d97706;
+      --clr-bg: #f0f6fc;
+      --clr-surface: #ffffff;
+      --clr-text: #1e293b;
+      --clr-text-muted: #64748b;
+      --clr-success: #10b981;
+      --clr-rose: #f43f5e;
+      --clr-amber-light: #fef3c7;
+      --clr-blue-light: #dbeafe;
+      --clr-cream: #fefaf0;
+      --radius: 12px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+      --shadow-md: 0 4px 20px rgba(0,0,0,.10);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,.12);
+      --shadow-xl: 0 24px 60px rgba(0,0,0,.16);
+      --font: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-bn: 'Noto Sans Bengali', 'SolaimanLipi', sans-serif;
+      --max-w: 1120px;
+      --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--clr-bg);
+      color: var(--clr-text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+
+    .container { width: min(var(--max-w), 92vw); margin: 0 auto; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    .bn { font-family: var(--font-bn); }
+
+    /* ── Scroll Reveal ─────────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-left { opacity: 0; transform: translateX(-40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+    .reveal-right { opacity: 0; transform: translateX(40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+    /* ── Floating Particles ────────────────────────────────── */
+    .particles {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .particle {
+      position: absolute; border-radius: 50%; opacity: 0.06;
+      animation: particleFloat linear infinite;
+    }
+    @keyframes particleFloat {
+      0% { transform: translateY(100vh) rotate(0deg) scale(0); opacity: 0; }
+      10% { opacity: 0.06; }
+      90% { opacity: 0.06; }
+      100% { transform: translateY(-10vh) rotate(720deg) scale(1); opacity: 0; }
+    }
+
+    /* ── NAV ─────────────────────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(0,0,0,.06);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .nav-logo {
+      font-weight: 900; font-size: 1.25rem;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--clr-primary), #38bdf8);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 14px; font-weight: 700;
+    }
+    .nav-logo span { background: linear-gradient(135deg, var(--clr-primary), #38bdf8); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a {
+      font-size: .9rem; font-weight: 500; color: var(--clr-text-muted);
+      transition: color .2s; position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px;
+      background: var(--clr-primary); transition: width .2s; border-radius: 2px;
+    }
+    .nav-links a:hover { color: var(--clr-primary); }
+    .nav-links a:hover::after { width: 100%; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px; border-radius: 999px;
+      font-weight: 600; font-size: .9rem;
+      border: none; cursor: pointer;
+      transition: transform .2s, box-shadow .3s, background .3s;
+      position: relative; overflow: hidden;
+    }
+    .btn::before {
+      content: ''; position: absolute; inset: 0; border-radius: 999px;
+      background: rgba(255,255,255,.15); transform: translateX(-100%); transition: transform .4s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:hover::before { transform: translateX(100%); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-dark));
+      color: #fff; box-shadow: 0 4px 14px rgba(26,111,181,.35);
+    }
+    .btn-primary:hover { box-shadow: 0 6px 22px rgba(26,111,181,.45); }
+    .btn-accent {
+      background: linear-gradient(135deg, var(--clr-accent), var(--clr-accent-hover));
+      color: #fff; box-shadow: 0 4px 14px rgba(245,158,11,.35);
+    }
+    .btn-accent:hover { box-shadow: 0 6px 22px rgba(245,158,11,.45); }
+    .btn-outline {
+      background: transparent; border: 2px solid var(--clr-primary);
+      color: var(--clr-primary);
+    }
+    .btn-outline:hover { background: var(--clr-primary); color: #fff; }
+    .btn-white {
+      background: #fff; color: var(--clr-primary); box-shadow: var(--shadow-md);
+    }
+    .btn-white:hover { box-shadow: var(--shadow-lg); }
+    .btn-success {
+      background: var(--clr-success); color: #fff;
+      box-shadow: 0 4px 14px rgba(16,185,129,.35);
+    }
+    .btn-success:hover { box-shadow: 0 6px 22px rgba(16,185,129,.45); }
+
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px;
+      z-index: 200; position: relative; width: 36px; height: 36px;
+      justify-content: center; align-items: center;
+      border-radius: 10px; transition: background .2s;
+    }
+    .hamburger:hover { background: rgba(0,0,0,.04); }
+    .hamburger span {
+      display: block; width: 22px; height: 2.5px;
+      background: var(--clr-text); border-radius: 2px;
+      transition: all .3s ease; position: absolute;
+    }
+    .hamburger span:nth-child(1) { transform: translateY(-7px); }
+    .hamburger span:nth-child(2) { transform: translateY(0); }
+    .hamburger span:nth-child(3) { transform: translateY(7px); }
+    .hamburger.open span:nth-child(1) { transform: translateY(0) rotate(45deg); width: 24px; }
+    .hamburger.open span:nth-child(2) { opacity: 0; transform: scale(0); }
+    .hamburger.open span:nth-child(3) { transform: translateY(0) rotate(-45deg); width: 24px; }
+    .nav-overlay {
+      position: fixed; inset: 0; z-index: 104;
+      background: rgba(0,0,0,.3); opacity: 0; pointer-events: none;
+      transition: opacity .35s ease;
+    }
+    .nav-overlay.active { opacity: 1; pointer-events: auto; }
+
+    /* ── Hero ────────────────────────────────────────────────── */
+    .hero {
+      position: relative; padding: 100px 0 80px;
+      background: linear-gradient(160deg, #dbeafe 0%, #f0f6fc 35%, #fef3c7 100%);
+      overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(600px circle at 70% 15%, rgba(26,111,181,.10), transparent 60%),
+        radial-gradient(400px circle at 20% 60%, rgba(245,158,11,.06), transparent 50%),
+        radial-gradient(300px circle at 85% 75%, rgba(16,185,129,.06), transparent 50%);
+    }
+    .hero::after {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(rgba(30,41,59,.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(ellipse 80% 60% at 35% 45%, black 20%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 60% at 35% 45%, black 20%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-bg-shape {
+      position: absolute; width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(26,111,181,.08), transparent 70%);
+      top: -120px; right: -80px;
+      animation: pulseShape 8s ease-in-out infinite;
+    }
+    .hero-bg-shape-2 {
+      position: absolute; width: 350px; height: 350px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,158,11,.07), transparent 70%);
+      bottom: -80px; left: -60px;
+      animation: pulseShape 10s ease-in-out infinite reverse;
+    }
+    .hero-bg-shape-3 {
+      position: absolute; width: 200px; height: 200px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(16,185,129,.06), transparent 70%);
+      bottom: 30%; right: 15%;
+      animation: pulseShape 12s ease-in-out infinite;
+    }
+    .hero-deco { position: absolute; pointer-events: none; z-index: 0; }
+    .hero-deco-line {
+      height: 3px; border-radius: 2px; opacity: .06;
+    }
+    .hero-deco-1 { top: 15%; right: 5%; }
+    .hero-deco-1 .hero-deco-line { width: 120px; background: var(--clr-primary); margin-bottom: 6px; }
+    .hero-deco-1 .hero-deco-line:nth-child(2) { width: 90px; }
+    .hero-deco-1 .hero-deco-line:nth-child(3) { width: 100px; }
+    .hero-deco-2 { bottom: 20%; left: 3%; }
+    .hero-deco-2 .hero-deco-line { width: 80px; background: var(--clr-accent); margin-bottom: 5px; }
+    .hero-deco-2 .hero-deco-line:nth-child(2) { width: 110px; }
+    .hero-deco-2 .hero-deco-line:nth-child(3) { width: 60px; }
+    @keyframes pulseShape {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    .hero .container {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
+      position: relative; z-index: 1;
+    }
+    .hero-text h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900; line-height: 1.12;
+      margin-bottom: 16px;
+    }
+    .hero-text h1 .bn-prefix {
+      display: block; font-size: .55em; font-weight: 700;
+      background: linear-gradient(135deg, var(--clr-primary), #38bdf8);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+    .hero-text h1 .line2 {
+      display: block; font-size: 1.1em;
+      background: linear-gradient(90deg, var(--clr-text), #334155);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-text h1 .highlight {
+      background: linear-gradient(135deg, var(--clr-primary), #38bdf8);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-text .hero-badges {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;
+    }
+    .hero-text .hero-badges span {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.65); backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: var(--clr-primary);
+      font-size: .72rem; font-weight: 600;
+      padding: 5px 14px; border-radius: 999px;
+      border: 1px solid rgba(26,111,181,.12);
+      box-shadow: 0 1px 4px rgba(26,111,181,.06);
+    }
+    .hero-text .hero-badges span .badge-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+    }
+    .badge-dot-dys { background: var(--clr-primary); }
+    .badge-dot-research { background: var(--clr-accent); }
+    .badge-dot-free { background: var(--clr-success); }
+    .hero-text .subtitle {
+      font-size: 1.05rem; color: var(--clr-text-muted);
+      max-width: 500px; margin-bottom: 28px; line-height: 1.7;
+    }
+    .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+    .hero-ctas .btn-primary {
+      padding: 13px 28px; font-size: .95rem;
+      box-shadow: 0 4px 20px rgba(26,111,181,.30), 0 0 0 0 rgba(26,111,181,.15);
+      animation: ctaGlow 3s ease-in-out infinite;
+    }
+    @keyframes ctaGlow {
+      0%, 100% { box-shadow: 0 4px 20px rgba(26,111,181,.30), 0 0 0 0 rgba(26,111,181,.15); }
+      50% { box-shadow: 0 6px 28px rgba(26,111,181,.40), 0 0 0 8px rgba(26,111,181,.06); }
+    }
+    .hero-ctas .btn-outline {
+      padding: 13px 28px; font-size: .95rem;
+      border-color: rgba(26,111,181,.35); color: var(--clr-primary);
+      background: rgba(255,255,255,.45); backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .hero-ctas .btn-outline:hover {
+      background: var(--clr-primary); color: #fff;
+      border-color: var(--clr-primary);
+    }
+    .hero-proof {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: .78rem; color: var(--clr-text-muted); margin-top: 18px;
+      background: rgba(255,255,255,.5); padding: 6px 14px; border-radius: 999px;
+      border: 1px solid rgba(0,0,0,.04);
+    }
+    .hero-phone { display: flex; justify-content: center; position: relative; }
+
+    .phone-mockup {
+      width: 260px; height: 520px;
+      background: linear-gradient(160deg, #1e293b, #334155);
+      border-radius: 36px; padding: 12px;
+      box-shadow:
+        var(--shadow-xl),
+        0 0 0 1px rgba(255,255,255,.08) inset,
+        0 20px 50px rgba(0,0,0,.18);
+      position: relative;
+      animation: floatPhone 6s ease-in-out infinite;
+    }
+    @keyframes floatPhone {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-14px) rotate(0.5deg); }
+    }
+    .phone-screen {
+      width: 100%; height: 100%;
+      border-radius: 26px; overflow: hidden;
+      display: flex; flex-direction: column;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .phone-screen-header {
+      background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-dark));
+      padding: 16px 14px 10px; color: #fff;
+      position: relative; overflow: hidden;
+    }
+    .phone-screen-header::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.08), transparent 60%);
+    }
+    .phone-screen-header .app-name {
+      font-weight: 700; font-size: .78rem; text-align: center; position: relative; z-index: 1;
+    }
+    .phone-screen-body {
+      background: #fefaf0; flex: 1; padding: 14px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .phone-screen-body .word-demo {
+      display: flex; flex-wrap: wrap; gap: 4px 6px; justify-content: center;
+    }
+    .phone-screen-body .word-demo span {
+      font-family: var(--font-bn); font-size: .78rem; padding: 4px 8px;
+      border-radius: 6px; background: #fff;
+      border: 1px solid #e2e8f0; transition: all .3s;
+    }
+    .phone-screen-body .word-demo span.active {
+      background: var(--clr-primary); color: #fff;
+      border-color: var(--clr-primary); transform: scale(1.05);
+    }
+    .phone-screen-body .reading-line {
+      height: 6px; background: #e2e8f0; border-radius: 3px; margin-bottom: 5px;
+    }
+    .phone-screen-body .reading-line:nth-child(1) { width: 85%; }
+    .phone-screen-body .reading-line:nth-child(2) { width: 65%; }
+    .phone-screen-body .reading-line:nth-child(3) { width: 75%; }
+    .phone-screen-body .conjunct-demo {
+      background: #fff; border-radius: 8px; padding: 8px; margin-top: 6px;
+      display: flex; align-items: center; gap: 6px; justify-content: center;
+    }
+    .phone-screen-body .conjunct-demo .fused {
+      color: #64748b; text-decoration: line-through; font-size: .7rem;
+    }
+    .phone-screen-body .conjunct-demo .split {
+      color: var(--clr-primary); font-weight: 700; font-size: .8rem;
+    }
+    .phone-screen-footer {
+      background: #fff; padding: 10px 14px;
+      border-top: 1px solid #e2e8f0;
+      display: flex; justify-content: space-around;
+    }
+    .phone-screen-footer .btn-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; background: #f1f5f9; color: #64748b; cursor: pointer;
+      transition: all .2s;
+    }
+    .phone-screen-footer .btn-icon.play {
+      background: var(--clr-primary); color: #fff;
+    }
+    .phone-notch {
+      position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+      width: 80px; height: 24px; background: #1e293b;
+      border-radius: 0 0 14px 14px; z-index: 2;
+    }
+    .phone-badge {
+      position: absolute;
+      background: rgba(255,255,255,.88); backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: var(--radius); padding: 10px 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+      font-size: .78rem; font-weight: 600; white-space: nowrap;
+      animation: float 3s ease-in-out infinite;
+      display: flex; align-items: center; gap: 8px; z-index: 3;
+      border: 1px solid rgba(255,255,255,.5);
+    }
+    .phone-badge .badge-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem;
+    }
+    .badge-icon-highlight { background: rgba(245,158,11,.12); }
+    .badge-icon-split { background: rgba(26,111,181,.12); }
+    .badge-icon-tts { background: rgba(16,185,129,.12); }
+    .badge-icon-ruler { background: rgba(139,92,246,.12); }
+    .phone-badge.badge-1 { top: 50px; left: -60px; }
+    .phone-badge.badge-2 { bottom: 110px; right: -65px; animation-delay: 1.2s; }
+    .phone-badge.badge-3 { top: 155px; left: -55px; font-size: .7rem; animation-delay: .6s; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* ── Section shared ──────────────────────────────────────── */
+    section { padding: 80px 0; }
+    .section-label {
+      display: inline-block; font-size: .78rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--clr-primary); margin-bottom: 8px;
+    }
+    .section-title {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800; margin-bottom: 12px;
+    }
+    .section-sub {
+      font-size: 1rem; color: var(--clr-text-muted); max-width: 560px;
+    }
+    .section-header { margin-bottom: 48px; }
+    .section-header.center { text-align: center; }
+    .section-header.center .section-sub { margin: 0 auto; }
+
+    /* ── Features ────────────────────────────────────────────── */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;
+    }
+    .feature-card {
+      background: var(--clr-surface);
+      border: 1px solid rgba(0,0,0,.05);
+      border-radius: var(--radius-lg);
+      padding: 32px 28px;
+      transition: box-shadow .25s, transform .25s;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    .feature-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 18px;
+    }
+    .fi-blue   { background: #dbeafe; color: var(--clr-primary); }
+    .fi-amber  { background: #fef3c7; color: #92400e; }
+    .fi-green  { background: #d1fae5; color: #065f46; }
+    .fi-purple { background: #ede9fe; color: #5b21b6; }
+    .fi-rose   { background: #ffe4e6; color: #9f1239; }
+    .fi-cyan   { background: #cffafe; color: #155e75; }
+    .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
+    .feature-card p  { font-size: .9rem; color: var(--clr-text-muted); line-height: 1.6; }
+
+    /* ── Why Shohojpath (Problem vs Solution) ───────────────── */
+    .why-section { background: #fff; }
+    .why-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+    }
+    .why-card {
+      border-radius: var(--radius-lg); padding: 32px;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .why-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .why-card.problem {
+      background: #fef2f2; border: 1px solid #fecaca;
+    }
+    .why-card.solution {
+      background: #ecfdf5; border: 1px solid #a7f3d0;
+    }
+    .why-card h3 {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1.1rem; font-weight: 800; margin-bottom: 16px;
+    }
+    .why-card.problem h3 { color: #b91c1c; }
+    .why-card.solution h3 { color: #047857; }
+    .why-card ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .why-card li {
+      display: flex; gap: 10px; align-items: flex-start;
+      font-size: .9rem; line-height: 1.5; color: var(--clr-text);
+    }
+    .why-card li .mark {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .7rem; font-weight: 700; margin-top: 2px;
+    }
+    .why-card.problem li .mark { background: #fecaca; color: #b91c1c; }
+    .why-card.solution li .mark { background: #a7f3d0; color: #047857; }
+
+    /* ── App Screenshots ────────────────────────────────────── */
+    .screens-section { background: var(--clr-bg); }
+    .screens-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+    }
+    .screen-card {
+      background: #fff; border-radius: var(--radius-xl);
+      padding: 28px 24px; text-align: center;
+      box-shadow: var(--shadow-sm);
+      transition: transform .3s, box-shadow .3s;
+    }
+    .screen-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+    .screen-card .screen-label {
+      font-size: .7rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--clr-primary); margin-bottom: 14px;
+    }
+    .screen-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .screen-card p { font-size: .82rem; color: var(--clr-text-muted); margin-bottom: 16px; }
+
+    .mini-phone {
+      width: 100%; max-width: 190px; height: 330px; margin: 0 auto;
+      background: linear-gradient(160deg, #1e293b, #334155);
+      border-radius: 26px; padding: 8px; position: relative;
+    }
+    .mini-phone .mini-screen {
+      width: 100%; height: 100%; border-radius: 20px; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    /* Library */
+    .mini-screen.lib { background: #f8fafc; }
+    .mini-screen.lib .lib-header {
+      background: linear-gradient(135deg, var(--clr-primary), #1a56a0);
+      padding: 12px 10px; color: #fff; font-size: .7rem; font-weight: 700;
+      text-align: center;
+    }
+    .mini-screen.lib .lib-search {
+      margin: 8px; padding: 6px 10px; background: #e2e8f0; border-radius: 6px;
+      font-size: .6rem; color: var(--clr-text-muted); display: flex; align-items: center; gap: 4px;
+    }
+    .mini-screen.lib .lib-cards { padding: 6px 8px; display: flex; flex-direction: column; gap: 6px; }
+    .mini-screen.lib .lib-card {
+      background: #fff; border-radius: 6px; padding: 6px 8px;
+      border: 1px solid #e2e8f0; display: flex; gap: 6px; align-items: center;
+    }
+    .mini-screen.lib .lib-card .thumb {
+      width: 28px; height: 28px; border-radius: 4px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: .6rem; font-weight: 700;
+    }
+    .mini-screen.lib .lib-card .info { text-align: left; }
+    .mini-screen.lib .lib-card .info .title { font-size: .6rem; font-weight: 600; }
+    .mini-screen.lib .lib-card .info .sub { font-size: .5rem; color: var(--clr-text-muted); }
+    /* Reading */
+    .mini-screen.reading { background: #fefaf0; }
+    .mini-screen.reading .r-top {
+      background: linear-gradient(135deg, var(--clr-primary), #1a56a0);
+      padding: 12px 10px; text-align: center; color: #fff; font-size: .7rem; font-weight: 700;
+    }
+    .mini-screen.reading .r-body { padding: 10px; flex: 1; }
+    .mini-screen.reading .r-body .r-line {
+      font-size: .6rem; line-height: 1.8; color: var(--clr-text);
+    }
+    .mini-screen.reading .r-body .r-line .hl {
+      background: rgba(245,158,11,.25); border-radius: 2px; padding: 0 2px;
+    }
+    .mini-screen.reading .r-body .r-line .hl-blue {
+      background: rgba(26,111,181,.15); border-radius: 2px; padding: 0 2px;
+    }
+    .mini-screen.reading .r-body .r-ruler {
+      height: 2px; background: rgba(26,111,181,.12); margin: 4px 0;
+    }
+    .mini-screen.reading .r-bottom {
+      padding: 6px 10px; border-top: 1px solid #e2e8f0; background: #fff;
+      display: flex; justify-content: center; gap: 16px;
+    }
+    .mini-screen.reading .r-bottom .dot {
+      width: 20px; height: 20px; border-radius: 50%; background: #f1f5f9;
+    }
+    .mini-screen.reading .r-bottom .dot.play { background: var(--clr-primary); }
+    /* Settings */
+    .mini-screen.settings { background: #f8fafc; }
+    .mini-screen.settings .s-top {
+      background: linear-gradient(135deg, var(--clr-primary), #1a56a0);
+      padding: 12px 10px; color: #fff; font-size: .7rem; font-weight: 700; text-align: center;
+    }
+    .mini-screen.settings .s-body { padding: 10px; overflow-y: auto; }
+    .mini-screen.settings .s-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; border-bottom: 1px solid #f1f5f9;
+    }
+    .mini-screen.settings .s-row .lbl { font-size: .55rem; color: var(--clr-text-muted); }
+    .mini-screen.settings .s-row .val { font-size: .55rem; font-weight: 600; }
+    .mini-screen.settings .s-row .toggle { width: 20px; height: 12px; border-radius: 6px; background: var(--clr-primary); }
+    .mini-screen.settings .s-row .slider {
+      width: 60px; height: 4px; border-radius: 2px; background: #e2e8f0; position: relative;
+    }
+    .mini-screen.settings .s-row .slider::after {
+      content: ''; position: absolute; left: 0; top: -3px;
+      width: 10px; height: 10px; border-radius: 50%; background: var(--clr-primary);
+    }
+
+    /* ── How It Works ──────────────────────────────────────── */
+    .how-section { background: #fff; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+    .step { text-align: center; position: relative; }
+    .step-num {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-dark));
+      color: #fff; font-weight: 800; font-size: 1.3rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+    .step p  { font-size: .88rem; color: var(--clr-text-muted); max-width: 260px; margin: 0 auto; }
+
+    /* ── Stats ──────────────────────────────────────────────── */
+    .stats {
+      background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-dark));
+      color: #fff; padding: 60px 0;
+    }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; text-align: center; }
+    .stat-num { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 800; line-height: 1; }
+    .stat-label { font-size: .9rem; opacity: .8; margin-top: 6px; }
+
+    /* ── Comparison ─────────────────────────────────────────── */
+    .compare-section { background: var(--clr-bg); }
+    .compare-wrap { overflow-x: auto; }
+    .compare-table {
+      width: 100%; border-collapse: collapse; min-width: 560px;
+      background: #fff; border-radius: var(--radius-lg); overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .compare-table th, .compare-table td {
+      padding: 16px 20px; text-align: left; font-size: .9rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .compare-table th { font-weight: 700; }
+    .compare-table th.sph { background: var(--clr-primary); color: #fff; }
+    .compare-table th.other { background: #f8fafc; color: var(--clr-text-muted); }
+    .compare-table td { color: var(--clr-text); }
+    .compare-table td.feature { font-weight: 600; }
+    .compare-table .check { color: var(--clr-success); font-weight: 800; }
+    .compare-table .cross { color: #cbd5e1; }
+    .compare-table tr:hover td { background: #f8fafc; }
+
+    /* ── Research ───────────────────────────────────────────── */
+    .research-section {
+      background: linear-gradient(135deg, #0f4d7a, #124d80);
+      color: #fff; position: relative; overflow: hidden;
+    }
+    .research-section .container {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
+    }
+    .research-text h2 { font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 800; margin-bottom: 14px; }
+    .research-text p { opacity: .85; margin-bottom: 12px; font-size: .95rem; line-height: 1.7; }
+    .research-text .res-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+    .research-text .res-badges span {
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+      border-radius: 999px; padding: 8px 16px; font-size: .8rem; font-weight: 600;
+    }
+    .research-cards { display: grid; gap: 14px; }
+    .research-card {
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+      border-radius: var(--radius); padding: 20px 24px;
+      display: flex; gap: 14px; align-items: flex-start;
+      backdrop-filter: blur(4px);
+      transition: background .2s;
+    }
+    .research-card:hover { background: rgba(255,255,255,.14); }
+    .research-card .rc-icon {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      background: rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .research-card h4 { font-size: .95rem; font-weight: 700; margin-bottom: 2px; }
+    .research-card p { font-size: .82rem; opacity: .8; }
+
+    /* ── Testimonials ───────────────────────────────────────── */
+    .testimonials-section { background: var(--clr-bg); }
+    .testimonials-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;
+    }
+    .testimonial {
+      background: var(--clr-surface); border: 1px solid rgba(0,0,0,.05);
+      border-radius: var(--radius-lg); padding: 28px;
+    }
+    .testimonial blockquote {
+      font-size: .95rem; line-height: 1.7; color: var(--clr-text-muted);
+      margin-bottom: 16px; font-style: italic;
+    }
+    .testimonial .author { font-weight: 600; font-size: .9rem; }
+
+    /* ── CTA ────────────────────────────────────────────────── */
+    .cta {
+      text-align: center;
+      background: linear-gradient(160deg, #dbeafe, #fef3c7);
+    }
+    .cta-box {
+      background: var(--clr-surface); border-radius: var(--radius-lg);
+      padding: 56px 40px; box-shadow: var(--shadow-md);
+      max-width: 640px; margin: 0 auto;
+    }
+    .cta-box h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 10px; }
+    .cta-box p  { color: var(--clr-text-muted); margin-bottom: 28px; }
+    .cta-box .btn { padding: 14px 36px; font-size: 1rem; }
+
+    /* ── Footer ─────────────────────────────────────────────── */
+    footer {
+      background: #0f172a; color: #94a3b8;
+      padding: 40px 0 28px; text-align: center; font-size: .85rem;
+    }
+    footer .footer-links { display: flex; justify-content: center; gap: 28px; margin-bottom: 18px; }
+    footer .footer-links a { color: #cbd5e1; transition: color .2s; }
+    footer .footer-links a:hover { color: #fff; }
+    footer .copyright { font-size: .8rem; color: #64748b; }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 920px) {
+      section { padding: 56px 0; }
+      .screens-grid { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; }
+      .why-grid { grid-template-columns: 1fr; }
+      .research-section .container { grid-template-columns: 1fr; text-align: center; }
+      .research-cards { max-width: 480px; margin: 0 auto; }
+      .steps { grid-template-columns: 1fr; gap: 32px; }
+    }
+    @media (max-width: 820px) {
+      .hero { padding: 60px 0 50px; }
+      .hero .container { grid-template-columns: 1fr; text-align: center; }
+      .hero-text .subtitle { margin-left: auto; margin-right: auto; }
+      .hero-text h1 { font-size: 1.6rem; }
+      .hero-proof { display: none; }
+      .hero-ctas { justify-content: center; }
+      .hero-phone { order: -1; margin-bottom: 24px; }
+      .hero-phone .phone-badge { display: none; }
+      .phone-mockup { width: 200px; height: 400px; padding: 10px; border-radius: 28px; }
+      .phone-screen { border-radius: 20px; }
+      .phone-screen-body { padding: 10px; gap: 6px; }
+      .phone-screen-body .word-demo span { font-size: .7rem; padding: 3px 6px; }
+      .phone-screen-body .conjunct-demo { padding: 6px; }
+      .phone-screen-body .conjunct-demo .split { font-size: .72rem; }
+      .phone-screen-footer { padding: 8px 10px; }
+      .phone-screen-footer .btn-icon { width: 26px; height: 26px; font-size: .65rem; }
+      .phone-notch { display: none; }
+      .stats-grid { grid-template-columns: 1fr; gap: 24px; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: fixed; top: 0; right: 0; bottom: 0;
+        width: min(320px, 82vw);
+        background: #fff;
+        padding: 88px 28px 28px; gap: 4px;
+        box-shadow: -4px 0 40px rgba(0,0,0,.12);
+        animation: mobileNavIn .3s ease-out;
+        z-index: 105;
+        overflow-y: auto;
+      }
+      .nav-links.open::before {
+        content: 'Menu'; position: absolute; top: 28px; left: 28px;
+        font-size: .7rem; font-weight: 600; text-transform: uppercase;
+        letter-spacing: 1.5px; color: var(--clr-text-muted);
+      }
+      .nav-links.open a {
+        font-size: 1.05rem; font-weight: 500; padding: 14px 16px;
+        color: var(--clr-text); width: 100%; border-radius: var(--radius);
+        transition: background .2s;
+      }
+      .nav-links.open a:hover { background: var(--clr-bg); color: var(--clr-primary); }
+      .nav-links.open a::after { display: none; }
+      .nav-links.open a:last-child {
+        margin-top: 12px;
+        background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-dark));
+        color: #fff; font-weight: 600; text-align: center;
+      }
+      .nav-links.open a:last-child:hover { opacity: .92; }
+      @keyframes mobileNavIn {
+        0% { opacity: 0; transform: translateX(30px); }
+        100% { opacity: 1; transform: translateX(0); }
+      }
+      .mini-phone { max-width: 160px; height: 280px; }
+      .cta-box { padding: 40px 24px; }
+      .cta-box h2 { font-size: 1.4rem; }
+      .compare-table th, .compare-table td { padding: 12px 14px; font-size: .8rem; }
+      .why-card { padding: 24px 20px; }
+      .research-text { text-align: center; }
+      .research-text .res-badges { justify-content: center; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      footer .footer-links { flex-wrap: wrap; gap: 16px; }
+    }
+    @media (max-width: 480px) {
+      .hero { padding: 44px 0 36px; }
+      .hero-text h1 { font-size: 1.5rem; }
+      .hero-text .subtitle { font-size: .95rem; }
+      .hero-ctas { flex-direction: column; align-items: center; }
+      .hero-ctas .btn { width: 100%; max-width: 260px; justify-content: center; }
+      .phone-mockup { width: 170px; height: 340px; padding: 8px; border-radius: 22px; }
+      .phone-screen { border-radius: 16px; }
+      .phone-screen-body { padding: 8px; }
+      .phone-screen-body .word-demo span { font-size: .6rem; padding: 2px 5px; }
+      .phone-screen-body .conjunct-demo { padding: 4px; }
+      .phone-screen-body .conjunct-demo .split { font-size: .65rem; }
+      .phone-screen-body .reading-line { height: 4px; }
+      .phone-screen-footer { padding: 6px 8px; }
+      .phone-screen-footer .btn-icon { width: 22px; height: 22px; font-size: .55rem; }
+      .hero-text .hero-badges span { font-size: .65rem; padding: 2px 10px; }
+      .section-title { font-size: 1.3rem; }
+      .section-sub { font-size: .88rem; }
+      .feature-card { padding: 24px 20px; }
+      .feature-icon { width: 44px; height: 44px; font-size: 1.2rem; margin-bottom: 14px; }
+      .feature-card h3 { font-size: .95rem; }
+      .feature-card p { font-size: .82rem; }
+      .mini-phone { max-width: 140px; height: 240px; }
+      .mini-screen .r-body .r-line { font-size: .5rem; }
+      .mini-screen.lib .lib-header { font-size: .6rem; padding: 8px; }
+      .mini-screen.settings .s-row .lbl { font-size: .48rem; }
+      .mini-screen.settings .s-row .slider { width: 40px; }
+      .stats { padding: 40px 0; }
+      .stat-num { font-size: 1.8rem; }
+      .cta-box { padding: 32px 20px; }
+      .cta-box h2 { font-size: 1.2rem; }
+      .cta-box .btn { padding: 12px 28px; font-size: .9rem; }
+      .research-card { padding: 16px 18px; }
+      .research-card .rc-icon { width: 34px; height: 34px; font-size: .95rem; }
+      .research-card h4 { font-size: .85rem; }
+      .research-card p { font-size: .75rem; }
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <div class="container nav-inner">
+    <a href="#" class="nav-logo">
+      <img src="logo.png" alt="Shohojpath" style="width:32px;height:32px;border-radius:10px;object-fit:cover;">
+      <span>Shohojpath</span>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#features">Features</a>
+      <a href="#why">Why Shohojpath</a>
+      <a href="#screens">App</a>
+      <a href="#research">Research</a>
+      <a href="#">📲 Get Started</a>
+    </div>
+    <div class="nav-overlay" id="navOverlay"></div>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<header class="hero">
+  <div class="hero-bg-shape"></div>
+  <div class="hero-bg-shape-2"></div>
+  <div class="hero-bg-shape-3"></div>
+  <div class="hero-deco hero-deco-1">
+    <div class="hero-deco-line"></div>
+    <div class="hero-deco-line"></div>
+    <div class="hero-deco-line"></div>
+  </div>
+  <div class="hero-deco hero-deco-2">
+    <div class="hero-deco-line"></div>
+    <div class="hero-deco-line"></div>
+    <div class="hero-deco-line"></div>
+  </div>
+  <div class="container">
+    <div class="hero-text reveal">
+      <div class="hero-badges">
+        <span><span class="badge-dot badge-dot-dys"></span> Dyslexia-Friendly</span>
+        <span><span class="badge-dot badge-dot-research"></span> Research-Backed</span>
+        <span><span class="badge-dot badge-dot-free"></span> Free Forever</span>
+      </div>
+      <h1>
+        <span class="bn-prefix bn">সহজপাঠ</span>
+        <span class="line2">Reading Bengali</span>
+        <span class="highlight">Should Feel Effortless</span>
+      </h1>
+      <p class="subtitle">
+        Struggling with Bengali <strong>যুক্তাক্ষর</strong> (conjuncts)? <span class="bn">সহজপাঠ</span> splits complex letters, highlights each word as it reads aloud, and lets you <strong>customise every detail</strong> — so reading feels natural for <strong>your</strong> brain.
+      </p>
+      <div class="hero-ctas">
+        <a href="#" class="btn btn-primary">📲 Try Shohojpath Free</a>
+        <a href="#screens" class="btn btn-outline">See How It Works →</a>
+      </div>
+      <a href="#" class="hero-proof">
+        🎓 Built as a research prototype for an HCI thesis · Trusted by <strong>12+ participants</strong> in controlled studies
+      </a>
+    </div>
+
+    <div class="hero-phone reveal">
+      <div class="phone-mockup">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="phone-screen-header">
+            <div class="app-name">📖 Shohojpath · সহজপাঠ</div>
+          </div>
+          <div class="phone-screen-body">
+            <div class="word-demo">
+              <span class="active">স্বাগতম</span>
+              <span>আমার</span>
+              <span>ছোট</span>
+              <span>পাঠক</span>
+            </div>
+            <div class="conjunct-demo">
+              <span class="fused">ক্ষ</span>
+              <span>→</span>
+              <span class="split">ক্‌ষ</span>
+            </div>
+            <div class="reading-line"></div>
+            <div class="reading-line"></div>
+            <div class="reading-line"></div>
+          </div>
+          <div class="phone-screen-footer">
+            <div class="btn-icon">🔊</div>
+            <div class="btn-icon play">▶</div>
+            <div class="btn-icon">⚙</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-badge badge-1">
+        <span class="badge-icon badge-icon-highlight">🎯</span>
+        <span>Word Highlighting</span>
+      </div>
+      <div class="phone-badge badge-2">
+        <span class="badge-icon badge-icon-tts">🔊</span>
+        <span>Bengali Text-to-Speech</span>
+      </div>
+      <div class="phone-badge badge-3">
+        <span class="badge-icon badge-icon-split">✂️</span>
+        <span>ক্ষ → ক্‌ষ</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ FEATURES ═══ -->
+<section id="features">
+  <div class="container">
+    <div class="section-header center reveal">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">Built for Every Reader</h2>
+      <p class="section-sub">Everything you need to make Bengali reading clear, comfortable, and confident.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon fi-blue">✂️</div>
+        <h3>Conjunct Splitting</h3>
+        <p>Breaks complex যুক্তাক্ষর (like ক্ষ → ক্‌ষ) into visible letters. The core research feature — helps dyslexic readers decode each letter.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon fi-amber">🔊</div>
+        <h3>Text-to-Speech</h3>
+        <p>Hear any passage read aloud with word-by-word highlighting. Follow along visually while the audio guides you.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon fi-green">🎨</div>
+        <h3>Customisable Reading Aids</h3>
+        <p>Adjust font size, letter spacing, line height, background colour, and reading ruler. Every setting saves your preference.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon fi-purple">📏</div>
+        <h3>Reading Ruler &amp; Focus Mode</h3>
+        <p>A line guide that moves with your reading position. Reduces visual crowding and helps you track each line.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon fi-rose">🗣</div>
+        <h3>Syllable Breaks</h3>
+        <p>Show syllable boundaries to break long words into bite-sized chunks. Proven to improve phonetic decoding.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon fi-cyan">📊</div>
+        <h3>Progress Tracking</h3>
+        <p>Track reading time, passages completed, and quiz scores. See your improvement over weeks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WHY SHOHOJPATH ═══ -->
+<section id="why" class="why-section">
+  <div class="container">
+    <div class="section-header center reveal">
+      <div class="section-label">Why Shohojpath</div>
+      <h2 class="section-title">The Problem &amp; How We Solve It</h2>
+      <p class="section-sub">Bengali script is uniquely hard for dyslexic readers. Here is why — and what we did about it.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-card problem reveal-left">
+        <h3><span>❌</span> The Problem</h3>
+        <ul>
+          <li><span class="mark">✕</span> <span>বাংলা যুক্তাক্ষর (conjuncts) fuse letters into unrecognisable glyphs like <strong>ক্ষ</strong>, making decoding impossible for dyslexic readers</span></li>
+          <li><span class="mark">✕</span> <span>Generic reading apps don't understand Bengali script structure — they can't split conjuncts or adjust spacing</span></li>
+          <li><span class="mark">✕</span> <span>Dense text blocks cause visual crowding and eye fatigue, especially for readers with visual stress</span></li>
+          <li><span class="mark">✕</span> <span>No Bengali app offers research-backed reading profiles designed for dyslexia</span></li>
+          <li><span class="mark">✕</span> <span>Parents and teachers have no tool to track reading progress in Bengali</span></li>
+        </ul>
+      </div>
+      <div class="why-card solution reveal-right">
+        <h3><span>✅</span> Our Solution</h3>
+        <ul>
+          <li><span class="mark">✓</span> <span><strong>Conjunct splitting</strong> — inserts ZWNJ after the hasant (হসন্ত) to break ক্+ষ into visible <strong>ক্‌ষ</strong> instead of fused ক্ষ</span></li>
+          <li><span class="mark">✓</span> <span><strong>3 research profiles</strong> — Default, Recommended (evidence-based), and Custom. Each is a logged research condition</span></li>
+          <li><span class="mark">✓</span> <span><strong>Full customisation</strong> — font, size, spacing, line height, colour themes, reading ruler, focus mode, all adjustable</span></li>
+          <li><span class="mark">✓</span> <span><strong>HCD research prototype</strong> — built for a controlled user study with session logging, NASA-TLX, SUS, and quiz feedback</span></li>
+          <li><span class="mark">✓</span> <span><strong>Free &amp; open</strong> — no ads, no tracking, just a tool designed to help Bengali readers thrive</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ APP SCREENSHOTS ═══ -->
+<section id="screens" class="screens-section">
+  <div class="container">
+    <div class="section-header center reveal">
+      <div class="section-label">App Preview</div>
+      <h2 class="section-title">See It in Action</h2>
+      <p class="section-sub">Three screens you will use every day.</p>
+    </div>
+    <div class="screens-grid">
+      <div class="screen-card reveal">
+        <div class="screen-label">📚 Library</div>
+        <h3>Browse Passages</h3>
+        <p>Explore Bengali texts organised by difficulty.</p>
+        <div class="mini-phone">
+          <div class="mini-screen lib">
+            <div class="lib-header">📚 Library</div>
+            <div class="lib-search">🔍 Search passages…</div>
+            <div class="lib-cards">
+              <div class="lib-card">
+                <div class="thumb" style="background:var(--clr-primary)">প</div>
+                <div class="info"><div class="title">বাংলা কবিতা</div><div class="sub">Beginner</div></div>
+              </div>
+              <div class="lib-card">
+                <div class="thumb" style="background:var(--clr-accent)">ক</div>
+                <div class="info"><div class="title">সহজ গল্প</div><div class="sub">Intermediate</div></div>
+              </div>
+              <div class="lib-card">
+                <div class="thumb" style="background:var(--clr-success)">ব</div>
+                <div class="info"><div class="title">বিজ্ঞান</div><div class="sub">Advanced</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen-card reveal">
+        <div class="screen-label">📖 Reading</div>
+        <h3>Read with Aids</h3>
+        <p>Conjunct splitting, highlight, TTS, ruler.</p>
+        <div class="mini-phone">
+          <div class="mini-screen reading">
+            <div class="r-top">📖 সহজপাঠ</div>
+            <div class="r-body">
+              <div class="r-line"><span class="hl">আমার</span> সোনার <span class="hl-blue">বাংলা</span></div>
+              <div class="r-ruler"></div>
+              <div class="r-line">আমি তোমায় <span class="hl">ভালোবাসি</span></div>
+              <div class="r-line">চিরদিন <span class="hl-blue">তোমার</span> আকাশ</div>
+            </div>
+            <div class="r-bottom">
+              <div class="dot"></div>
+              <div class="dot play"></div>
+              <div class="dot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen-card reveal">
+        <div class="screen-label">⚙️ Settings</div>
+        <h3>Customise Reading</h3>
+        <p>Font, spacing, colours, profiles — all yours.</p>
+        <div class="mini-phone">
+          <div class="mini-screen settings">
+            <div class="s-top">⚙️ Settings</div>
+            <div class="s-body">
+              <div class="s-row"><span class="lbl">Font Size</span><span class="slider"></span></div>
+              <div class="s-row"><span class="lbl">Letter Spacing</span><span class="slider"></span></div>
+              <div class="s-row"><span class="lbl">Line Height</span><span class="slider"></span></div>
+              <div class="s-row"><span class="lbl">Conjunct Split</span><span class="toggle"></span></div>
+              <div class="s-row"><span class="lbl">Syllable Break</span><span class="toggle"></span></div>
+              <div class="s-row"><span class="lbl">Read Aloud</span><span class="toggle"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how-section">
+  <div class="container">
+    <div class="section-header center reveal">
+      <div class="section-label">How It Works</div>
+      <h2 class="section-title">Three Simple Steps</h2>
+      <p class="section-sub">Start reading with confidence in minutes.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">1</div>
+        <h3>Pick a Passage</h3>
+        <p>Choose from our graded library of Bengali texts — from short poems to longer articles.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">2</div>
+        <h3>Set Your Aids</h3>
+        <p>Enable conjunct splitting, adjust font and spacing, or pick the Recommended profile — our research-backed preset.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">3</div>
+        <h3>Read &amp; Track</h3>
+        <p>Read with TTS and word highlighting. Your progress, quiz scores, and reading time are logged automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STATS ═══ -->
+<div class="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="reveal">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Research Profiles</div>
+      </div>
+      <div class="reveal">
+        <div class="stat-num">12+</div>
+        <div class="stat-label">Reading Aids</div>
+      </div>
+      <div class="reveal">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Free &amp; Open</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ COMPARISON ═══ -->
+<section class="compare-section">
+  <div class="container">
+    <div class="section-header center reveal">
+      <div class="section-label">Comparison</div>
+      <h2 class="section-title">Why Shohojpath Stands Out</h2>
+      <p class="section-sub">No other Bengali reading app offers this level of dyslexia-friendly support.</p>
+    </div>
+    <div class="compare-wrap reveal">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th class="sph">Shohojpath</th>
+            <th class="other">Generic Reader</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="feature">Conjunct Splitting (ক্ষ → ক্‌ষ)</td>
+            <td class="check">✓</td>
+            <td class="cross">✗</td>
+          </tr>
+          <tr>
+            <td class="feature">Research-Based Profiles</td>
+            <td class="check">✓</td>
+            <td class="cross">✗</td>
+          </tr>
+          <tr>
+            <td class="feature">Word-by-Word Highlighting with TTS</td>
+            <td class="check">✓</td>
+            <td class="cross">✗</td>
+          </tr>
+          <tr>
+            <td class="feature">Reading Ruler / Focus Mode</td>
+            <td class="check">✓</td>
+            <td class="cross">✗</td>
+          </tr>
+          <tr>
+            <td class="feature">Syllable Breaks</td>
+            <td class="check">✓</td>
+            <td class="cross">✗</td>
+          </tr>
+          <tr>
+            <td class="feature">Session Logging for Research</td>
+            <td class="check">✓</td>
+            <td class="cross">✗</td>
+          </tr>
+          <tr>
+            <td class="feature">Progress Tracking &amp; Quizzes</td>
+            <td class="check">✓</td>
+            <td class="cross">✗</td>
+          </tr>
+          <tr>
+            <td class="feature">Customisable Font &amp; Spacing</td>
+            <td class="check">✓</td>
+            <td class="check">Basic</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ RESEARCH ═══ -->
+<section id="research" class="research-section">
+  <div class="container">
+    <div class="research-text reveal-left">
+      <div class="section-label" style="color:#93c5fd">The Research</div>
+      <h2>Built on Human-Centered Design</h2>
+      <p>
+        Shohojpath is not just an app — it is a <strong>controlled research prototype</strong> for a thesis titled:
+      </p>
+      <p>
+        <em>"Design and Evaluation of a Dyslexia-Friendly Bangla Reading Interface Using Human-Centered Design Principles"</em>
+      </p>
+      <p>
+        Every settings change is logged with a timestamp and the active research condition, so sessions can be mapped to the independent-variable analysis.
+      </p>
+      <div class="res-badges">
+        <span>📋 NASA-TLX</span>
+        <span>📝 SUS Score</span>
+        <span>📊 Quiz Feedback</span>
+        <span>🔬 HCD Study</span>
+      </div>
+    </div>
+    <div class="research-cards reveal-right">
+      <div class="research-card">
+        <div class="rc-icon">🎯</div>
+        <div>
+          <h4>Default Profile</h4>
+          <p>Baseline control condition — plain Bengali text with no reading aids.</p>
+        </div>
+      </div>
+      <div class="research-card">
+        <div class="rc-icon">⭐</div>
+        <div>
+          <h4>Recommended Profile</h4>
+          <p>Evidence-based preset: conjunct splitting, syllable breaks, TTS, and adjusted spacing optimised for dyslexia.</p>
+        </div>
+      </div>
+      <div class="research-card">
+        <div class="rc-icon">🔧</div>
+        <div>
+          <h4>Custom Profile</h4>
+          <p>Every reading aid is independently adjustable — font, spacing, ruler, focus, colour, and more.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TESTIMONIALS ═══ -->
+<section class="testimonials-section">
+  <div class="container">
+    <div class="section-header center reveal">
+      <div class="section-label">Testimonials</div>
+      <h2 class="section-title">What Readers Say</h2>
+      <p class="section-sub">Feedback from early users and research participants.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial reveal">
+        <blockquote>"The conjunct splitting changed everything. For the first time, my son could actually see the letters in words like ক্ষমতা instead of guessing."</blockquote>
+        <div class="author">— Parent of a Grade 5 student</div>
+      </div>
+      <div class="testimonial reveal">
+        <blockquote>"I never realised how much visual crowding affected my reading until I tried the reading ruler. I can actually focus on one line now."</blockquote>
+        <div class="author">— University student, Dhaka</div>
+      </div>
+      <div class="testimonial reveal">
+        <blockquote>"As a teacher, I love that every setting change is logged. It helps me understand exactly what works for each student."</blockquote>
+        <div class="author">— Special education teacher</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta">
+  <div class="container">
+    <div class="cta-box reveal">
+      <h2>Ready to Read with Confidence?</h2>
+      <p>Join early users and experience Bengali reading the way it should be — clear, supported, and research-backed.</p>
+      <a href="#" class="btn btn-primary">📲 Download Shohojpath</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="container">
+    <div class="footer-links">
+      <a href="#">Home</a>
+      <a href="#features">Features</a>
+      <a href="#why">Why Shohojpath</a>
+      <a href="#research">Research</a>
+      <a href="#">GitHub</a>
+      <a href="#">Privacy</a>
+    </div>
+    <div class="copyright">
+      Shohojpath · সহজপাঠ — Built with ❤️ for Bengali readers. Research prototype for HCI thesis.
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ── Scroll Reveal ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => observer.observe(el));
+
+  // ── Particles ──
+  (function() {
+    const container = document.getElementById('particles');
+    const colors = ['#1a6fb5', '#60a5fa', '#f59e0b', '#10b981', '#38bdf8'];
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = 4 + Math.random() * 12;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      p.style.animationDuration = (15 + Math.random() * 25) + 's';
+      p.style.animationDelay = (Math.random() * 15) + 's';
+      container.appendChild(p);
+    }
+  })();
+
+  // ── Hamburger ──
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('navLinks');
+  const navOverlay = document.getElementById('navOverlay');
+
+  function toggleMenu(open) {
+    navLinks.classList.toggle('open', open);
+    hamburger.classList.toggle('open', open);
+    navOverlay.classList.toggle('active', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+
+  hamburger.addEventListener('click', () => {
+    toggleMenu(!navLinks.classList.contains('open'));
+  });
+
+  navOverlay.addEventListener('click', () => toggleMenu(false));
+
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => toggleMenu(false));
+  });
+</script>
+
+</body>
+</html>

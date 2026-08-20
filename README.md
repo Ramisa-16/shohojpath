@@ -3,6 +3,8 @@
 A dyslexia-friendly Bangla reading interface, built as an HCD research
 prototype for a controlled user study.
 
+Live site: https://shohojpath.netlify.app/
+
 > Design and Evaluation of a Dyslexia-Friendly Bangla Reading Interface Using
 > Human-Centered Design Principles
 
